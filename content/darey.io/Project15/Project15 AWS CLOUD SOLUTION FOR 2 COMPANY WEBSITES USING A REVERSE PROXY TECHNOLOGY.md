@@ -16,7 +16,7 @@ tags:
 > 
 
 
-#### Project 15: Steps
+# Project 15: Steps
 
 I start by getting a domain `hracompany.ga` from `www.freenom.com`
 
@@ -36,16 +36,17 @@ Created Organizational Unit **Dev**  and put Account **DevOps**
 Login to newly created account **DevOps**  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/accountDevOps.png)  
 
-#### Create VPC 
+## Create VPC 
 * VPC > Your VPCs > Create VPC
 * VPC Settings
-  * Name tag: HRA-VPC
+  * Name tag: **HRA-VPC**
   * IPv4 CIDR: `10.0.0.0/16`
   * DNS hostnames: Enabled
 
-Creating Internet Gateway **HRA-Igw** attach to **HRA-VPC**  
+## Create Internet Gateway **HRA-Igw** attach to **HRA-VPC**  
 * VPC > Internet Gateways > Create internet gateway
 
+## Create subnets
 * VCP > Subnets > Create subnet
   * **Public** Subnets
     * **Public Subnet 1** HRA-public-subnet-1  
@@ -64,7 +65,7 @@ Creating Internet Gateway **HRA-Igw** attach to **HRA-VPC**
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnet.png)  
 
-**Creating Route Tables**
+## Creating Route Tables
 * VPC > Route Tables > Create route table
   * Created Route Tables  
 	* **HRA-public-rtb**  
@@ -72,7 +73,7 @@ Creating Internet Gateway **HRA-Igw** attach to **HRA-VPC**
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/routeTable.png) 
 
-**Associate Subnets to Route Tables**  
+## **Associate Subnets to Route Tables**  
 * **HRA-public-rtb** to Public Subnets
 	<details close>
 	<summary>Expand to see GIF</summary>
@@ -80,14 +81,12 @@ Creating Internet Gateway **HRA-Igw** attach to **HRA-VPC**
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnetAssociationPublicRTB.gif)  
 	</details> 
   	 
-	
 * **HRA-private-rtb** to Private Subnets
 	<details close>
 	<summary>Expand to see GIF</summary>
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnetAssociationPrivateRTB.gif)  
 	</details>   
-    
 
 Edit Public Route Table **HRA-public-rtb** (to target **HRA-Igw** Internet Gateway)  
 <details close>
@@ -97,7 +96,7 @@ Edit Public Route Table **HRA-public-rtb** (to target **HRA-Igw** Internet Gatew
 </details>
   
 
-**Create a NAT gateway**  
+## **Create a NAT gateway**  
 * VPC > Elastic IPs > Allocate Elastic IP Address  
 	Allocate Elastic IP (Tag name **HRA-NAT**)  
 	<details close>
@@ -121,7 +120,7 @@ Edit Private Route Table **HRA-private-rtb** like so _dest:_ `0.0.0.0/0`  _targe
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/privateRTB_NAT.gif)  
 </details>
 
-**Creating Security Groups**
+## **Creating Security Groups**
 * VPC > SECURITY > Security Groups > Create security group  
   * **HRA-ext-ALB** | HTTP/S from anywhere  
   * **HRA-bastion** | SSH from anywhere (ideally from our current IP)  
@@ -132,9 +131,7 @@ Edit Private Route Table **HRA-private-rtb** like so _dest:_ `0.0.0.0/0`  _targe
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/securiyGroups.png)  
 
-
-
-**Creating a hosted zone**  
+## **Creating a hosted zone**  
 Tells **Route 53** how to respond to **DNS** queries for domain `hracompany.ga`  
 Route 53 > Hosted zones > Create hosted zone  
 <details close>
@@ -147,29 +144,28 @@ Route 53 > Hosted zones > Create hosted zone
 
 The values under **Value/Route traffic to** are nameservers, need to add those in `www.freenom.com`  
 
-**Request Certificate**  
-* DNS Validation  
-  Tag: Name **HRA-Cert**    
+### **Request Certificate**  
+DNS Validation  
+Tag: Name **HRA-Cert**
+![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/requestCertificate2.gif)  
 
-  ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/requestCertificate2.gif)  
-
-  Validation Step: button **Create record in Route 53**  
-  ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/createRecordsRoute53.png)  
+Validation Step: button **Create record in Route 53**
+![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/createRecordsRoute53.png)  
 
 Now we see in Route 53 > Hosted zones > `hracompany.ga`  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/records2.png)  
 
-**Creating Elastic File System**  
-* EFS > Create file system  
-  Name: **HRA-filesystem**  
-  VPC: **HRA-VPC**  
+## **Creating Elastic File System**  
+EFS > Create file system  
+Name: **HRA-filesystem**  
+VPC: **HRA-VPC**  
 
 Mount targets: **HRA-private-subnet-1** and **HRA-private-subnet-2**, where the webservers are, resources in these subnets will have the ability to mount the filesystem  
 
 Apply Security Group **HRA-datalayer**  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/EFS.gif)  
 
-**Creating Access Point**  
+## **Creating Access Point**
 [Working with Amazon EFS access points](https://docs.aws.amazon.com/efs/latest/ug/efs-access-points.html)  
 Amazon **EFS** access points are application-specific entry points into an **EFS** file system that make it easier to manage application access to shared datasets.  
 
@@ -201,7 +197,7 @@ Amazon **EFS** access points are application-specific entry points into an **EFS
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/accessPoints.png)  
 
-**Create RDS**  
+## **Create RDS** 
 * **Create KMS Key**  
   KMS > Customer managed keys > Create Key  
   * Step1:  (defaults)  
@@ -219,7 +215,7 @@ Amazon **EFS** access points are application-specific entry points into an **EFS
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/customerManagedKeys.png)  
 
 
-**Create Subnet Group**  
+## **Create Subnet Group**  
 Amazon RDS > Subnet groups > Create DB Subnet Group  
 * Subnet group details  
   * Name: hra-rds-subnet  
@@ -231,7 +227,7 @@ Amazon RDS > Subnet groups > Create DB Subnet Group
   
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnetGroups.png)  
 
-
+## Create RDS
 * Amazon RDS > Dashboard > Create database  
   Choose a database creation method: **Standard create**  
   Engine options:  **MySQL**  
@@ -255,14 +251,14 @@ Production gives option to select encryption key
 Creating **RDS** with  **Free Tier**  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/RDS_creation.gif)  
 
-**Get the Endpoint:**  
+### **Get the Endpoint:**  
 `hra-database.cssi6ineszpw.us-east-1.rds.amazonaws.com`  
 
 
-#### Creating and Preparing EC2 Instances
+## Creating and Preparing EC2 Instances
 We create 3 RedHat Instances **bastion**, **nginx** and **webserver** install the needed software to create an **images** from them later
 
-**Bastion**  
+### **Bastion**  
 
 ``` bash
 	#commands for ami installation  
@@ -273,7 +269,7 @@ We create 3 RedHat Instances **bastion**, **nginx** and **webserver** install th
 	sudo systemctl enable chronyd
 ```
 
-**Nginx**  
+### **Nginx**  
 ``` bash
 #commands for ami installation  
 yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
@@ -305,6 +301,8 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/ACS
 sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
 
 ```
+
+### Self Signed Certificates
 
 * **Nginx Self Signed Certificate Output**  
 	``` bash
@@ -376,7 +374,7 @@ sed -i 's_SSLCertificateFile /etc/pki/tls/certs/localhost.crt_SSLCertificateFile
 sed -i 's_SSLCertificateKeyFile /etc/pki/tls/private/localhost.key_SSLCertificateKeyFile /etc/pki/tls/private/ACS.key_g' /etc/httpd/conf.d/ssl.conf
 ```  
 
-#### Creating AMI from the instances  
+## Creating AMI from the instances  
 _(deleted instances after)_  
 
 **HRA-webserver-ami** , description: for webserver
@@ -387,7 +385,7 @@ _(deleted instances after)_
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/amis.png)  
 
-#### Creating Target Groups  
+## Creating Target Groups  
 EC2 > Load Balancing >Target Groups > Create target group
 	
 * Target group name: **HRA-nginx-target**  
@@ -414,7 +412,7 @@ EC2 > Load Balancing >Target Groups > Create target group
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/targetGroups.png)  
 
 
-#### Creating Load Balancers  
+## Creating Load Balancers  
 EC2 > Load Balancers > Create Load Balancer  
 Select load balancer type: Application Load Balancer  
 
@@ -483,7 +481,7 @@ So depending on the header `tooling.hracompany.ga`, `www.tooling.hracompany.ga`,
 
 
 
-#### Creating Launch Templates  
+## Creating Launch Templates  
 EC2 > Launch Templates > Create launch template  
 
 * Launch template name and description
@@ -550,7 +548,7 @@ EC2 > Launch Templates > Create launch template
 	rm -rf reverse.conf
 	rm -rf /HRA-project-config
     ```  
-	                
+
  Need to edit `reverse.conf` in repo `https://github.com/hectorproko/HRA-project-config.git`  
 
 Make sure I have:  
@@ -683,7 +681,7 @@ sed -i "s/$db = mysqli_connect('mysql.tooling.svc.cluster.local', 'admin', 'admi
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/launchTemplates.png) 
 
-### Create Auto Scaling Group
+## Create Auto Scaling Group
 
 EC2 > Auto Scaling > Auto Scaling Groups > Create Auto Scaling group
 
@@ -715,8 +713,6 @@ EC2 > Auto Scaling > Auto Scaling Groups > Create Auto Scaling group
 * **Step 6**
    * Add tags  
      * Name **HRA-bastion**  
-
-
 
 
 

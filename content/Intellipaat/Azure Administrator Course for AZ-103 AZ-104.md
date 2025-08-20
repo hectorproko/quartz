@@ -10,14 +10,14 @@
 8. [[Assignment 4_Module2_Azure Administrator Course for AZ-103 AZ-104|Implementing Azure CDN with Blob Storage]] <!--done03/23/2024-->
 9. [[Assignment 5_Module2_Azure Administrator Course for AZ-103 AZ-104|Managing File Storage and Access Tiers in Azure Blob Service]] <!--done03/24/2024-->
 ### Module 3:
-10. [[Assignment 1_Module3_Azure Administrator Course for AZ-103 AZ-104|Setting Up a Storage Account and Integrating with Azure Storage Explorer]] <!--03/00/2024-->
-11. [[Assignment 2_Module3_Azure Administrator Course for AZ-103 AZ-104|Utilizing Azure Storage Explorer for File Share Creation, Blob Uploads, and Azure Table Management]] <!--03/00/2024-->
-12. [[Assignment 3_Module3_Azure Administrator Course for AZ-103 AZ-104|Data Management with Azure Storage and Data Factory for Efficient Data Transfer]] <!--03/00/2024-->
-13. [[Assignment 4_Module3_Azure Administrator Course for AZ-103 AZ-104|Employing AzCopy for Efficient Data Transfer Between Azure Storage Containers]] <!--03/00/2024-->
+10. [[Assignment 1_Module3_Azure Administrator Course for AZ-103 AZ-104|Setting Up a Storage Account and Integrating with Azure Storage Explorer]] <!--Done03/26/2024-->
+11. [[Assignment 2_Module3_Azure Administrator Course for AZ-103 AZ-104|Utilizing Azure Storage Explorer for File Share Creation, Blob Uploads, and Azure Table Management]] <!--done03/27/2024-->
+12. [[Assignment 3_Module3_Azure Administrator Course for AZ-103 AZ-104|Data Management with Azure Storage and Data Factory for Efficient Data Transfer]] <!--done03/28/2024-->
+13. [[Assignment 4_Module3_Azure Administrator Course for AZ-103 AZ-104|Employing AzCopy for Efficient Data Transfer Between Azure Storage Containers]] <!--done03/29/2024-->
 
 ---
 ###  Module 4:
-14. [[Assignment 1_Module4_Azure Administrator Course for AZ-103 AZ-104|Setting Up and Accessing an Ubuntu Virtual Machine in Azure]] <!--03/00/2024-->
+14. [[Assignment 1_Module4_Azure Administrator Course for AZ-103 AZ-104|Setting Up and Accessing an Ubuntu Virtual Machine in Azure]] <!--2025-04-11DONE-->
 15. [[Assignment 2_Module4_Azure Administrator Course for AZ-103 AZ-104|Deploying and Connecting to a Windows VM in Azure via Remote Desktop]] <!--03/00/2024-->
 16. [[Assignment 3_Module4_Azure Administrator Course for AZ-103 AZ-104|Configuring an Ubuntu VM Scale Set in Azure with Auto-Scaling Parameters]] <!--03/00/2024-->
 17. [[Assignment 4_Module4_Azure Administrator Course for AZ-103 AZ-104|Building and Imaging a Linux VM with Ubuntu and Apache2 on Azure]] <!--03/00/2024-->
