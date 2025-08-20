@@ -706,10 +706,10 @@ EC2 > Auto Scaling > Auto Scaling Groups > Create Auto Scaling group
 	 Target value: 90
 * **Step 5**
    * Add notifications  
-      * SNS Topic: <drop down>  
+      * SNS Topic: `<drop down>  `
         * Create a topic  
 		  * Send a notification to: **HRA Notification**  
-		  * With these recipients: <email>
+		  * With these recipients: `<email>`
 * **Step 6**
    * Add tags  
      * Name **HRA-bastion**  
@@ -739,10 +739,10 @@ EC2 > Auto Scaling > Auto Scaling Groups > Create Auto Scaling group
 	 Target value: 90
 * **Step 5**
    * Add notifications  
-      * SNS Topic: <drop down>  
+      * SNS Topic: `<drop down>`  
         * Create a topic  
 		  * Send a notification to: **HRA Notification**  
-		  * With these recipients: <email>
+		  * With these recipients: `<email>`
 * **Step 6**
    * Add tags  
      * Name **HRA-nginx**
@@ -751,7 +751,7 @@ EC2 > Auto Scaling > Auto Scaling Groups > Create Auto Scaling group
 
 
 
-**Create database _wordpressdb_ and _toolingdb_**   
+## **Create database _wordpressdb_ and _toolingdb_**   
 Now I'll use Bastion Instance to connect to **RDS**  
 
 We need the **Endpoint** of **HRA-database**  
@@ -795,9 +795,6 @@ mysql> show databases;
 mysql>
 ```
 
-
-
-
 * **Step 1**  
   * Name  
     * Auto Scaling group name: **HRA-wordpress**  
@@ -824,7 +821,7 @@ mysql>
 	 *	SNS Topic: \<drop down>   
 		 * Create a topic  
 			 * Send a notification to: **HRA Notification**  
-			   With these recipients: <email>
+			   With these recipients: \<email>
 * **Step 6**  
   * Add tags  
     * Name **HRA-wordpress**  
@@ -864,7 +861,7 @@ mysql>
     * Name **HRA-tooling**
 
 
-### Create records in Route 53 to route traffic to HRA-ext-ALB
+## Create records in Route 53 to route traffic to HRA-ext-ALB
 
 Create records for:  
 `tooling.hracompany.ga ` 
@@ -893,15 +890,15 @@ Created records for:
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/records3.png) 
 
 
-**Adding certificate to Internal Load Balancer**  
+## **Adding certificate to Internal Load Balancer**  
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/addinRestofURLsToCert.gif) 
 
-### Testing URL
+## Testing URL
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/wordpressSecureConenction.gif)  
 
 
-### Using Terraform
+## Using Terraform
 [AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL)
 
 
