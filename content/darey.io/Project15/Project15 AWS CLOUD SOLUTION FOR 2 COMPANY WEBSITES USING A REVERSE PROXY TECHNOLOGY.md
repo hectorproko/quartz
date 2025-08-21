@@ -127,8 +127,9 @@ Configured security groups to control traffic:
 
 ## 4. DNS and Certificates
 ==Refactoring== #pending 
-I start by getting a domain `hracompany.ga` from `www.freenom.com` #pending 
+I start by getting a domain `hracompany.ga` from `www.freenom.com` 
 
+==test==
 
 Tells **Route 53** how to respond to **DNS** queries for domain `hracompany.ga`  
 Route 53 > Hosted zones > Create hosted zone  
