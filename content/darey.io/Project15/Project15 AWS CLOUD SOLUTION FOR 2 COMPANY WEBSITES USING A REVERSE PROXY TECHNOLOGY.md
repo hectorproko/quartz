@@ -154,7 +154,7 @@ Validation Step: button **Create record in Route 53**
 Now we see in Route 53 > Hosted zones > `hracompany.ga`  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/records2.png)  
 
-## **Creating Elastic File System**  
+## Creating Elastic File System 
 EFS > Create file system  
 Name: **HRA-filesystem**  
 VPC: **HRA-VPC**  
@@ -164,7 +164,7 @@ Mount targets: **HRA-private-subnet-1** and **HRA-private-subnet-2**, where the 
 Apply Security Group **HRA-datalayer**  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/EFS.gif)  
 
-## **Creating Access Point**
+## Creating Access Point
 [Working with Amazon EFS access points](https://docs.aws.amazon.com/efs/latest/ug/efs-access-points.html)  
 Amazon **EFS** access points are application-specific entry points into an **EFS** file system that make it easier to manage application access to shared datasets.  
 
@@ -196,7 +196,7 @@ Amazon **EFS** access points are application-specific entry points into an **EFS
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/accessPoints.png)  
 
-## **Create RDS** 
+## Create RDS 
 * **Create KMS Key**  
   KMS > Customer managed keys > Create Key  
   * Step1:  (defaults)  
