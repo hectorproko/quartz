@@ -22,14 +22,14 @@ I start by getting a domain `hracompany.ga` from `www.freenom.com` #move
 ## 1. AWS Organizations and Account Setup
 
 Created an **Organizational Unit** (OU) called **Dev**.
-AWS Organizations > AWS accounts
-* Select root account > Actions > Organizational Unit - Create New
+*AWS Organizations > AWS accounts*
+*Select root account > Actions > Organizational Unit - Create New*
 
 Created a new account called **DevOps**  
-* AWS Organizations > AWS accounts > Add an AWS Account
+*AWS Organizations > AWS accounts > Add an AWS Account*
 
 Moved **DevOps** account to Organizational Unit **Dev**  
-* Select DevOps > Actions > Move  
+*Select DevOps > Actions > Move*  
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/organizationalUnit.png)  
 
