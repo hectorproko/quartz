@@ -18,7 +18,6 @@ tags:
 
 # Project 15: Steps
 
-I start by getting a domain `hracompany.ga` from `www.freenom.com` #move
 ## 1. AWS Organizations and Account Setup
 
 Created an **Organizational Unit** (OU) called **Dev**.
@@ -31,7 +30,7 @@ Created a new account called **DevOps**
 Moved **DevOps** account to Organizational Unit **Dev**  
 *Select DevOps > Actions > Move*  
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/organizationalUnit.png)  
+![Markdown Logo|400](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/organizationalUnit.png)  
 
 Logged into the **DevOps** account to set up the infrastructure.
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/accountDevOps.png)  
@@ -58,17 +57,16 @@ Created **HRA-Igw** and attached it to **HRA-VPC**.
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnet.png)  
 
 
-==Refactoring== 
-[[#VPC Creation|test]]
-## Creating Route Tables
-* VPC > Route Tables > Create route table
-  * Created Route Tables  
-	* **HRA-public-rtb**  
-    * **HRA-private-rtb**  
+#### Route Tables:
+==refactoring== #pending routing to a NAT
+
+*VPC > Route Tables > Create route table*
+- Created **HRA-public-rtb** (associated with public subnets, routing to **HRA-Igw**).
+- Created **HRA-private-rtb** (associated with private subnets, routing to a NAT gateway).
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/routeTable.png) 
 
-## **Associate Subnets to Route Tables**  
+**Associate Subnets to Route Tables** 
 * **HRA-public-rtb** to Public Subnets
 	<details close>
 	<summary>Expand to see GIF</summary>
@@ -90,43 +88,48 @@ Edit Public Route Table **HRA-public-rtb** (to target **HRA-Igw** Internet Gatew
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/subnetAssociationPrivateRTB.gif)
 </details>
   
+#### NAT Gateway
+Allocated an Elastic IP (**HRA-NAT**) and created a NAT gateway (**HRA-NatGateway**) in **HRA-public-subnet-1**.  *(NAT uses the Elastic IP)*
 
-## **Create a NAT gateway**  
-* VPC > Elastic IPs > Allocate Elastic IP Address  
-	Allocate Elastic IP (Tag name **HRA-NAT**)  
+*VPC > Elastic IPs > Allocate Elastic IP Address*
 	<details close>
 	<summary>Expand to see GIF</summary>
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NAT_ElasticIP.gif)  
 	</details>  
 
-* VPC > NAT Gateways > Create NAT gateway  
-	Create the **NAT** in NAT Gateways (**HRA-NatGateway**) into **Public Subnet 1** and choose Elastic IP **HRA-NAT**
+*VPC > NAT Gateways > Create NAT gateway*  
 	<details close>
 	<summary>Expand to see GIF</summary>
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NATcreation.gif)  
 	</details>
 
-Edit Private Route Table **HRA-private-rtb** like so _dest:_ `0.0.0.0/0`  _target:_ **HRA-NatGateway**  
+Configured **HRA-private-rtb** to route _dest:_ `0.0.0.0/0` to _target:_ **HRA-NatGateway** for outbound internet access from private subnets.
 <details close>
 <summary>Expand to see GIF</summary>
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/privateRTB_NAT.gif)  
 </details>
 
-## **Creating Security Groups**
-* VPC > SECURITY > Security Groups > Create security group  
-  * **HRA-ext-ALB** | HTTP/S from anywhere  
-  * **HRA-bastion** | SSH from anywhere (ideally from our current IP)  
-  * **HRA-nginx-reverse-proxy** | HTTP/s from **HRA-ext-ALB** 
-  * **HRA-int-ALB** | HTTP/S from **HRA-nginx-reverse-proxy** 
-  * **HRA-webserver** | SSH from **HRA-bastion** , HTTP/S from **HRA-int-ALB**
-  * **HRA-datalayer** | MYSQL/Aurora from **HRA-bastion**, NFS from **HRA-webserver**, MYSQL/Aurora from **HRA-webserver**  
+## 3. Security Groups
+*VPC > SECURITY > Security Groups > Create security group* 
 
-	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/securiyGroups.png)  
+Configured security groups to control traffic:
+- **HRA-ext-ALB**: Allows HTTP/HTTPS from anywhere.
+- **HRA-bastion**: Allows SSH from anywhere (ideally restricted to your IP).
+- **HRA-nginx-reverse-proxy**: Allows HTTP/HTTPS from **HRA-ext-ALB**.
+- **HRA-int-ALB**: Allows HTTP/HTTPS from **HRA-nginx-reverse-proxy**.
+- **HRA-webserver**: Allows SSH from **HRA-bastion**, HTTP/HTTPS from **HRA-int-ALB**.
+- **HRA-datalayer**: Allows MySQL/Aurora from **HRA-bastion** and **HRA-webserver**, NFS from **HRA-webserver**.
 
-## **Creating a hosted zone**  
+![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/securiyGroups.png)  
+
+## 4. DNS and Certificates
+==Refactoring== #pending 
+I start by getting a domain `hracompany.ga` from `www.freenom.com` #pending 
+
+
 Tells **Route 53** how to respond to **DNS** queries for domain `hracompany.ga`  
 Route 53 > Hosted zones > Create hosted zone  
 <details close>
