@@ -96,14 +96,14 @@ Allocated an Elastic IP (**HRA-NAT**) and created a NAT gateway (**HRA-NatGatewa
 	<summary>Expand to see GIF</summary>
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NAT_ElasticIP.gif)  
-	</details>  
+	\</details>  
 
 *VPC > NAT Gateways > Create NAT gateway*  
 	<details close>
 	<summary>Expand to see GIF</summary>
 
 	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NATcreation.gif)  
-	</details>
+	\</details>
 
 Configured **HRA-private-rtb** to route _dest:_ `0.0.0.0/0` to _target:_ **HRA-NatGateway** for outbound internet access from private subnets.
 <details close>
