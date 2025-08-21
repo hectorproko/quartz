@@ -92,25 +92,17 @@ Edit Public Route Table **HRA-public-rtb** (to target **HRA-Igw** Internet Gatew
 Allocated an Elastic IP (**HRA-NAT**) and created a NAT gateway (**HRA-NatGateway**) in **HRA-public-subnet-1**.  *(NAT uses the Elastic IP)*
 
 *VPC > Elastic IPs > Allocate Elastic IP Address*
-	<details close>
-	<summary>Expand to see GIF</summary>
-
-	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NAT_ElasticIP.gif)  
-	\</details>  
+> [!NOTE]- Expand to see GIF
+> ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NAT_ElasticIP.gif)
 
 *VPC > NAT Gateways > Create NAT gateway*  
-	<details close>
-	<summary>Expand to see GIF</summary>
-
-	![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NATcreation.gif)  
-	\</details>
+> [!NOTE]- Expand to see GIF
+> ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/NATcreation.gif)
 
 Configured **HRA-private-rtb** to route _dest:_ `0.0.0.0/0` to _target:_ **HRA-NatGateway** for outbound internet access from private subnets.
-<details close>
-<summary>Expand to see GIF</summary>
+> [!NOTE]- Expand to see GIF
+> ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/privateRTB_NAT.gif)
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/privateRTB_NAT.gif)  
-</details>
 
 ## 3. Security Groups
 *VPC > SECURITY > Security Groups > Create security group* 
