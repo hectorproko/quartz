@@ -6,7 +6,7 @@ tags:
 *~~(old [Project 21](https://github.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/blob/main/Project21_Steps.md))~~*
 
 ## Description
-This project showcases a demonstration of setting up a Kubernetes cluster from scratch, aiming to exhibit a comprehensive understanding of the technology. The project encompasses the installation and configuration of Kubernetes control plane components, worker nodes, and networking. The instructions provided are designed for a Linux-based environment.
+This project demonstrates setting up a Kubernetes cluster from scratch to showcase a comprehensive understanding of the technology. It includes installing and configuring Kubernetes control plane components, worker nodes, and networking. The instructions are for a Linux-based environment.
 
 ## Technologies/Tools used:
 - Linux-based operating system.
@@ -18,97 +18,116 @@ This project showcases a demonstration of setting up a Kubernetes cluster from s
 
 --- 
 
-## KUBERNETES ARCHITECTURE  
+## Kubernetes Architecture  
+
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/K8s_architecture.png)
 
-## INSTALL CLIENT TOOLS BEFORE BOOTSTRAPPING THE CLUSTER.
+## Install Client Tools Before Bootstrapping the Cluster
 
-**Install and configure AWS CLI**  
+### Install and Configure AWS CLI
 
-We will utilize the existing *AWS CLI* setup *(from [Project 15](https://github.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/blob/main/Project15_Steps.md#project-15-steps)*
-), which has already been configured, along with the **DevOps** account and a user **Terraform** *(used in [AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main)
+We will utilize the existing *AWS CLI* setup *(from [[Project15 AWS CLOUD SOLUTION FOR 2 COMPANY WEBSITES USING A REVERSE PROXY TECHNOLOGY|Project 15]]*), which has already been configured, along with the **DevOps** account and a user **Terraform** *(used in [AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main)
 ).*  
 
-**Installing kubectl**  
+### Installing kubectl
 [Kubernetes Doc](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 
-``` bash
-hector@hector-Laptop:~$ chmod +x kubectl
-hector@hector-Laptop:~$ ls -a | grep kubectl
-kubectl
-hector@hector-Laptop:~$ ls -l | grep kubectl
--rwxrwxr-x  1 hector hector 46436352 Apr  8  2021 kubectl
-hector@hector-Laptop:~$ sudo mv kubectl /usr/local/bin/
-[sudo] password for hector:
-hector@hector-Laptop:~$ kubectl version --client
-Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.0", GitCommit:"cb303e613a121a29364f75cc67d3d580833a7479", GitTreeState:"clean", BuildDate:"2021-04-08T16:31:21Z", GoVersion:"go1.16.1", Compiler:"gc", Platform:"linux/amd64"}
-hector@hector-Laptop:~$
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ chmod +x kubectl
+> 
+> hector@hector-Laptop:~$ ls -a | grep kubectl
+> kubectl
+> 
+> hector@hector-Laptop:~$ ls -l | grep kubectl
+> -rwxrwxr-x  1 hector hector 46436352 Apr  8  2021 kubectl
+> 
+> hector@hector-Laptop:~$ sudo mv kubectl /usr/local/bin/
+> [sudo] password for hector:
+> 
+> hector@hector-Laptop:~$ kubectl version --client
+> Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.0", GitCommit:"cb303e613a121a29364f75cc67d3d580833a7479", GitTreeState:"clean", BuildDate:"2021-04-08T16:31:21Z", GoVersion:"go1.16.1", Compiler:"gc", Platform:"linux/amd64"}
+> ```
 
-**Install CFSSL and CFSSLJSON**  
+### Install CFSSL and CFSSLJSON
 CFSSL (CloudFlare's PKI/TLS toolkit) and CFSSLJSON are tools developed by Cloudflare for managing public key infrastructure (PKI) and X.509 certificates.
 
 - [CFSSL](https://blog.cloudflare.com/introducing-cfssl/) is a command-line tool and a server for signing, verifying, and bundling X.509 certificates.
 - [CFSSLJSON](https://github.com/cloudflare/cfssl) is a utility that provides a JSON-based interface to CFSSL.
 
-``` bash
-hector@hector-Laptop:~$ wget -q --show-progress --https-only --timestamping \
->   https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssl \
->   https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssljson
-cfssl               100%[===================>]  14.15M  2.53MB/s    in 5.7s
-cfssljson           100%[===================>]   9.05M  1.99MB/s    in 5.2s
-hector@hector-Laptop:~$ ls -l | grep cfssl
--rw-rw-r--  1 hector hector 14842064 Jul 18  2020 cfssl
--rw-rw-r--  1 hector hector  9495504 Jul 18  2020 cfssljson
-hector@hector-Laptop:~$ chmod +x cfssl cfssljson
-hector@hector-Laptop:~$ ls -l | grep cfssl
--rwxrwxr-x  1 hector hector 14842064 Jul 18  2020 cfssl
--rwxrwxr-x  1 hector hector  9495504 Jul 18  2020 cfssljson
-hector@hector-Laptop:~$ sudo mv cfssl cfssljson /usr/local/bin/
-[sudo] password for hector:
-hector@hector-Laptop:~$ ls -l | grep cfssl
-hector@hector-Laptop:~$
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ wget -q --show-progress --https-only --timestamping \
+> >   https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssl \
+> >   https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssljson
+> cfssl               100%[===================>]  14.15M  2.53MB/s    in 5.7s
+> cfssljson           100%[===================>]   9.05M  1.99MB/s    in 5.2s
+> 
+> hector@hector-Laptop:~$ ls -l | grep cfssl
+> -rw-rw-r--  1 hector hector 14842064 Jul 18  2020 cfssl
+> -rw-rw-r--  1 hector hector  9495504 Jul 18  2020 cfssljson
+> 
+> hector@hector-Laptop:~$ chmod +x cfssl cfssljson
+> 
+> hector@hector-Laptop:~$ ls -l | grep cfssl
+> -rwxrwxr-x  1 hector hector 14842064 Jul 18  2020 cfssl
+> -rwxrwxr-x  1 hector hector  9495504 Jul 18  2020 cfssljson
+> 
+> hector@hector-Laptop:~$ sudo mv cfssl cfssljson /usr/local/bin/
+> [sudo] password for hector:
+> hector@hector-Laptop:~$ ls -l | grep cfssl
+> ```
 
 
 ## Step 1 – Configure Network Infrastructure
-### AWS CLOUD RESOURCES FOR KUBERNETES CLUSTER  
 
-As we already know, we need some compute power to run the **control plane** and the **worker nodes**. In this section, we will provision **EC2 Instances** required to run our **K8s cluster**. We will do **manual** provisioning using `awscli` to have thorough knowledge about the whole setup. After that, we can redo the entire project using Terraform. This manual approach its to solidify our skills and have the opportunity to face more challenges.
+### AWS Cloud Resources for Kubernetes Cluster  
+
+Provision EC2 instances manually using **AWS CLI** for in-depth knowledge. Later, this can be automated with Terraform.
 
 1. Creating a directory named `k8s-cluster-from-ground-up`:    
-``` bash
-hector@hector-Laptop:~$ mkdir k8s-cluster-from-ground-up`
-```  
 
-**Virtual Private Cloud – VPC**
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ mkdir k8s-cluster-from-ground-up`
+> ```  
+> 
 
-2. Creating a **VPC** and storing the **ID** in a **variable** `VPC_ID`:  
-``` bash
-hector@hector-Laptop:~$ VPC_ID=$(aws ec2 create-vpc \
-> --cidr-block 172.31.0.0/16 \
-> --output text --query 'Vpc.VpcId'
-> )
-```  
+### Virtual Private Cloud – VPC
 
-3. **Tag**ging the **VPC** to name it:  
-     
-``` bash
-hector@hector-Laptop:~$ NAME=k8s-cluster-from-ground-up #Create variable
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${VPC_ID} \
->   --tags Key=Name,Value=${NAME}
-```
+2. Create a **VPC** and store the **ID** in a variable `VPC_ID`.
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ VPC_ID=$(aws ec2 create-vpc \
+> > --cidr-block 172.31.0.0/16 \
+> > --output text --query 'Vpc.VpcId'
+> > )
+> ```  
+> 
+
+3. Tag the **VPC** with a name.
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ NAME=k8s-cluster-from-ground-up #Create variable
+> 
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${VPC_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> ```
+> 
 
 ### Domain Name System – DNS  
 
-4. Enabling **DNS** support for your **VPC**:  
+4. Enable **DNS** support for the **VPC**.
 ``` bash
 hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
 > --vpc-id ${VPC_ID} \
 > --enable-dns-support '{"Value": true}'
 ```
-5. Enable **DNS** support for **hostnames**:  
+
+5. Enable **DNS** support for **hostnames**.
 ``` bash
 hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
 > --vpc-id ${VPC_ID} \
@@ -118,10 +137,10 @@ hector@hector-Laptop:~$
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/yourvpc.png)  
 
-6. Set the required **AWS Region** `AWS_REGION=us-east-1`:  
+6. Set the required **AWS Region** `AWS_REGION=us-east-1`.
 
-7. Configure **DHCP Options Set**:
-*By default **EC2** instances have fully qualified names like `ip-172-50-197-106.eu-central-1.compute.internal`. We will set our own configuration shown below.*  
+7. Configure **DHCP Options Set**.
+   *By default **EC2** instances have fully qualified names like `ip-172-50-197-106.eu-central-1.compute.internal`. We will set our own configuration shown below.*  
 
 ``` bash
 hector@hector-Laptop:~$ DHCP_OPTION_SET_ID=$(aws ec2 create-dhcp-options \

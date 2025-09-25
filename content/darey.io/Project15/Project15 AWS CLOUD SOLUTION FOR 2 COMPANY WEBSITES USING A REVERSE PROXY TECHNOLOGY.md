@@ -103,7 +103,6 @@ Configured **HRA-private-rtb** to route _dest:_ `0.0.0.0/0` to _target:_ **HRA-N
 > [!NOTE]- Expand to see GIF
 > ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/privateRTB_NAT.gif)
 
-
 ## 3. Security Groups
 *VPC > SECURITY > Security Groups > Create security group* 
 
