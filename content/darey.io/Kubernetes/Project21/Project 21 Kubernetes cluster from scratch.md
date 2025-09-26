@@ -680,10 +680,10 @@ Specifies CA details, including:
 - O: Organization ("Kubernetes")
 - OU: Organizational Unit ("Hector DEVOPS")
 
-**The 3 important files here are:** 
-`ca.pem`:        Root Certificate
-`ca-key.pem`: Private Key
-`ca.csr`:        Certificate Signing Request
+**The 3 important files here are:**   
+`ca.pem`:        Root Certificate  
+`ca-key.pem`: Private Key  
+`ca.csr`:        Certificate Signing Request  
 
 ==Note Refactoring end==
 ### Generating TLS Certificates For Client and Server  
