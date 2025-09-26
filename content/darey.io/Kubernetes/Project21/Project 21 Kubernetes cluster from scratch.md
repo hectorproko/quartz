@@ -85,7 +85,8 @@ CFSSL (CloudFlare's PKI/TLS toolkit) and CFSSLJSON are tools developed by Cloudf
 
 Provision EC2 instances manually using **AWS CLI** for in-depth knowledge. Later, this can be automated with Terraform.
 
-1. Creating a directory named `k8s-cluster-from-ground-up`:    
+#### 1. Creating a directory named 
+`k8s-cluster-from-ground-up`:    
 
 > [!NOTE]- Commands
 > ``` bash
@@ -95,7 +96,7 @@ Provision EC2 instances manually using **AWS CLI** for in-depth knowledge. Later
 
 ### Virtual Private Cloud – VPC
 
-2. Create a **VPC** and store the **ID** in a variable `VPC_ID`.
+#### 2. Create a **VPC** and store the **ID** in a variable `VPC_ID`.
 
 > [!NOTE]- Commands
 > ``` bash
@@ -106,7 +107,7 @@ Provision EC2 instances manually using **AWS CLI** for in-depth knowledge. Later
 > ```  
 > 
 
-3. Tag the **VPC** with a name.
+#### 3. Tag the **VPC** with a name.
 
 > [!NOTE]- Commands
 > ``` bash
@@ -120,352 +121,386 @@ Provision EC2 instances manually using **AWS CLI** for in-depth knowledge. Later
 
 ### Domain Name System – DNS  
 
-4. Enable **DNS** support for the **VPC**.
-``` bash
-hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
-> --vpc-id ${VPC_ID} \
-> --enable-dns-support '{"Value": true}'
-```
+#### 4. Enable **DNS** support for the **VPC**.
 
-5. Enable **DNS** support for **hostnames**.
-``` bash
-hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
-> --vpc-id ${VPC_ID} \
-> --enable-dns-hostnames '{"Value": true}'
-hector@hector-Laptop:~$
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
+> > --vpc-id ${VPC_ID} \
+> > --enable-dns-support '{"Value": true}'
+> ```
+> 
+
+#### 5. Enable **DNS** support for **hostnames**.
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 modify-vpc-attribute \
+> > --vpc-id ${VPC_ID} \
+> > --enable-dns-hostnames '{"Value": true}'
+> ```
+> 
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/yourvpc.png)  
 
-6. Set the required **AWS Region** `AWS_REGION=us-east-1`.
+#### 6. Set the required **AWS Region**:
+`AWS_REGION=us-east-1`.
 
-7. Configure **DHCP Options Set**.
-   *By default **EC2** instances have fully qualified names like `ip-172-50-197-106.eu-central-1.compute.internal`. We will set our own configuration shown below.*  
+#### 7. Configure **DHCP Options Set**:
+   *By default, AWS assigns **EC2** instances fully qualified domain names (FQDNs) like `ip-172-50-197-106.eu-central-1.compute.internal`. This step customizes the domain name used by instances in the **VPC** to something more meaningful for the project (e.g., `ip-172-50-197-106.$AWS_REGION.hector.compute.internal`) and ensures that DNS resolution uses Amazon's provided **DNS** server.*
 
-``` bash
-hector@hector-Laptop:~$ DHCP_OPTION_SET_ID=$(aws ec2 create-dhcp-options \
->   --dhcp-configuration \
->     "Key=domain-name,Values=$AWS_REGION.hector.compute.internal" \
->     "Key=domain-name-servers,Values=AmazonProvidedDNS" \
->   --output text --query 'DhcpOptions.DhcpOptionsId')
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ DHCP_OPTION_SET_ID=$(aws ec2 create-dhcp-options \
+> >   --dhcp-configuration \
+> >     "Key=domain-name,Values=$AWS_REGION.hector.compute.internal" \
+> >     "Key=domain-name-servers,Values=AmazonProvidedDNS" \
+> >   --output text --query 'DhcpOptions.DhcpOptionsId')
+> ```
 
-8. **Tag**ing the **DHCP Option set** to make the **domain name** appear:  
-``` bash
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${DHCP_OPTION_SET_ID} \
->   --tags Key=Name,Value=${NAME}
-```
+#### 8. **Tag**ing the **DHCP Option set** to make the **domain name** appear:
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${DHCP_OPTION_SET_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> ```
+> 
+
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/dhcp.png)  
 
+#### 9. Associate the **DHCP Option set** with the **VPC**:
 
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 associate-dhcp-options \
+> >   --dhcp-options-id ${DHCP_OPTION_SET_ID} \
+> >   --vpc-id ${VPC_ID}
+> ```
+> 
 
-
-
-9. Associate the **DHCP Option set** with the **VPC**:
-``` bash
-hector@hector-Laptop:~$ aws ec2 associate-dhcp-options \
->   --dhcp-options-id ${DHCP_OPTION_SET_ID} \
->   --vpc-id ${VPC_ID}
-```
-
-VPC > Your VPCs  
+VPC > Your VPCs
 VPC is now **associated** with the above **DHCP options set ID**    
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/yourvpc2.png)  
 
+#### 10.  Creating the **Subnet**:  
 
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ SUBNET_ID=$(aws ec2 create-subnet \
+> >   --vpc-id ${VPC_ID} \
+> >   --cidr-block 172.31.0.0/24 \
+> >   --output text --query 'Subnet.SubnetId')  
+> ```
 
-
-10.  Creating the **Subnet**:  
-``` bash
-hector@hector-Laptop:~$ SUBNET_ID=$(aws ec2 create-subnet \
->   --vpc-id ${VPC_ID} \
->   --cidr-block 172.31.0.0/24 \
->   --output text --query 'Subnet.SubnetId')  
-```
-**Tag**ging to name it  
-``` bash  
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${SUBNET_ID} \
->   --tags Key=Name,Value=${NAME}
-```
+> [!NOTE]- **Tag**ging to name it
+> ``` bash  
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${SUBNET_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> ```
+> 
 
 VPC > Subnets  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/subnets.png)  
 
 
-11. Creating the **Internet Gateway** *(**IGW**)* and attaching it to the **VPC**:  
+#### 11. Creating the **Internet Gateway** *(**IGW**)* and attaching it to the **VPC**:  
 
-``` bash
-hector@hector-Laptop:~$ INTERNET_GATEWAY_ID=$(aws ec2 create-internet-gateway \
->   --output text --query 'InternetGateway.InternetGatewayId')
-#Tagging to name it
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${INTERNET_GATEWAY_ID} \
->   --tags Key=Name,Value=${NAME}
-#Attaching
-hector@hector-Laptop:~$ aws ec2 attach-internet-gateway \
->   --internet-gateway-id ${INTERNET_GATEWAY_ID} \
->   --vpc-id ${VPC_ID}
-hector@hector-Laptop:~$
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ INTERNET_GATEWAY_ID=$(aws ec2 create-internet-gateway \
+> >   --output text --query 'InternetGateway.InternetGatewayId')
+> 
+> #Tagging to name it
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${INTERNET_GATEWAY_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> 
+> #Attaching
+> hector@hector-Laptop:~$ aws ec2 attach-internet-gateway \
+> >   --internet-gateway-id ${INTERNET_GATEWAY_ID} \
+> >   --vpc-id ${VPC_ID}
+> ```
+> 
 
 **VPC ID** `vpc-003a8fe8a20274a1d`  
 
 VPC > Internet gateways  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/gateways.png)  
 
-12.   Creating **route tables**, associating the route table to **subnet**, and creating a **route** to allow external traffic to the Internet through the **Internet Gateway**:  
+#### 12. Routes
+Creating **route tables**, associating the route table to **subnet**, and creating a **route** to allow external traffic to the Internet through the **Internet Gateway**.  
 
-``` bash
-hector@hector-Laptop:~$ ROUTE_TABLE_ID=$(aws ec2 create-route-table \
->   --vpc-id ${VPC_ID} \
->   --output text --query 'RouteTable.RouteTableId')
-#Tagging to name it
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${ROUTE_TABLE_ID} \
->   --tags Key=Name,Value=${NAME}
-#Associating
-hector@hector-Laptop:~$ aws ec2 associate-route-table \
->   --route-table-id ${ROUTE_TABLE_ID} \
->   --subnet-id ${SUBNET_ID}
-{
-    "AssociationId": "rtbassoc-0127a282e2bedeec0",
-    "AssociationState": {
-        "State": "associated"
-    }
-}
-#Creating route
-hector@hector-Laptop:~$ aws ec2 create-route \
->   --route-table-id ${ROUTE_TABLE_ID} \
->   --destination-cidr-block 0.0.0.0/0 \
->   --gateway-id ${INTERNET_GATEWAY_ID}
-{
-    "Return": true
-}
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ ROUTE_TABLE_ID=$(aws ec2 create-route-table \
+> >   --vpc-id ${VPC_ID} \
+> >   --output text --query 'RouteTable.RouteTableId')
+> 
+> #Tagging to name it
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${ROUTE_TABLE_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> 
+> #Associating
+> hector@hector-Laptop:~$ aws ec2 associate-route-table \
+> >   --route-table-id ${ROUTE_TABLE_ID} \
+> >   --subnet-id ${SUBNET_ID}
+> {
+>     "AssociationId": "rtbassoc-0127a282e2bedeec0",
+>     "AssociationState": {
+>         "State": "associated"
+>     }
+> }
+> 
+> #Creating route
+> hector@hector-Laptop:~$ aws ec2 create-route \
+> >   --route-table-id ${ROUTE_TABLE_ID} \
+> >   --destination-cidr-block 0.0.0.0/0 \
+> >   --gateway-id ${INTERNET_GATEWAY_ID}
+> {
+>     "Return": true
+> }
+> ```
+> 
 
 VPC > Route tables  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/routetables.png)  
 
-
-
 ### SECURITY GROUPS  
-13. Configure **security groups**:  
 
-Creating the **security group** and store its **ID** in a **variable**  
-``` bash
-hector@hector-Laptop:~$ SECURITY_GROUP_ID=$(aws ec2 create-security-group \
->   --group-name ${NAME} \
->   --description "Kubernetes cluster security group" \
->   --vpc-id ${VPC_ID} \
->   --output text --query 'GroupId')
-```
+#### 13. Configure **security groups**:  
 
+> [!NOTE]- Creating the **security group** and store its **ID** in a **variable**  
+> ``` bash
+> hector@hector-Laptop:~$ SECURITY_GROUP_ID=$(aws ec2 create-security-group \
+> >   --group-name ${NAME} \
+> >   --description "Kubernetes cluster security group" \
+> >   --vpc-id ${VPC_ID} \
+> >   --output text --query 'GroupId')
+> ```
+> 
 
-Creating a NAME **tag** for the **security group**  
-``` bash
-hector@hector-Laptop:~$ aws ec2 create-tags \
->   --resources ${SECURITY_GROUP_ID} \
->   --tags Key=Name,Value=${NAME}
-```
+> [!NOTE]- Creating a NAME **tag** for the **security group**  
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 create-tags \
+> >   --resources ${SECURITY_GROUP_ID} \
+> >   --tags Key=Name,Value=${NAME}
+> ```
+> 
 
-Creating **Inbound traffic** for all communication within the **subnet** to connect on **ports** used by the **master nodes** 
-``` bash
-hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
->     --group-id ${SECURITY_GROUP_ID} \
->     --ip-permissions IpProtocol=tcp,FromPort=2379,ToPort=2380,IpRanges='[{CidrIp=172.31.0.0/24}]'
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-0fdd63e60afe82980",
-            "GroupId": "sg-0a9ee15e7bc3faf61",
-            "GroupOwnerId": "199055125796",
-            "IsEgress": false,
-            "IpProtocol": "tcp",
-            "FromPort": 2379,
-            "ToPort": 2380,
-            "CidrIpv4": "172.31.0.0/24"
-        }
-    ]
-}
-```
+> [!NOTE]- Authorize **inbound** traffic for **master nodes** ports.
+> Configure the security group to allow inbound TCP traffic within the subnet for ports used by the Kubernetes master nodes (specifically ports 2379–2380, used by etcd for communication).
+> 
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
+> >     --group-id ${SECURITY_GROUP_ID} \
+> >     --ip-permissions IpProtocol=tcp,FromPort=2379,ToPort=2380,IpRanges='[{CidrIp=172.31.0.0/24}]'
+> {
+>     "Return": true,
+>     "SecurityGroupRules": [
+>         {
+>             "SecurityGroupRuleId": "sgr-0fdd63e60afe82980",
+>             "GroupId": "sg-0a9ee15e7bc3faf61",
+>             "GroupOwnerId": "199055125796",
+>             "IsEgress": false,
+>             "IpProtocol": "tcp",
+>             "FromPort": 2379,
+>             "ToPort": 2380,
+>             "CidrIpv4": "172.31.0.0/24"
+>         }
+>     ]
+> }
+> ```
+> 
 
-Creating **Inbound traffic** for all communication within the **subnet** to connect on **ports** used by the **worker nodes**
-``` bash
-hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
->     --group-id ${SECURITY_GROUP_ID} \
->     --ip-permissions IpProtocol=tcp,FromPort=30000,ToPort=32767,IpRanges='[{CidrIp=172.31.0.0/24}]'
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-08c0785dd4c3d1add",
-            "GroupId": "sg-0a9ee15e7bc3faf61",
-            "GroupOwnerId": "199055125796",
-            "IsEgress": false,
-            "IpProtocol": "tcp",
-            "FromPort": 30000,
-            "ToPort": 32767,
-            "CidrIpv4": "172.31.0.0/24"
-        }
-    ]
-}
-```
+> [!NOTE]- Authorize **inbound** traffic for **worker nodes** ports.
+> Configure the security group to allow inbound TCP traffic within the subnet for ports used by Kubernetes worker nodes (ports 30000–32767, used for NodePort services).
+> 
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
+> >     --group-id ${SECURITY_GROUP_ID} \
+> >     --ip-permissions IpProtocol=tcp,FromPort=30000,ToPort=32767,IpRanges='[{CidrIp=172.31.0.0/24}]'
+> {
+>     "Return": true,
+>     "SecurityGroupRules": [
+>         {
+>             "SecurityGroupRuleId": "sgr-08c0785dd4c3d1add",
+>             "GroupId": "sg-0a9ee15e7bc3faf61",
+>             "GroupOwnerId": "199055125796",
+>             "IsEgress": false,
+>             "IpProtocol": "tcp",
+>             "FromPort": 30000,
+>             "ToPort": 32767,
+>             "CidrIpv4": "172.31.0.0/24"
+>         }
+>     ]
+> }
+> ```
+> 
 
+> [!NOTE]- Authorize **inbound** for Kubernetes **API Server** on port 6443.
+> Configure the security group to allow inbound TCP traffic on port 6443, enabling external access to the Kubernetes API Server.
+> 
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
+> >   --group-id ${SECURITY_GROUP_ID} \
+> >   --protocol tcp \
+> >   --port 6443 \
+> >   --cidr 0.0.0.0/0
+> {
+>     "Return": true,
+>     "SecurityGroupRules": [
+>         {
+>             "SecurityGroupRuleId": "sgr-0105bda399b098396",
+>             "GroupId": "sg-0a9ee15e7bc3faf61",
+>             "GroupOwnerId": "199055125796",
+>             "IsEgress": false,
+>             "IpProtocol": "tcp",
+>             "FromPort": 6443,
+>             "ToPort": 6443,
+>             "CidrIpv4": "0.0.0.0/0"
+>         }
+>     ]
+> }
+> ```
 
-Creating **inbound traffic** to **allow** connections to the Kubernetes **API Server** listening on **port** `6443`
-``` bash
-hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
->   --group-id ${SECURITY_GROUP_ID} \
->   --protocol tcp \
->   --port 6443 \
->   --cidr 0.0.0.0/0
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-0105bda399b098396",
-            "GroupId": "sg-0a9ee15e7bc3faf61",
-            "GroupOwnerId": "199055125796",
-            "IsEgress": false,
-            "IpProtocol": "tcp",
-            "FromPort": 6443,
-            "ToPort": 6443,
-            "CidrIpv4": "0.0.0.0/0"
-        }
-    ]
-}
-```
+> [!NOTE]- Authorize **inbound** for **SSH** from anywhere
+> *(not to be done in production. Limit access ONLY to IPs or CIDR that MUST connect)*
+> 
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
+> >   --group-id ${SECURITY_GROUP_ID} \
+> >   --protocol tcp \
+> >   --port 22 \
+> >   --cidr 0.0.0.0/0
+> {
+>     "Return": true,
+>     "SecurityGroupRules": [
+>         {
+>             "SecurityGroupRuleId": "sgr-0b646d465f5257b56",
+>             "GroupId": "sg-0a9ee15e7bc3faf61",
+>             "GroupOwnerId": "199055125796",
+>             "IsEgress": false,
+>             "IpProtocol": "tcp",
+>             "FromPort": 22,
+>             "ToPort": 22,
+>             "CidrIpv4": "0.0.0.0/0"
+>         }
+>     ]
+> }
+> ```
+> 
 
-
-Creating **Inbound traffic** for **SSH** from anywhere   
-*(not to be done in production. Limit access ONLY to IPs or CIDR that MUST connect)*
-``` bash
-hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
->   --group-id ${SECURITY_GROUP_ID} \
->   --protocol tcp \
->   --port 22 \
->   --cidr 0.0.0.0/0
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-0b646d465f5257b56",
-            "GroupId": "sg-0a9ee15e7bc3faf61",
-            "GroupOwnerId": "199055125796",
-            "IsEgress": false,
-            "IpProtocol": "tcp",
-            "FromPort": 22,
-            "ToPort": 22,
-            "CidrIpv4": "0.0.0.0/0"
-        }
-    ]
-}
-```
-
-
-Creating **ICMP ingress** for all types  
-``` bash
-hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
->   --group-id ${SECURITY_GROUP_ID} \
->   --protocol icmp \
->   --port -1 \
->   --cidr 0.0.0.0/0
-{
-    "Return": true,
-    "SecurityGroupRules": [
-        {
-            "SecurityGroupRuleId": "sgr-0f3b453bf36f5ad8c",
-            "GroupId": "sg-0a9ee15e7bc3faf61",
-            "GroupOwnerId": "199055125796",
-            "IsEgress": false,
-            "IpProtocol": "icmp",
-            "FromPort": -1,
-            "ToPort": -1,
-            "CidrIpv4": "0.0.0.0/0"
-        }
-    ]
-}
-```
-
+> [!NOTE]- Authorize **ICMP ingress**.
+> ``` bash
+> hector@hector-Laptop:~$ aws ec2 authorize-security-group-ingress \
+> >   --group-id ${SECURITY_GROUP_ID} \
+> >   --protocol icmp \
+> >   --port -1 \
+> >   --cidr 0.0.0.0/0
+> {
+>     "Return": true,
+>     "SecurityGroupRules": [
+>         {
+>             "SecurityGroupRuleId": "sgr-0f3b453bf36f5ad8c",
+>             "GroupId": "sg-0a9ee15e7bc3faf61",
+>             "GroupOwnerId": "199055125796",
+>             "IsEgress": false,
+>             "IpProtocol": "icmp",
+>             "FromPort": -1,
+>             "ToPort": -1,
+>             "CidrIpv4": "0.0.0.0/0"
+>         }
+>     ]
+> }
+> ```
 
 VPC > Security > Security groups  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/securitygroups.png)  
 
+#### 14.  Creating a **Network Load Balancer**: 
 
-
-14.  Creating a **Network Load Balancer**:  
-``` bash
-hector@hector-Laptop:~$ LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
-> --name ${NAME} \
-> --subnets ${SUBNET_ID} \
-> --scheme internet-facing \
-> --type network \
-> --output text --query 'LoadBalancers[].LoadBalancerArn')
-```
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
+> > --name ${NAME} \
+> > --subnets ${SUBNET_ID} \
+> > --scheme internet-facing \
+> > --type network \
+> > --output text --query 'LoadBalancers[].LoadBalancerArn')
+> ```
+> 
 
 EC2 > Load Balancing > Load Balancers  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/createlb.png)  
 
 
-15. Creating a **Target Group**:   
+#### 15. Creating a **Target Group**:   
 *(For now it will be unhealthy because there are no **targets** yet)*
-``` bash
-hector@hector-Laptop:~$ TARGET_GROUP_ARN=$(aws elbv2 create-target-group \
->   --name ${NAME} \
->   --protocol TCP \
->   --port 6443 \
->   --vpc-id ${VPC_ID} \
->   --target-type ip \
->   --output text --query 'TargetGroups[].TargetGroupArn')
-```
 
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ TARGET_GROUP_ARN=$(aws elbv2 create-target-group \
+> >   --name ${NAME} \
+> >   --protocol TCP \
+> >   --port 6443 \
+> >   --vpc-id ${VPC_ID} \
+> >   --target-type ip \
+> >   --output text --query 'TargetGroups[].TargetGroupArn')
+> ```
+> 
 
 EC2 > Load Balancing > Target Groups  
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/targetgroups.png)  
 
-
-16.  Registering targets:  
+#### 16.  Registering targets:  
 *(Just like above, no real targets. We will just put the **IP addresses** so that, when the **nodes** become available, they will be used as **targets**.)*
-``` bash
-hector@hector-Laptop:~$ aws elbv2 register-targets \
->   --target-group-arn ${TARGET_GROUP_ARN} \
->   --targets Id=172.31.0.1{0,1,2}
-```
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ aws elbv2 register-targets \
+> >   --target-group-arn ${TARGET_GROUP_ARN} \
+> >   --targets Id=172.31.0.1{0,1,2}
+> ```
+> 
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/targetgroups2.png)  
 
+#### 17. Create Listener for Kubernetes API Server
 
-17. Creating a **listener** to listen for requests and forward to the **target nodes** on **TCP port** `6443`:  
-``` bash
-hector@hector-Laptop:~$ aws elbv2 create-listener \
-> --load-balancer-arn ${LOAD_BALANCER_ARN} \
-> --protocol TCP \
-> --port 6443 \
-> --default-actions Type=forward,TargetGroupArn=${TARGET_GROUP_ARN} \
-> --output text --query 'Listeners[].ListenerArn'
-arn:aws:elasticloadbalancing:us-east-1:199055125796:listener/net/k8s-cluster-from-ground-up/a09ad605b1edac82/add00ef9131bd674
-hector@hector-Laptop:~$
-```
+Configure a listener on the Network Load Balancer to forward TCP traffic on port 6443 to the target group containing the Kubernetes master nodes (enabling external access to the Kubernetes API Server).
+
+> [!NOTE]- Create a listener for port 6443
+> ``` bash
+> hector@hector-Laptop:~$ aws elbv2 create-listener \
+> > --load-balancer-arn ${LOAD_BALANCER_ARN} \
+> > --protocol TCP \
+> > --port 6443 \
+> > --default-actions Type=forward,TargetGroupArn=${TARGET_GROUP_ARN} \
+> > --output text --query 'Listeners[].ListenerArn'
+> arn:aws:elasticloadbalancing:us-east-1:199055125796:listener/net/k8s-cluster-from-ground-up/a09ad605b1edac82/add00ef9131bd674
+> ```
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/addlistener.png)  
 
+#### 18. Get the Kubernetes Public address:
 
+Obtain the **public DNS name** of the internet-facing **Network Load Balancer**, which serves as the public IP endpoint for the Kubernetes API Server.
 
-18. Get the Kubernetes Public address:
-``` bash
-hector@hector-Laptop:~$ KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers \
-> --load-balancer-arns ${LOAD_BALANCER_ARN} \
-> --output text --query 'LoadBalancers[].DNSName')
-hector@hector-Laptop:~$
-#Just revealing the address
-hector@hector-Laptop:~$ echo $KUBERNETES_PUBLIC_ADDRESS
-k8s-cluster-from-ground-up-a09ad605b1edac82.elb.us-east-1.amazonaws.com
-```
-
-
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers \
+> > --load-balancer-arns ${LOAD_BALANCER_ARN} \
+> > --output text --query 'LoadBalancers[].DNSName')
+> 
+> #Just revealing the address
+> hector@hector-Laptop:~$ echo $KUBERNETES_PUBLIC_ADDRESS
+> k8s-cluster-from-ground-up-a09ad605b1edac82.elb.us-east-1.amazonaws.com
+> ```
+> 
 
 
 ## STEP 2 - CREATE COMPUTE RESOURCES
