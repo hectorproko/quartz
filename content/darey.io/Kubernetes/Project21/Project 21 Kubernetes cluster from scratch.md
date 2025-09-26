@@ -503,85 +503,101 @@ Obtain the **public DNS name** of the internet-facing **Network Load Balancer**,
 > 
 
 
-## STEP 2 - CREATE COMPUTE RESOURCES
+## Step 2 - Create Compute Resources
 
-1. Getting an **AMI** to create EC2 instances:  
+#### 1. Getting an **AMI** for EC2 instances:  
 *(needed to install Command-line JSON processor **jq** `sudo apt install jq`)*
-``` bash
-hector@hector-Laptop:~$ IMAGE_ID=$(aws ec2 describe-images --owners 099720109477 \
->   --filters \
->   'Name=root-device-type,Values=ebs' \
->   'Name=architecture,Values=x86_64' \
->   'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*' \
->   | jq -r '.Images|sort_by(.Name)[-1]|.ImageId')
-hector@hector-Laptop:~$ echo $IMAGE_ID
-ami-0b0ea68c435eb488d
-```
 
-2. Creating **SSH Key-Pair**:  
-``` bash
-hector@hector-Laptop:~$ mkdir -p ssh
-hector@hector-Laptop:~$ aws ec2 create-key-pair \
->   --key-name ${NAME} \
->   --output text --query 'KeyMaterial' \
->   > ssh/${NAME}.id_rsa
-chmod 600 ssh/${NAME}.id_rsa
-hector@hector-Laptop:~$ chmod 600 ssh/${NAME}.id_rsa
-#Confirming key was created
-hector@hector-Laptop:~$ ls ssh
-k8s-cluster-from-ground-up.id_rsa
-```
+> [!NOTE]-  Amazon Machine Image (AMI)
+> ``` bash
+> hector@hector-Laptop:~$ IMAGE_ID=$(aws ec2 describe-images --owners 099720109477 \
+> >   --filters \
+> >   'Name=root-device-type,Values=ebs' \
+> >   'Name=architecture,Values=x86_64' \
+> >   'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*' \
+> >   | jq -r '.Images|sort_by(.Name)[-1]|.ImageId')
+> 
+> # Confirming var contents
+> hector@hector-Laptop:~$ echo $IMAGE_ID
+> ami-0b0ea68c435eb488d
+> ```
 
-3. Creating 3 **Master nodes** *(EC2 Instances)* for the **Control Plane**:  
+#### 2. Creating **SSH Key-Pair**:  
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ mkdir -p ssh
+> 
+> hector@hector-Laptop:~$ aws ec2 create-key-pair \
+> >   --key-name ${NAME} \
+> >   --output text --query 'KeyMaterial' \
+> >   > ssh/${NAME}.id_rsa
+> chmod 600 ssh/${NAME}.id_rsa
+> 
+> hector@hector-Laptop:~$ chmod 600 ssh/${NAME}.id_rsa
+> 
+> #Confirming key was created
+> hector@hector-Laptop:~$ ls ssh
+> k8s-cluster-from-ground-up.id_rsa
+> ```
+> 
+
+#### 3. Creating **3 Master nodes** *(EC2 Instances)* for the **Control Plane**:  
+
 *(**Note** – Using `t2.micro` instead of `t2.small` as `t2.micro` is covered by AWS free tier)*  
-``` bash
-hector@hector-Laptop:~$ for i in 0 1 2; do
->   instance_id=$(aws ec2 run-instances \
->     --associate-public-ip-address \
->     --image-id ${IMAGE_ID} \
->     --count 1 \
->     --key-name ${NAME} \
->     --security-group-ids ${SECURITY_GROUP_ID} \
->     --instance-type t2.micro \
->     --private-ip-address 172.31.0.1${i} \
->     --user-data "name=master-${i}" \
->     --subnet-id ${SUBNET_ID} \
->     --output text --query 'Instances[].InstanceId')
->   aws ec2 modify-instance-attribute \
->     --instance-id ${instance_id} \
->     --no-source-dest-check
->   aws ec2 create-tags \
->     --resources ${instance_id} \
->     --tags "Key=Name,Value=${NAME}-master-${i}"
-> done
-```
 
-EC2 > Instances > Instances  
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances.png)  
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ for i in 0 1 2; do
+> >   instance_id=$(aws ec2 run-instances \
+> >     --associate-public-ip-address \
+> >     --image-id ${IMAGE_ID} \
+> >     --count 1 \
+> >     --key-name ${NAME} \
+> >     --security-group-ids ${SECURITY_GROUP_ID} \
+> >     --instance-type t2.micro \
+> >     --private-ip-address 172.31.0.1${i} \
+> >     --user-data "name=master-${i}" \
+> >     --subnet-id ${SUBNET_ID} \
+> >     --output text --query 'Instances[].InstanceId')
+> >   aws ec2 modify-instance-attribute \
+> >     --instance-id ${instance_id} \
+> >     --no-source-dest-check
+> >   aws ec2 create-tags \
+> >     --resources ${instance_id} \
+> >     --tags "Key=Name,Value=${NAME}-master-${i}"
+> > done
+> ```
 
 
-4. Creating 3 **worker nodes** *(EC2 Instances)*:  
-``` bash
-hector@hector-Laptop:~$ for i in 0 1 2; do
->   instance_id=$(aws ec2 run-instances \
->     --associate-public-ip-address \
->     --image-id ${IMAGE_ID} \
->     --count 1 \
->     --key-name ${NAME} \
->     --security-group-ids ${SECURITY_GROUP_ID} \
->     --instance-type t2.micro \
->     --private-ip-address 172.31.0.2${i} \
->     --user-data "name=worker-${i}|pod-cidr=172.20.${i}.0/24" \
->     --subnet-id ${SUBNET_ID} \
->     --output text --query 'Instances[].InstanceId')
->   aws ec2 modify-instance-attribute \
->     --instance-id ${instance_id} \
->     --no-source-dest-check
->   aws ec2 create-tags \
->     --resources ${instance_id} \
->     --tags "Key=Name,Value=${NAME}-worker-${i}"
-> done
-```
+> [!done] EC2 > Instances > Instances  
+> ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances.png)  
+> 
+
+#### 4. Creating 3 **worker nodes** *(EC2 Instances)*: 
+
+> [!NOTE]- Commands
+> ``` bash
+> hector@hector-Laptop:~$ for i in 0 1 2; do
+> >   instance_id=$(aws ec2 run-instances \
+> >     --associate-public-ip-address \
+> >     --image-id ${IMAGE_ID} \
+> >     --count 1 \
+> >     --key-name ${NAME} \
+> >     --security-group-ids ${SECURITY_GROUP_ID} \
+> >     --instance-type t2.micro \
+> >     --private-ip-address 172.31.0.2${i} \
+> >     --user-data "name=worker-${i}|pod-cidr=172.20.${i}.0/24" \
+> >     --subnet-id ${SUBNET_ID} \
+> >     --output text --query 'Instances[].InstanceId')
+> >   aws ec2 modify-instance-attribute \
+> >     --instance-id ${instance_id} \
+> >     --no-source-dest-check
+> >   aws ec2 create-tags \
+> >     --resources ${instance_id} \
+> >     --tags "Key=Name,Value=${NAME}-worker-${i}"
+> > done
+> ```
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances2.png)  
 
