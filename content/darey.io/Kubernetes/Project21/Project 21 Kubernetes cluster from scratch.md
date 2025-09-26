@@ -897,7 +897,7 @@ Also, Kubernetes uses a special-purpose authorization mode called **Node Authori
 
 Therefore, the certificate to be created must comply to these requirements. In the below example, there are 3 **worker nodes**, hence we will use bash to loop through a list of the worker nodes’ **hostnames**, and based on each index, the respective **Certificate Signing Request** *(**CSR**)*, **private key** and **client certificates** will be generated.
 
-> [!Note]-  `kubelet` Client Certificate and Private Key  
+> [!Note]-   `kubelet` Client Certificate and Private Key  
 > ``` bash
 > hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
 > >   instance="${NAME}-worker-${i}"
