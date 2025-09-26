@@ -685,7 +685,6 @@ Specifies CA details, including:
 `ca-key.pem`: Private Key  
 `ca.csr`:        Certificate Signing Request  
 
-==Note Refactoring end==
 ### Generating TLS Certificates For Client and Server  
 We need to provision **Client/Server** certificates for all the components. It is a must to have encrypted communication within the cluster.   
 
@@ -701,198 +700,195 @@ In the context of the cluster:
 
 Now we have a certificate for the **Root CA**, we can begin to request more certificates which the different Kubernetes components *(clients and server)* will use for **encrypted** communication.  
 
-
-
-#### Kubernetes API-Server Certificate and Private Key  
+#### 1. Kubernetes API-Server Certificate and Private Key  
 The certificate for the `Api-server` must have **IP addresses**, **DNS** names, and a **Load Balancer** address included.  
 
-1. Generating the **Certificate Signing Request (CSR)**, **Private Key** and the **Certificate** for the Kubernetes Master Nodes.
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > master-kubernetes-csr.json <<EOF
-> {
->   "CN": "kubernetes",
->    "hosts": [
->    "127.0.0.1",
->    "172.31.0.10",
->    "172.31.0.11",
->    "172.31.0.12",
->    "ip-172-31-0-10",
->    "ip-172-31-0-11",
->    "ip-172-31-0-12",
->    "ip-172-31-0-10.${AWS_REGION}.compute.internal",
->    "ip-172-31-0-11.${AWS_REGION}.compute.internal",
->    "ip-172-31-0-12.${AWS_REGION}.compute.internal",
->    "${KUBERNETES_PUBLIC_ADDRESS}",
->    "kubernetes",
->    "kubernetes.default",
->    "kubernetes.default.svc",
->    "kubernetes.default.svc.cluster",
->    "kubernetes.default.svc.cluster.local"
->   ],
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "Kubernetes",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   master-kubernetes-csr.json | cfssljson -bare master-kubernetes
-> }
-2022/06/08 14:23:17 [INFO] generate received request
-2022/06/08 14:23:17 [INFO] received CSR
-2022/06/08 14:23:17 [INFO] generating key: rsa-2048
-2022/06/08 14:23:17 [INFO] encoded CSR
-2022/06/08 14:23:17 [INFO] signed certificate with serial number 547649748408320050103723158040590516113896364808
-hector@hector-Laptop:~/ca-authority$
-```
+Generating the **Certificate Signing Request (CSR)**, **Private Key** and the **Certificate** for the Kubernetes Master Nodes.
 
+> [!NOTE]- Commands
+> ```bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > master-kubernetes-csr.json <<EOF
+> > {
+> >   "CN": "kubernetes",
+> >    "hosts": [
+> >    "127.0.0.1",
+> >    "172.31.0.10",
+> >    "172.31.0.11",
+> >    "172.31.0.12",
+> >    "ip-172-31-0-10",
+> >    "ip-172-31-0-11",
+> >    "ip-172-31-0-12",
+> >    "ip-172-31-0-10.${AWS_REGION}.compute.internal",
+> >    "ip-172-31-0-11.${AWS_REGION}.compute.internal",
+> >    "ip-172-31-0-12.${AWS_REGION}.compute.internal",
+> >    "${KUBERNETES_PUBLIC_ADDRESS}",
+> >    "kubernetes",
+> >    "kubernetes.default",
+> >    "kubernetes.default.svc",
+> >    "kubernetes.default.svc.cluster",
+> >    "kubernetes.default.svc.cluster.local"
+> >   ],
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "Kubernetes",
+> >       "OU": "Hector DEVOPS", 
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   master-kubernetes-csr.json | cfssljson -bare master-kubernetes
+> > }
+> 2022/06/08 14:23:17 [INFO] generate received request
+> 2022/06/08 14:23:17 [INFO] received CSR
+> 2022/06/08 14:23:17 [INFO] generating key: rsa-2048
+> 2022/06/08 14:23:17 [INFO] encoded CSR
+> 2022/06/08 14:23:17 [INFO] signed certificate with serial number 547649748408320050103723158040590516113896364808
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> 
 
-
-
-
-#### Creating the other *(Client)* certificates: for the following Kubernetes components:  
-`Scheduler`  
-`Kube Proxye`  
+#### Creating the *(Client)* Certificates
+`Kube Proxy`  
 `Controller Manager`  
 `Kubelet`  
 `K8s admin user`  
 
 
-2. `kube-scheduler` **Client Certificate and Private Key**  
+> [!NOTE]- `kube-scheduler` Client Certificate and Private Key
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > kube-scheduler-csr.json <<EOF
+> > {
+> >   "CN": "system:kube-scheduler",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "system:kube-scheduler",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   kube-scheduler-csr.json | cfssljson -bare kube-scheduler
+> > }
+> 2022/06/08 14:27:53 [INFO] generate received request
+> 2022/06/08 14:27:53 [INFO] received CSR
+> 2022/06/08 14:27:53 [INFO] generating key: rsa-2048
+> 2022/06/08 14:27:53 [INFO] encoded CSR
+> 2022/06/08 14:27:53 [INFO] signed certificate with serial number 622069761468098043960394959246888396290159189426
+> 2022/06/08 14:27:53 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+> websites. For more information see the Baseline Requirements for the Issuance and Management
+> of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+> specifically, section 10.2.3 ("Information Requirements").
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> *We can ignore the warning message*  
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > kube-scheduler-csr.json <<EOF
-> {
->   "CN": "system:kube-scheduler",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "system:kube-scheduler",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   kube-scheduler-csr.json | cfssljson -bare kube-scheduler
-> }
-2022/06/08 14:27:53 [INFO] generate received request
-2022/06/08 14:27:53 [INFO] received CSR
-2022/06/08 14:27:53 [INFO] generating key: rsa-2048
-2022/06/08 14:27:53 [INFO] encoded CSR
-2022/06/08 14:27:53 [INFO] signed certificate with serial number 622069761468098043960394959246888396290159189426
-2022/06/08 14:27:53 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
-websites. For more information see the Baseline Requirements for the Issuance and Management
-of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
-specifically, section 10.2.3 ("Information Requirements").
-hector@hector-Laptop:~/ca-authority$
-```
-*We can ignore the warning message*  
+> [!NOTE]- `kube-proxy` Client Certificate and Private Key
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ cat > kube-proxy-csr.json <<EOF
+> > {
+> >   "CN": "system:kube-proxy",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "system:node-proxier",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> hector@hector-Laptop:~/ca-authority$ cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   kube-proxy-csr.json | cfssljson -bare kube-proxy
+> 2022/06/08 14:45:22 [INFO] generate received request
+> 2022/06/08 14:45:22 [INFO] received CSR
+> 2022/06/08 14:45:22 [INFO] generating key: rsa-2048
+> }2022/06/08 14:45:22 [INFO] encoded CSR
+> 2022/06/08 14:45:22 [INFO] signed certificate with serial number 176112969599687911110401190660797659018781968094
+> 2022/06/08 14:45:22 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+> websites. For more information see the Baseline Requirements for the Issuance and Management
+> of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+> specifically, section 10.2.3 ("Information Requirements").
+> ```
+> 
 
-3. `kube-proxy` **Client Certificate and Private Key**  
+> [!NOTE]- `kube-controller-manager` Client Certificate and Private Key
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > kube-controller-manager-csr.json <<EOF
+> > {
+> >   "CN": "system:kube-controller-manager",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "system:kube-controller-manager",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
+> > }
+> 2022/06/08 15:50:39 [INFO] generate received request
+> 2022/06/08 15:50:39 [INFO] received CSR
+> 2022/06/08 15:50:39 [INFO] generating key: rsa-2048
+> 2022/06/08 15:50:39 [INFO] encoded CSR
+> 2022/06/08 15:50:39 [INFO] signed certificate with serial number 279440487414994410215011560698903695611018498249
+> 2022/06/08 15:50:39 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+> websites. For more information see the Baseline Requirements for the Issuance and Management
+> of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+> specifically, section 10.2.3 ("Information Requirements").
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ cat > kube-proxy-csr.json <<EOF
-> {
->   "CN": "system:kube-proxy",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "system:node-proxier",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-hector@hector-Laptop:~/ca-authority$ cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   kube-proxy-csr.json | cfssljson -bare kube-proxy
-2022/06/08 14:45:22 [INFO] generate received request
-2022/06/08 14:45:22 [INFO] received CSR
-2022/06/08 14:45:22 [INFO] generating key: rsa-2048
-}2022/06/08 14:45:22 [INFO] encoded CSR
-2022/06/08 14:45:22 [INFO] signed certificate with serial number 176112969599687911110401190660797659018781968094
-2022/06/08 14:45:22 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
-websites. For more information see the Baseline Requirements for the Issuance and Management
-of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
-specifically, section 10.2.3 ("Information Requirements").
-```
-
-4. `kube-controller-manager` **Client Certificate and Private Key**  
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > kube-controller-manager-csr.json <<EOF
-> {
->   "CN": "system:kube-controller-manager",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "system:kube-controller-manager",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
-> }
-2022/06/08 15:50:39 [INFO] generate received request
-2022/06/08 15:50:39 [INFO] received CSR
-2022/06/08 15:50:39 [INFO] generating key: rsa-2048
-2022/06/08 15:50:39 [INFO] encoded CSR
-2022/06/08 15:50:39 [INFO] signed certificate with serial number 279440487414994410215011560698903695611018498249
-2022/06/08 15:50:39 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
-websites. For more information see the Baseline Requirements for the Issuance and Management
-of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
-specifically, section 10.2.3 ("Information Requirements").
-hector@hector-Laptop:~/ca-authority$
-```
-
-5. `kubelet` **Client Certificate and Private Key**  
+----
+==Note Refactoring end==
+5. `kubelet` Client Certificate and Private Key  
 
 <!--Similar to how you configured the api-server's certificate,--> 
 Kubernetes requires that the **hostname** of each **worker node** is included in the **client certificate**.  
@@ -901,149 +897,152 @@ Also, Kubernetes uses a special-purpose authorization mode called **Node Authori
 
 Therefore, the certificate to be created must comply to these requirements. In the below example, there are 3 **worker nodes**, hence we will use bash to loop through a list of the worker nodes’ **hostnames**, and based on each index, the respective **Certificate Signing Request** *(**CSR**)*, **private key** and **client certificates** will be generated.
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
->   instance="${NAME}-worker-${i}"
->   instance_hostname="ip-172-31-0-2${i}"
->   cat > ${instance}-csr.json <<EOF
-> {
->   "CN": "system:node:${instance_hostname}",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "system:nodes",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> external_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PublicIpAddress')
-> internal_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PrivateIpAddress')
-> cfssl gencert \
->     -ca=ca.pem \
->     -ca-key=ca-key.pem \
->     -config=ca-config.json \
->     -hostname=${instance_hostname},${external_ip},${internal_ip} \
->     -profile=kubernetes \
->     ${NAME}-worker-${i}-csr.json | cfssljson -bare ${NAME}-worker-${i}
-> done
-2022/06/08 20:38:25 [INFO] generate received request
-2022/06/08 20:38:25 [INFO] received CSR
-2022/06/08 20:38:25 [INFO] generating key: rsa-2048
-2022/06/08 20:38:25 [INFO] encoded CSR
-2022/06/08 20:38:25 [INFO] signed certificate with serial number 88068063509947593848109566279871873559554569039
-2022/06/08 20:38:27 [INFO] generate received request
-2022/06/08 20:38:27 [INFO] received CSR
-2022/06/08 20:38:27 [INFO] generating key: rsa-2048
-2022/06/08 20:38:27 [INFO] encoded CSR
-2022/06/08 20:38:27 [INFO] signed certificate with serial number 582231254599715575847880223126164829455969326988
-2022/06/08 20:38:28 [INFO] generate received request
-2022/06/08 20:38:28 [INFO] received CSR
-2022/06/08 20:38:28 [INFO] generating key: rsa-2048
-2022/06/08 20:38:30 [INFO] encoded CSR
-2022/06/08 20:38:30 [INFO] signed certificate with serial number 205507639545489712146564463937190119075761906061
-hector@hector-Laptop:~/ca-authority$
-```
+> [!Note]-  `kubelet` Client Certificate and Private Key  
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> >   instance="${NAME}-worker-${i}"
+> >   instance_hostname="ip-172-31-0-2${i}"
+> >   cat > ${instance}-csr.json <<EOF
+> > {
+> >   "CN": "system:node:${instance_hostname}",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "system:nodes",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > external_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PublicIpAddress')
+> > internal_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PrivateIpAddress')
+> > cfssl gencert \
+> >     -ca=ca.pem \
+> >     -ca-key=ca-key.pem \
+> >     -config=ca-config.json \
+> >     -hostname=${instance_hostname},${external_ip},${internal_ip} \
+> >     -profile=kubernetes \
+> >     ${NAME}-worker-${i}-csr.json | cfssljson -bare ${NAME}-worker-${i}
+> > done
+> 2022/06/08 20:38:25 [INFO] generate received request
+> 2022/06/08 20:38:25 [INFO] received CSR
+> 2022/06/08 20:38:25 [INFO] generating key: rsa-2048
+> 2022/06/08 20:38:25 [INFO] encoded CSR
+> 2022/06/08 20:38:25 [INFO] signed certificate with serial number 88068063509947593848109566279871873559554569039
+> 2022/06/08 20:38:27 [INFO] generate received request
+> 2022/06/08 20:38:27 [INFO] received CSR
+> 2022/06/08 20:38:27 [INFO] generating key: rsa-2048
+> 2022/06/08 20:38:27 [INFO] encoded CSR
+> 2022/06/08 20:38:27 [INFO] signed certificate with serial number 582231254599715575847880223126164829455969326988
+> 2022/06/08 20:38:28 [INFO] generate received request
+> 2022/06/08 20:38:28 [INFO] received CSR
+> 2022/06/08 20:38:28 [INFO] generating key: rsa-2048
+> 2022/06/08 20:38:30 [INFO] encoded CSR
+> 2022/06/08 20:38:30 [INFO] signed certificate with serial number 205507639545489712146564463937190119075761906061
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
+---
 
-6. `kubernetes admin user's` **Client Certificate and Private Key**  
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > admin-csr.json <<EOF
-> {
->   "CN": "admin",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "system:masters",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   admin-csr.json | cfssljson -bare admin
-> }
-2022/06/08 20:49:35 [INFO] generate received request
-2022/06/08 20:49:35 [INFO] received CSR
-2022/06/08 20:49:35 [INFO] generating key: rsa-2048
-2022/06/08 20:49:35 [INFO] encoded CSR
-2022/06/08 20:49:35 [INFO] signed certificate with serial number 140984123270054335235966735745247869171088770273
-2022/06/08 20:49:35 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
-websites. For more information see the Baseline Requirements for the Issuance and Management
-of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
-specifically, section 10.2.3 ("Information Requirements").
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- `kubernetes admin user's` Client Certificate and Private Key
+> 
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > admin-csr.json <<EOF
+> > {
+> >   "CN": "admin",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "system:masters",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   admin-csr.json | cfssljson -bare admin
+> > }
+> 2022/06/08 20:49:35 [INFO] generate received request
+> 2022/06/08 20:49:35 [INFO] received CSR
+> 2022/06/08 20:49:35 [INFO] generating key: rsa-2048
+> 2022/06/08 20:49:35 [INFO] encoded CSR
+> 2022/06/08 20:49:35 [INFO] signed certificate with serial number 140984123270054335235966735745247869171088770273
+> 2022/06/08 20:49:35 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+> websites. For more information see the Baseline Requirements for the Issuance and Management
+> of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+> specifically, section 10.2.3 ("Information Requirements").
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
+---
 Another pair of certificate and private key we need to generate is for the **Token Controller** (a part of the **Kubernetes Controller Manager** `kube-controller-manager` responsible for generating and signing service account tokens which are used by pods or other resources to establish connectivity to the `api-server`.   
 
 [Service Accounts official documentation](https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/) 
 
+We create the last set of files, and we are done with **PKI**s
 
-7. We create the last set of files, and we are done with **PKI**s
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > service-account-csr.json <<EOF
-> {
->   "CN": "service-accounts",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "Kubernetes",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert \
->   -ca=ca.pem \
->   -ca-key=ca-key.pem \
->   -config=ca-config.json \
->   -profile=kubernetes \
->   service-account-csr.json | cfssljson -bare service-account
-> }
-2022/06/08 21:09:08 [INFO] generate received request
-2022/06/08 21:09:08 [INFO] received CSR
-2022/06/08 21:09:08 [INFO] generating key: rsa-2048
-2022/06/08 21:09:09 [INFO] encoded CSR
-2022/06/08 21:09:09 [INFO] signed certificate with serial number 117554976092240248700077848849651368992033028376
-2022/06/08 21:09:09 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
-websites. For more information see the Baseline Requirements for the Issuance and Management
-of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
-specifically, section 10.2.3 ("Information Requirements").
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- Token Controller Certificate and Private Key
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > service-account-csr.json <<EOF
+> > {
+> >   "CN": "service-accounts",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "Kubernetes",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert \
+> >   -ca=ca.pem \
+> >   -ca-key=ca-key.pem \
+> >   -config=ca-config.json \
+> >   -profile=kubernetes \
+> >   service-account-csr.json | cfssljson -bare service-account
+> > }
+> 2022/06/08 21:09:08 [INFO] generate received request
+> 2022/06/08 21:09:08 [INFO] received CSR
+> 2022/06/08 21:09:08 [INFO] generating key: rsa-2048
+> 2022/06/08 21:09:09 [INFO] encoded CSR
+> 2022/06/08 21:09:09 [INFO] signed certificate with serial number 117554976092240248700077848849651368992033028376
+> 2022/06/08 21:09:09 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+> websites. For more information see the Baseline Requirements for the Issuance and Management
+> of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+> specifically, section 10.2.3 ("Information Requirements").
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
-
-
-
+---
 
 ## STEP 4 – DISTRIBUTING THE CLIENT AND SERVER CERTIFICATES
 
