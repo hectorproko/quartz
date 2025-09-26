@@ -568,10 +568,7 @@ Obtain the **public DNS name** of the internet-facing **Network Load Balancer**,
 > >     --tags "Key=Name,Value=${NAME}-master-${i}"
 > > done
 > ```
-
-
-> [!done] EC2 > Instances > Instances  
-> ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances.png)  
+ ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances.png)  
 > 
 
 #### 4. Creating 3 **worker nodes** *(EC2 Instances)*: 
@@ -601,100 +598,97 @@ Obtain the **public DNS name** of the internet-facing **Network Load Balancer**,
 
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/PROJECT-21-Orchestrating-containers-across-multiple-Virtual-Servers-with-Kubernetes/main/images/instances2.png)  
 
-## STEP 3 - PREPARE THE SELF-SIGNED CERTIFICATE AUTHORITY AND GENERATE TLS CERTIFICATES  
+## Step 3 - Prepare the Self-Signed Certificate Authority and Generate TLS Certificates 
 
-The following components running on the **Master nodes** require **TLS certificates**.    
-`kube-controller-manager`  
-`kube-scheduler`  
-`etcd`  
-`kube-apiserver`  
-	
-The following components running on the **Worker nodes** will require **TLS certificates**.
-`kubelet`  
-`kube-proxy`  
-	
-Therefore, we will provision a **PKI** *(Public key infrastructure)* using `cfssl` which will have a **Certificate Authority**. The **CA** will then generate certificates for all the individual components.  
+The following components on **master nodes** require **TLS certificates** for secure communication:
+- kube-controller-manager
+- kube-scheduler
+- etcd
+- kube-apiserver
 
-Creating a directory and `cd` into it:
-``` bash
-hector@hector-Laptop:~$ mkdir ca-authority && cd ca-authority
-```
+The following components on **worker nodes** require **TLS certificates**:
+- kubelet
+- kube-proxy
 
-Generating the **CA** configuration file, **Root Certificate**, and **Private key**:  
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> cat > ca-config.json <<EOF
-> {
->   "signing": {
->     "default": {
->       "expiry": "8760h"
->     },
->     "profiles": {
->       "kubernetes": {
->         "usages": ["signing", "key encipherment", "server auth", "client auth"],
->         "expiry": "8760h"
->       }
->     }
->   }
-> }
-> EOF
-> cat > ca-csr.json <<EOF
-> {
->   "CN": "Kubernetes",
->   "key": {
->     "algo": "rsa",
->     "size": 2048
->   },
->   "names": [
->     {
->       "C": "US",
->       "L": "Florida",
->       "O": "Kubernetes",
->       "OU": "Hector DEVOPS",
->       "ST": "Miami"
->     }
->   ]
-> }
-> EOF
-> cfssl gencert -initca ca-csr.json | cfssljson -bare ca
-> }
-2022/06/08 14:17:28 [INFO] generating a new CA key and certificate from CSR
-2022/06/08 14:17:28 [INFO] generate received request
-2022/06/08 14:17:28 [INFO] received CSR
-2022/06/08 14:17:28 [INFO] generating key: rsa-2048
-2022/06/08 14:17:28 [INFO] encoded CSR
-2022/06/08 14:17:28 [INFO] signed certificate with serial number 595938750693050736385532716166856798624679790798
-hector@hector-Laptop:~/ca-authority$
-```
+### Set Up Certificate Authority for PKI
 
+Provision a Public Key Infrastructure (**PKI**) using `cfssl` to create a Certificate Authority (**CA**) that will generate **TLS certificates** for all the individual components.  
 
-The file defines the following:  
-`CN` – Common name for the authority  
-`algo` – the algorithm used for the certificates  
-`size` – algorithm size in bits  
-`C` – Country  
-`L` – Locality (city)  
-`ST` – State or province  
-`O` – Organization  
-`OU` – Organizational Unit  
+> [!NOTE]- Creating a directory and `cd` into it:
+> ``` bash
+> hector@hector-Laptop:~$ mkdir ca-authority && cd ca-authority
+> ```
+> 
 
-Created files:  
-`ca-config.json`  
-`ca-csr.json`  
-`ca.pem`  
-`ca-key.pem`  
-`ca.csr`  
+> [!NOTE]- Generating the **CA** configuration file, **Root Certificate**, and **Private key**:
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > cat > ca-config.json <<EOF
+> > {
+> >   "signing": {
+> >     "default": {
+> >       "expiry": "8760h"
+> >     },
+> >     "profiles": {
+> >       "kubernetes": {
+> >         "usages": ["signing", "key encipherment", "server auth", "client auth"],
+> >         "expiry": "8760h"
+> >       }
+> >     }
+> >   }
+> > }
+> > EOF
+> > cat > ca-csr.json <<EOF
+> > {
+> >   "CN": "Kubernetes",
+> >   "key": {
+> >     "algo": "rsa",
+> >     "size": 2048
+> >   },
+> >   "names": [
+> >     {
+> >       "C": "US",
+> >       "L": "Florida",
+> >       "O": "Kubernetes",
+> >       "OU": "Hector DEVOPS",
+> >       "ST": "Miami"
+> >     }
+> >   ]
+> > }
+> > EOF
+> > cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+> > }
+> 2022/06/08 14:17:28 [INFO] generating a new CA key and certificate from CSR
+> 2022/06/08 14:17:28 [INFO] generate received request
+> 2022/06/08 14:17:28 [INFO] received CSR
+> 2022/06/08 14:17:28 [INFO] generating key: rsa-2048
+> 2022/06/08 14:17:28 [INFO] encoded CSR
+> 2022/06/08 14:17:28 [INFO] signed certificate with serial number 595938750693050736385532716166856798624679790798
+> ```
 
-The 3 important files here are:  
-`ca.pem` – The **Root Certificate**  
-`ca-key.pem` – The **Private Key**  
-`ca.csr` – The **Certificate Signing Request**  
+#### Created files:  
+`ca-config.json`
+ Defines certificate signing profiles and expiry (8760 hours, ~1 year).
+`ca-csr.json` 
+Specifies CA details, including:
+- CN: Common Name ("Kubernetes")
+- algo: Algorithm ("rsa")
+- size: Key size (2048 bits)
+- C: Country ("US")
+- L: Locality ("Florida")
+- ST: State ("Miami")
+- O: Organization ("Kubernetes")
+- OU: Organizational Unit ("Hector DEVOPS")
 
+**The 3 important files here are:** 
+`ca.pem`:        Root Certificate
+`ca-key.pem`: Private Key
+`ca.csr`:        Certificate Signing Request
 
-
+==Note Refactoring end==
 ### Generating TLS Certificates For Client and Server  
 We need to provision **Client/Server** certificates for all the components. It is a must to have encrypted communication within the cluster.   
-    
+
 In the context of the cluster:    
 * **server** are the **master nodes** running the `api-server` component.     
 * **client** is every other component that needs to communicate with the `api-server`.
@@ -709,7 +703,7 @@ Now we have a certificate for the **Root CA**, we can begin to request more cert
 
 
 
-#### Let us begin with the Kubernetes API-Server Certificate and Private Key  
+#### Kubernetes API-Server Certificate and Private Key  
 The certificate for the `Api-server` must have **IP addresses**, **DNS** names, and a **Load Balancer** address included.  
 
 1. Generating the **Certificate Signing Request (CSR)**, **Private Key** and the **Certificate** for the Kubernetes Master Nodes.
