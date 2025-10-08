@@ -1,3 +1,12 @@
+---
+tags:
+  - Ansible
+  - Terraform
+  - Jenkins
+  - docker
+---
+
+
 %%==2023-12-17==%%
 
 > [!info]- Project : Capstone II
