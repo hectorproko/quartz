@@ -1053,95 +1053,106 @@ Beginning with the **worker nodes** we will copy the following files securely us
 *	X509 Certificate for each worker node  
 *	Private Key of the certificate for each worker node  
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
->   instance="${NAME}-worker-${i}"
->   external_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PublicIpAddress')
->   scp -i ../ssh/${NAME}.id_rsa \
->     ca.pem ${instance}-key.pem ${instance}.pem ubuntu@${external_ip}:~/; \
-> done
-The authenticity of host '3.90.65.208 (3.90.65.208)' can't be established.
-ECDSA key fingerprint is SHA256:NR3IjdAA33E/5ZSy37qSl25w+Ei1uQuxBaakkuXnyX0.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '3.90.65.208' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342    25.8KB/s   00:00
-k8s-cluster-from-ground-up-worker-0-key.pem                                     100% 1679    30.9KB/s   00:00
-k8s-cluster-from-ground-up-worker-0.pem                                         100% 1505    25.5KB/s   00:00
-The authenticity of host '34.227.92.141 (34.227.92.141)' can't be established.
-ECDSA key fingerprint is SHA256:P3cCnXigFCnAzo4O00bEVHY5T11M7UPm25hbNMIBuC4.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '34.227.92.141' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342    23.0KB/s   00:00
-k8s-cluster-from-ground-up-worker-1-key.pem                                     100% 1675    30.4KB/s   00:00
-k8s-cluster-from-ground-up-worker-1.pem                                         100% 1505    24.1KB/s   00:00
-The authenticity of host '100.25.137.116 (100.25.137.116)' can't be established.
-ECDSA key fingerprint is SHA256:+G7SV9/P0jp0N6aDE8wZ0zOBKKiHazKipfFA7btq8Fo.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '100.25.137.116' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342    24.5KB/s   00:00
-k8s-cluster-from-ground-up-worker-2-key.pem                                     100% 1675    28.7KB/s   00:00
-k8s-cluster-from-ground-up-worker-2.pem                                         100% 1505    24.1KB/s   00:00
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- Worker Nodes (for-loop)
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> >   instance="${NAME}-worker-${i}"
+> >   external_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PublicIpAddress')
+> >   scp -i ../ssh/${NAME}.id_rsa \
+> >     ca.pem ${instance}-key.pem ${instance}.pem ubuntu@${external_ip}:~/; \
+> > done
+> The authenticity of host '3.90.65.208 (3.90.65.208)' can't be established.
+> ECDSA key fingerprint is SHA256:NR3IjdAA33E/5ZSy37qSl25w+Ei1uQuxBaakkuXnyX0.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '3.90.65.208' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342    25.8KB/s   00:00
+> k8s-cluster-from-ground-up-worker-0-key.pem                                     100% 1679    30.9KB/s   00:00
+> k8s-cluster-from-ground-up-worker-0.pem                                         100% 1505    25.5KB/s   00:00
+> The authenticity of host '34.227.92.141 (34.227.92.141)' can't be established.
+> ECDSA key fingerprint is SHA256:P3cCnXigFCnAzo4O00bEVHY5T11M7UPm25hbNMIBuC4.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '34.227.92.141' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342    23.0KB/s   00:00
+> k8s-cluster-from-ground-up-worker-1-key.pem                                     100% 1675    30.4KB/s   00:00
+> k8s-cluster-from-ground-up-worker-1.pem                                         100% 1505    24.1KB/s   00:00
+> The authenticity of host '100.25.137.116 (100.25.137.116)' can't be established.
+> ECDSA key fingerprint is SHA256:+G7SV9/P0jp0N6aDE8wZ0zOBKKiHazKipfFA7btq8Fo.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '100.25.137.116' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342    24.5KB/s   00:00
+> k8s-cluster-from-ground-up-worker-2-key.pem                                     100% 1675    28.7KB/s   00:00
+> k8s-cluster-from-ground-up-worker-2.pem                                         100% 1505    24.1KB/s   00:00
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> 
 
-**Master or Controller node:** *(Note that only the `api-server` related files will be sent over to the master nodes)*       
-``` bash
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
-> instance="${NAME}-master-${i}" \
->   external_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PublicIpAddress')
->   scp -i ../ssh/${NAME}.id_rsa \
->     ca.pem ca-key.pem service-account-key.pem service-account.pem \
->     master-kubernetes.pem master-kubernetes-key.pem ubuntu@${external_ip}:~/;
-> done
-The authenticity of host '100.26.49.196 (100.26.49.196)' can't be established.
-ECDSA key fingerprint is SHA256:/4rGAImFx/BZwNaqt1ykQGmzYIQXm5m7E5xCzwMD7F0.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '100.26.49.196' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342    14.8KB/s   00:00
-ca-key.pem                                                                      100% 1679    19.7KB/s   00:00
-service-account-key.pem                                                         100% 1675    16.0KB/s   00:00
-service-account.pem                                                             100% 1432    19.8KB/s   00:00
-master-kubernetes.pem                                                           100% 1862    18.7KB/s   00:00
-master-kubernetes-key.pem                                                       100% 1679    20.0KB/s   00:00
-The authenticity of host '54.210.195.212 (54.210.195.212)' can't be established.
-ECDSA key fingerprint is SHA256:QGJXM4aYn5FUC6nEwy/ggnEJkPc1gCPW7Vtr2J7niAI.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '54.210.195.212' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342    17.6KB/s   00:00
-ca-key.pem                                                                      100% 1679    18.0KB/s   00:00
-service-account-key.pem                                                         100% 1675    12.6KB/s   00:00
-service-account.pem                                                             100% 1432    24.0KB/s   00:00
-master-kubernetes.pem                                                           100% 1862    23.1KB/s   00:00
-master-kubernetes-key.pem                                                       100% 1679    26.5KB/s   00:00
-The authenticity of host '54.237.87.176 (54.237.87.176)' can't be established.
-ECDSA key fingerprint is SHA256:qgV+75d1s0XOw3YEfo5byFg8zo876/Fqm5rLddsZnzE.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '54.237.87.176' (ECDSA) to the list of known hosts.
-ca.pem                                                                          100% 1342     8.9KB/s   00:00
-ca-key.pem                                                                      100% 1679    17.1KB/s   00:00
-service-account-key.pem                                                         100% 1675    13.7KB/s   00:00
-service-account.pem                                                             100% 1432    10.5KB/s   00:00
-master-kubernetes.pem                                                           100% 1862    16.2KB/s   00:00
-master-kubernetes-key.pem                                                       100% 1679    27.3KB/s   00:00
-hector@hector-Laptop:~/ca-authority$
-```
+For **master nodes** only the `api-server` related files will be sent over the master nodes
 
-**Client certificates** from:  
+> [!NOTE]- Master or Controller node (for-loop)
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> > instance="${NAME}-master-${i}" \
+> >   external_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PublicIpAddress')
+> >   scp -i ../ssh/${NAME}.id_rsa \
+> >     ca.pem ca-key.pem service-account-key.pem service-account.pem \
+> >     master-kubernetes.pem master-kubernetes-key.pem ubuntu@${external_ip}:~/;
+> > done
+> The authenticity of host '100.26.49.196 (100.26.49.196)' can't be established.
+> ECDSA key fingerprint is SHA256:/4rGAImFx/BZwNaqt1ykQGmzYIQXm5m7E5xCzwMD7F0.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '100.26.49.196' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342    14.8KB/s   00:00
+> ca-key.pem                                                                      100% 1679    19.7KB/s   00:00
+> service-account-key.pem                                                         100% 1675    16.0KB/s   00:00
+> service-account.pem                                                             100% 1432    19.8KB/s   00:00
+> master-kubernetes.pem                                                           100% 1862    18.7KB/s   00:00
+> master-kubernetes-key.pem                                                       100% 1679    20.0KB/s   00:00
+> The authenticity of host '54.210.195.212 (54.210.195.212)' can't be established.
+> ECDSA key fingerprint is SHA256:QGJXM4aYn5FUC6nEwy/ggnEJkPc1gCPW7Vtr2J7niAI.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '54.210.195.212' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342    17.6KB/s   00:00
+> ca-key.pem                                                                      100% 1679    18.0KB/s   00:00
+> service-account-key.pem                                                         100% 1675    12.6KB/s   00:00
+> service-account.pem                                                             100% 1432    24.0KB/s   00:00
+> master-kubernetes.pem                                                           100% 1862    23.1KB/s   00:00
+> master-kubernetes-key.pem                                                       100% 1679    26.5KB/s   00:00
+> The authenticity of host '54.237.87.176 (54.237.87.176)' can't be established.
+> ECDSA key fingerprint is SHA256:qgV+75d1s0XOw3YEfo5byFg8zo876/Fqm5rLddsZnzE.
+> Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+> Warning: Permanently added '54.237.87.176' (ECDSA) to the list of known hosts.
+> ca.pem                                                                          100% 1342     8.9KB/s   00:00
+> ca-key.pem                                                                      100% 1679    17.1KB/s   00:00
+> service-account-key.pem                                                         100% 1675    13.7KB/s   00:00
+> service-account.pem                                                             100% 1432    10.5KB/s   00:00
+> master-kubernetes.pem                                                           100% 1862    16.2KB/s   00:00
+> master-kubernetes-key.pem                                                       100% 1679    27.3KB/s   00:00
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> 
+
+### Client Certificates
 `kube-proxy`  
 `kube-controller-manager`  
 `kube-scheduler`  
-`kubelet`  
+`kubelet` (on worker nodes)
 will be used to generate **client authentication configuration files** later.  
+###  Server Certificates
+These are used by components that **serve** requests and need to **prove their identity** to clients.
 
-
-
-
-
-
+**Worker nodes**:
+- Each worker node gets its own X.509 certificate and private key.
+- These are used by the **Kubelet** to authenticate itself to the API server.
+- The **API server** may also initiate communication with the **Kubelet** to:
+	- Fetch logs
+	- Execute commands (e.g., `kubectl exec`)
+	- Get metrics
+**Master nodes**:
+- `master-kubernetes.pem` and `master-kubernetes-key.pem` are used by the **API server** to authenticate itself to clients (like `kubectl`, `kubelet`, etc.).
 
 
 ## STEP 5 - USE `KUBECTL` TO GENERATE KUBERNETES CONFIGURATION FILES FOR AUTHENTICATION
