@@ -1157,7 +1157,7 @@ These are used by components that **serve** requests and need to **prove their i
 
 ## STEP 5 - USE `KUBECTL` TO GENERATE KUBERNETES CONFIGURATION FILES FOR AUTHENTICATION
 
- In this step we will create some files known as **kubeconfig**, which enable **Kubernetes clients** to *locate* and *authenticate* to the **Kubernetes API Servers**.  
+ In this step we will create some files known as **kubeconfig**, which enable **Kubernetes clients** to *locate (e.g., IP or hostname and Port)* and *authenticate (Certificate of token entries)*  to the **Kubernetes API Servers**.  
 
 We will need a **client tool** called `kubectl` to do this.   
 
@@ -1168,63 +1168,59 @@ First, we create a few **environment variables** for reuse by multiple commands.
 KUBERNETES_API_SERVER_ADDRESS=$(aws elbv2 describe-load-balancers --load-balancer-arns ${LOAD_BALANCER_ARN} --output text --query 'LoadBalancers[].DNSName')
 ```  
 
-1. Generating the `kubelet` **kubeconfig file**    
+### 1. Generating `kubelet` **kubeconfig file**    
 
 Because each **certificate** has the node’s **DNS name** or **IP Address** configured at the time the **certificate** was generated, the **client certificate** configured for each node *(running `kubelet`)* is used to generate the **kubeconfig**. It also ensures that the appropriate authorization is applied to that node through the **Node Authorizer**
 
 We run the command below in the directory where all the certificates were generated. In my case `ca-authority`  
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ KUBERNETES_API_SERVER_ADDRESS=$(aws elbv2 describe-load-balancers --load-balancer-arns ${LOAD_BALANCER_ARN} --output text --query 'LoadBalancers[].DNSName')
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
-> instance="${NAME}-worker-${i}"
-> instance_hostname="ip-172-31-0-2${i}"
-> # Set the kubernetes cluster in the kubeconfig file
->   kubectl config set-cluster ${NAME} \
->     --certificate-authority=ca.pem \
->     --embed-certs=true \
->     --server=https://$KUBERNETES_API_SERVER_ADDRESS:6443 \
->     --kubeconfig=${instance}.kubeconfig
-> # Set the cluster credentials in the kubeconfig file
->   kubectl config set-credentials system:node:${instance_hostname} \
->     --client-certificate=${instance}.pem \
->     --client-key=${instance}-key.pem \
->     --embed-certs=true \
->     --kubeconfig=${instance}.kubeconfig
-> # Set the context in the kubeconfig file
->   kubectl config set-context default \
->     --cluster=${NAME} \
->     --user=system:node:${instance_hostname} \
->     --kubeconfig=${instance}.kubeconfig
-> kubectl config use-context default --kubeconfig=${instance}.kubeconfig
-> done
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:node:ip-172-31-0-20" set.
-Context "default" created.
-Switched to context "default".
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:node:ip-172-31-0-21" set.
-Context "default" created.
-Switched to context "default".
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:node:ip-172-31-0-22" set.
-Context "default" created.
-Switched to context "default".
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- (for-loop)
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> > instance="${NAME}-worker-${i}"
+> > instance_hostname="ip-172-31-0-2${i}"
+> > # Set the kubernetes cluster in the kubeconfig file
+> >   kubectl config set-cluster ${NAME} \
+> >     --certificate-authority=ca.pem \
+> >     --embed-certs=true \
+> >     --server=https://$KUBERNETES_API_SERVER_ADDRESS:6443 \
+> >     --kubeconfig=${instance}.kubeconfig
+> > # Set the cluster credentials in the kubeconfig file
+> >   kubectl config set-credentials system:node:${instance_hostname} \
+> >     --client-certificate=${instance}.pem \
+> >     --client-key=${instance}-key.pem \
+> >     --embed-certs=true \
+> >     --kubeconfig=${instance}.kubeconfig
+> > # Set the context in the kubeconfig file
+> >   kubectl config set-context default \
+> >     --cluster=${NAME} \
+> >     --user=system:node:${instance_hostname} \
+> >     --kubeconfig=${instance}.kubeconfig
+> > kubectl config use-context default --kubeconfig=${instance}.kubeconfig
+> > done
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:node:ip-172-31-0-20" set.
+> Context "default" created.
+> Switched to context "default".
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:node:ip-172-31-0-21" set.
+> Context "default" created.
+> Switched to context "default".
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:node:ip-172-31-0-22" set.
+> Context "default" created.
+> Switched to context "default".
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
-Using `ls` we see newly generate **kubeconfig** files     
-``` bash
-hector@hector-Laptop:~/ca-authority$ ls -ltr *.kubeconfig
--rw------- 1 hector hector 6511 Jun  8 21:25 k8s-cluster-from-ground-up-worker-0.kubeconfig
--rw------- 1 hector hector 6507 Jun  8 21:25 k8s-cluster-from-ground-up-worker-1.kubeconfig
--rw------- 1 hector hector 6507 Jun  8 21:25 k8s-cluster-from-ground-up-worker-2.kubeconfig
-hector@hector-Laptop:~/ca-authority$
-```
-
-
-
-
+> [!NOTE]- Newly generated **kubeconfig** files
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ ls -ltr *.kubeconfig
+> -rw------- 1 hector hector 6511 Jun  8 21:25 k8s-cluster-from-ground-up-worker-0.kubeconfig
+> -rw------- 1 hector hector 6507 Jun  8 21:25 k8s-cluster-from-ground-up-worker-1.kubeconfig
+> -rw------- 1 hector hector 6507 Jun  8 21:25 k8s-cluster-from-ground-up-worker-2.kubeconfig
+> ```
+> 
 
 **Kubeconfig** file is used to organize information about clusters, users, namespaces and authentication mechanisms. By default, `kubectl` looks for a file named `config` in the `$HOME/.kube` directory. You can specify other **kubeconfig** files by setting the `KUBECONFIG` **environment variable** or by setting the `--kubeconfig` **flag**.  
 
@@ -1233,157 +1229,165 @@ hector@hector-Laptop:~/ca-authority$
 Context *(my case **default**)* part of **kubeconfig** file defines three main parameters: **cluster**, **namespace** and **user**. We can save several different contexts with any convenient names and switch between them when needed.  
 `kubectl config use-context <context-name>`
 
-2. Generating the `kube-proxy` **kubeconfig** 
+### 2. Generating `kube-proxy` **kubeconfig** 
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
->   kubectl config set-cluster ${NAME} \
->     --certificate-authority=ca.pem \
->     --embed-certs=true \
->     --server=https://${KUBERNETES_API_SERVER_ADDRESS}:6443 \
->     --kubeconfig=kube-proxy.kubeconfig
-> kubectl config set-credentials system:kube-proxy \
->     --client-certificate=kube-proxy.pem \
->     --client-key=kube-proxy-key.pem \
->     --embed-certs=true \
->     --kubeconfig=kube-proxy.kubeconfig
-> kubectl config set-context default \
->     --cluster=${NAME} \
->     --user=system:kube-proxy \
->     --kubeconfig=kube-proxy.kubeconfig
-> kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
-> }
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:kube-proxy" set.
-Context "default" created.
-Switched to context "default".
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- `set-cluster`, `set-credentials`, `set-context`
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> >  kubectl config set-cluster ${NAME} \
+> >     --certificate-authority=ca.pem \
+> >     --embed-certs=true \
+> >     --server=https://${KUBERNETES_API_SERVER_ADDRESS}:6443 \
+> >     --kubeconfig=kube-proxy.kubeconfig
+> >     
+> > kubectl config set-credentials system:kube-proxy \
+> >     --client-certificate=kube-proxy.pem \
+> >     --client-key=kube-proxy-key.pem \
+> >     --embed-certs=true \
+> >     --kubeconfig=kube-proxy.kubeconfig
+> >     
+> > kubectl config set-context default \
+> >     --cluster=${NAME} \
+> >     --user=system:kube-proxy \
+> >     --kubeconfig=kube-proxy.kubeconfig
+> > kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
+> > }
+> 
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:kube-proxy" set.
+> Context "default" created.
+> Switched to context "default".
+> ```
 
-3. Generate the `Kube-Controller-Manager` **kubeconfig**  
+### 3. Generating  `Kube-Controller-Manager` **kubeconfig**  
 
 The `--server` is set to use `127.0.0.1` because this component runs on the `API-Server` so there is no point **routing** through the **Load Balancer**.
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
->   kubectl config set-cluster ${NAME} \
+> [!NOTE]- `set-cluster`, `set-credentials`, `set-context`
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> >   kubectl config set-cluster ${NAME} \
+> >     --certificate-authority=ca.pem \
+> >     --embed-certs=true \
+> >     --server=https://127.0.0.1:6443 \
+> >     --kubeconfig=kube-controller-manager.kubeconfig
+> > kubectl config set-credentials system:kube-controller-manager \
+> >     --client-certificate=kube-controller-manager.pem \
+> >     --client-key=kube-controller-manager-key.pem \
+> >     --embed-certs=true \
+> >     --kubeconfig=kube-controller-manager.kubeconfig
+> > kubectl config set-context default \
+> >     --cluster=${NAME} \
+> >     --user=system:kube-controller-manager \
+> >     --kubeconfig=kube-controller-manager.kubeconfig
+> > kubectl config use-context default --kubeconfig=kube-controller-manager.kubeconfig
+> > }
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:kube-controller-manager" set.
+> Context "default" created.
+> Switched to context "default".
+> hector@hector-Laptop:~/ca-authority$
+> ```
+
+### 4. Generating `Kube-Scheduler` **Kubeconfig**  
+
+> [!NOTE]- `set-cluster`, `set-credentials`, `set-context`
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> > kubectl config set-cluster ${NAME} \
 >     --certificate-authority=ca.pem \
->     --embed-certs=true \
->     --server=https://127.0.0.1:6443 \
->     --kubeconfig=kube-controller-manager.kubeconfig
-> kubectl config set-credentials system:kube-controller-manager \
->     --client-certificate=kube-controller-manager.pem \
->     --client-key=kube-controller-manager-key.pem \
->     --embed-certs=true \
->     --kubeconfig=kube-controller-manager.kubeconfig
-> kubectl config set-context default \
->     --cluster=${NAME} \
->     --user=system:kube-controller-manager \
->     --kubeconfig=kube-controller-manager.kubeconfig
-> kubectl config use-context default --kubeconfig=kube-controller-manager.kubeconfig
-> }
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:kube-controller-manager" set.
-Context "default" created.
-Switched to context "default".
-hector@hector-Laptop:~/ca-authority$
-```
+> >     --certificate-authority=ca.pem \
+> >     --embed-certs=true \
+> >     --server=https://127.0.0.1:6443 \
+> >     --kubeconfig=kube-scheduler.kubeconfig
+> > kubectl config set-credentials system:kube-scheduler \
+> >     --client-certificate=kube-scheduler.pem \
+> >     --client-key=kube-scheduler-key.pem \
+> >     --embed-certs=true \
+> >     --kubeconfig=kube-scheduler.kubeconfig
+> > kubectl config set-context default \
+> >     --cluster=${NAME} \
+> >     --user=system:kube-scheduler \
+> >     --kubeconfig=kube-scheduler.kubeconfig
+> > kubectl config use-context default --kubeconfig=kube-scheduler.kubeconfig
+> > }
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "system:kube-scheduler" set.
+> Context "default" created.
+> Switched to context "default".
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
-4. Generating the `Kube-Scheduler` **Kubeconfig**  
+### 5. Generating **kubeconfig** file for the `admin user`
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
-> kubectl config set-cluster ${NAME} \
-    --certificate-authority=ca.pem \
->     --certificate-authority=ca.pem \
->     --embed-certs=true \
->     --server=https://127.0.0.1:6443 \
->     --kubeconfig=kube-scheduler.kubeconfig
-> kubectl config set-credentials system:kube-scheduler \
->     --client-certificate=kube-scheduler.pem \
->     --client-key=kube-scheduler-key.pem \
->     --embed-certs=true \
->     --kubeconfig=kube-scheduler.kubeconfig
-> kubectl config set-context default \
->     --cluster=${NAME} \
->     --user=system:kube-scheduler \
->     --kubeconfig=kube-scheduler.kubeconfig
-> kubectl config use-context default --kubeconfig=kube-scheduler.kubeconfig
-> }
-Cluster "k8s-cluster-from-ground-up" set.
-User "system:kube-scheduler" set.
-Context "default" created.
-Switched to context "default".
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- `set-cluster`, `set-credentials`, `set-context`
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ {
+> >   kubectl config set-cluster ${NAME} \
+> >     --certificate-authority=ca.pem \
+> >     --embed-certs=true \
+> >     --server=https://${KUBERNETES_API_SERVER_ADDRESS}:6443 \
+> >     --kubeconfig=admin.kubeconfig
+> > kubectl config set-credentials admin \
+> >     --client-certificate=admin.pem \
+> >     --client-key=admin-key.pem \
+> >     --embed-certs=true \
+> >     --kubeconfig=admin.kubeconfig
+> > kubectl config set-context default \
+> >     --cluster=${NAME} \
+> >     --user=admin \
+> >     --kubeconfig=admin.kubeconfig
+> > kubectl config use-context default --kubeconfig=admin.kubeconfig
+> > }
+> Cluster "k8s-cluster-from-ground-up" set.
+> User "admin" set.
+> Context "default" created.
+> Switched to context "default".
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> 
 
-5. Finally, generate the **kubeconfig** file for the `admin user`
+**Distributing the files** to their respective servers, using `scp` and a `for loop`    
 
-``` bash
-hector@hector-Laptop:~/ca-authority$ {
->   kubectl config set-cluster ${NAME} \
->     --certificate-authority=ca.pem \
->     --embed-certs=true \
->     --server=https://${KUBERNETES_API_SERVER_ADDRESS}:6443 \
->     --kubeconfig=admin.kubeconfig
-> kubectl config set-credentials admin \
->     --client-certificate=admin.pem \
->     --client-key=admin-key.pem \
->     --embed-certs=true \
->     --kubeconfig=admin.kubeconfig
-> kubectl config set-context default \
->     --cluster=${NAME} \
->     --user=admin \
->     --kubeconfig=admin.kubeconfig
-> kubectl config use-context default --kubeconfig=admin.kubeconfig
-> }
-Cluster "k8s-cluster-from-ground-up" set.
-User "admin" set.
-Context "default" created.
-Switched to context "default".
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- Worker
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> >   instance="${NAME}-worker-${i}"
+> >   external_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PublicIpAddress')
+> >   scp -i ../ssh/${NAME}.id_rsa \
+> >   ${instance}.kubeconfig kube-proxy.kubeconfig ubuntu@${external_ip}:~/; \
+> > done
+> k8s-cluster-from-ground-up-worker-0.kubeconfig                                                              100% 6511   101.2KB/s   00:00
+> kube-proxy.kubeconfig                                                                                       100% 6342   100.6KB/s   00:00
+> k8s-cluster-from-ground-up-worker-1.kubeconfig                                                              100% 6507   102.2KB/s   00:00
+> kube-proxy.kubeconfig                                                                                       100% 6342   103.5KB/s   00:00
+> k8s-cluster-from-ground-up-worker-2.kubeconfig                                                              100% 6507   105.6KB/s   00:00
+> kube-proxy.kubeconfig                                                                                       100% 6342    96.1KB/s   00:00
+> hector@hector-Laptop:~/ca-authority$
+> ```
 
-Distributing the files to their respective servers, using `scp` and a `for loop`    
-
-**Worker**    
-``` bash
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
->   instance="${NAME}-worker-${i}"
->   external_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PublicIpAddress')
->   scp -i ../ssh/${NAME}.id_rsa \
->   ${instance}.kubeconfig kube-proxy.kubeconfig ubuntu@${external_ip}:~/; \
-> done
-k8s-cluster-from-ground-up-worker-0.kubeconfig                                                              100% 6511   101.2KB/s   00:00
-kube-proxy.kubeconfig                                                                                       100% 6342   100.6KB/s   00:00
-k8s-cluster-from-ground-up-worker-1.kubeconfig                                                              100% 6507   102.2KB/s   00:00
-kube-proxy.kubeconfig                                                                                       100% 6342   103.5KB/s   00:00
-k8s-cluster-from-ground-up-worker-2.kubeconfig                                                              100% 6507   105.6KB/s   00:00
-kube-proxy.kubeconfig                                                                                       100% 6342    96.1KB/s   00:00
-hector@hector-Laptop:~/ca-authority$
-```
-
-
-**Master**  
-``` bash
-hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
-> instance="${NAME}-master-${i}" \
->   external_ip=$(aws ec2 describe-instances \
->     --filters "Name=tag:Name,Values=${instance}" \
->     --output text --query 'Reservations[].Instances[].PublicIpAddress')
->   scp -i ../ssh/${NAME}.id_rsa \
->   kube-controller-manager.kubeconfig kube-scheduler.kubeconfig ubuntu@${external_ip}:~/;
-> done
-kube-controller-manager.kubeconfig                                                                          100% 6425   104.3KB/s   00:00
-kube-scheduler.kubeconfig                                                                                   100% 6371    89.5KB/s   00:00
-kube-controller-manager.kubeconfig                                                                          100% 6425    87.8KB/s   00:00
-kube-scheduler.kubeconfig                                                                                   100% 6371    99.5KB/s   00:00
-kube-controller-manager.kubeconfig                                                                          100% 6425   102.6KB/s   00:00
-kube-scheduler.kubeconfig                                                                                   100% 6371    86.1KB/s   00:00
-hector@hector-Laptop:~/ca-authority$
-```
+> [!NOTE]- Master
+> 
+> ``` bash
+> hector@hector-Laptop:~/ca-authority$ for i in 0 1 2; do
+> > instance="${NAME}-master-${i}" \
+> >   external_ip=$(aws ec2 describe-instances \
+> >     --filters "Name=tag:Name,Values=${instance}" \
+> >     --output text --query 'Reservations[].Instances[].PublicIpAddress')
+> >   scp -i ../ssh/${NAME}.id_rsa \
+> >   kube-controller-manager.kubeconfig kube-scheduler.kubeconfig ubuntu@${external_ip}:~/;
+> > done
+> kube-controller-manager.kubeconfig                                                                          100% 6425   104.3KB/s   00:00
+> kube-scheduler.kubeconfig                                                                                   100% 6371    89.5KB/s   00:00
+> kube-controller-manager.kubeconfig                                                                          100% 6425    87.8KB/s   00:00
+> kube-scheduler.kubeconfig                                                                                   100% 6371    99.5KB/s   00:00
+> kube-controller-manager.kubeconfig                                                                          100% 6425   102.6KB/s   00:00
+> kube-scheduler.kubeconfig                                                                                   100% 6371    86.1KB/s   00:00
+> hector@hector-Laptop:~/ca-authority$
+> ```
+> 
 
 ## STEP 6 - PREPARE THE ETCD DATABASE FOR ENCRYPTION AT REST
 
