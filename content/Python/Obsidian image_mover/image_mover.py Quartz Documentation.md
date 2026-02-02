@@ -1,6 +1,6 @@
 ---
 tags:
-  - python
+  - Python
 title: Obsidian image_mover.py
 created: 2026-02-02T15:07:00
 modified: 2026-02-02
