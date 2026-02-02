@@ -44,7 +44,11 @@ kubectl version --client
 kubeadm version
 kubelet --version
 ```
-<br>![[Pasted image 20231113111114.png]]
+
+
+![[Pasted image 20231113111114.png]]
+
+
 > **Note:** As of the current date, the latest version installed is 1.28.
 
 #### Initializing kubeadm
@@ -54,7 +58,10 @@ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
 ```
 > This command sets up the pod networking configuration necessary for the Calico plugin to operate properly within the cluster.
 
-%%#question why here we had to specify advertise <br>![[Pasted image 20231107230634.png]]
+%%#question why here we had to specify advertise 
+![[Pasted image 20231107230634.png]]
+
+
 <br>![[Pasted image 20231215211736.png]]
 added `--ignore-preflight-errors=NumCPU,Mem` not sure what I did the first time when I did not use the ignore thing
 i think i just provision a large enought EC2
