@@ -39,11 +39,11 @@ Result: A tidy, portable sub-folder containing the note + its exclusive assets, 
 # Demo
 ![[obsidianmoverdemo.gif]]
 
-### Update: OOP Structure Refactoring
+## Update: OOP Structure Refactoring
 
 Here’s the **commit** where the OOP version came together: [OOP refactor obsidian image_mover](https://github.com/hectorproko/Lab/commit/4e8f5f75352027d9c1bace52d30ce72e9ab39d57)
 
-#### What changed?
+### What changed?
 
 I introduced three main classes with clear responsibilities:
 
