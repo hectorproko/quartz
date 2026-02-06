@@ -1,7 +1,7 @@
 ---
 title: "Project 11: Ansible-Automate"
 tags:
-  - quartz
+  - inquartz
   - hardlink
   - darey
   - Ansible
