@@ -1,5 +1,5 @@
 ---
-cssclasses:
+title: "Project 11: Ansible-Automate"
 tags:
   - quartz
   - hardlink
