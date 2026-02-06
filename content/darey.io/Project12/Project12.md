@@ -6,7 +6,7 @@ tags:
   - inquartz
 title: "Project 12: Ansible (Refactoring, Static Assignments Imports, Roles)"
 ---
-
+~~*(Old [Project 12](https://github.com/hectorproko/ANSIBLE-REFACTORING-ASSIGNMENTS-IMPORTS/blob/main/Project12_Steps.md))*~~
 #### ANSIBLE REFACTORING AND STATIC ASSIGNMENTS (IMPORTS AND ROLES)
 
 In this project I will continue working with [ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt.git) repository and make some improvements to the code. Now I need to refactor the **Ansible** code, create assignments, and learn how to use the **imports** functionality to effectively re-use previously created playbooks in a new playbook – it allows us to organize tasks and reuse them as needed.
