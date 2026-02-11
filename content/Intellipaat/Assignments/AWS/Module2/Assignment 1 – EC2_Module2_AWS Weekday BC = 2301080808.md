@@ -1,6 +1,7 @@
 ---
 tags:
   - AWS
+  - Nginx
 title: Launching and Configuring an Ubuntu EC2 Instance with Nginx on AWS
 ---
 <!--
