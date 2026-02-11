@@ -8,11 +8,10 @@ Some Scripts:
 
 ---
 
-https://github.com/hectorproko/Work_Scripts/tree/master/Bash
+Github link: https://github.com/hectorproko/Work_Scripts/tree/master/Bash
 
-****
 
-> [!summary] Quick Summary:
+> [!note] Quick Summary:
 > 1. **fullAutoBuild.sh** - Main script, calls everything in order
 > 2. **Pull_Step_Full.sh** - Gets latest code from repos
 > 3. **autoBuildV3_Full.bash** - Builds 7 packages, extracts artifact numbers from Jenkins console
