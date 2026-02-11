@@ -147,6 +147,22 @@ fullAutoBuild.sh (MAIN ORCHESTRATOR)
 **Here's a strong answer that explains the technical details clearly:**
 
 ---
+
+<!--
+In aquent ended up using
+The manual process was incredibly time-consuming: build 7 packages in dependency order, extract artifact version numbers from Jenkins console output, manually update those versions in 60+ application repositories, push changes to GitHub, then trigger each application build individually, all of which took about an hour.
+
+I automated this with a Bash script orchestration system that had three key innovations:
+
+**Real-time artifact extraction:** After triggering each package build via Jenkins API, my script actively monitored the Jenkins console output using curl, parsed the build logs to extract the specific artifact version number, and saved it to a central file. This eliminated the manual process of opening each Jenkins job and copying version numbers from the console output.
+
+**Intelligent version updating:** The script read the extracted versions and automatically updated package references across all 60+ repositories, editing packages.config, .csproj, and .vbproj files with correct SNAPSHOT or RELEASE versions. This eliminated the time-consuming and error-prone process of manually editing configuration files across dozens of repositories.
+
+**Self-correcting logic and parallelization:** If git operations failed, the script automatically recovered, removing and re-cloning repos on pull failures, retrying pushes with backoff logic. This self-correction eliminated manual intervention that typically took 40 minutes to 2 hours per incident. Instead of triggering 60+ builds manually through the Jenkins UI, the script parallelized them through the Jenkins REST API.
+
+The result was a 60-minute manual process reduced to 7 minutes of fully automated, error-free execution that could be kicked off with a single command.
+-->
+
 <!--
 ## **Version 1 - Technical but Clear (Recommended)**
 
