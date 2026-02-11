@@ -77,10 +77,3 @@ Here are some of the projects I've been working on, categorized by technology:
 -->
 
 
-Testing base:
-![[nginx_base.base]]
-
-[[nginx_base.base]]
-
-
-
