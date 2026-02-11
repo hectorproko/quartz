@@ -1,5 +1,7 @@
 ---
 title: Packer To AMI
+tags:
+  - Packer
 ---
 ~~*(old [Packer To AMI (AWS)](https://github.com/hectorproko/Packer/blob/main/Packer_To_AMI.md) )*~~
 
