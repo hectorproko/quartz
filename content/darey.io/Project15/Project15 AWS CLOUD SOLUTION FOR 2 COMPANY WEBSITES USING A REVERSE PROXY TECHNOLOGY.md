@@ -5,6 +5,9 @@ tags:
 ---
 ~~*(old [Project 15](https://github.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/blob/main/Project15_Steps.md))*~~
 
+> [!attention] Provisioning with Terraform
+> [AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL)
+
 > [!NOTE]
 > PROJECT 15
 > In this project we will build a secure infrastructure inside **AWS VPC** (Virtual Private Cloud) network for a fictitious company that uses **WordPress CMS** for its main business website, and a [Tooling Website](https://github.com/hectorproko/tooling.git) for their DevOps team. As part of the desire for improved security and performance we'll use a reverse proxy technology from NGINX to achieve this.  
@@ -888,8 +891,7 @@ Created records for:
 ![Markdown Logo](https://raw.githubusercontent.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/main/images/wordpressSecureConenction.gif)  
 
 
-## Using Terraform
-[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL)
+
 
 
 

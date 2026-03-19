@@ -20,6 +20,9 @@ Here are some of the projects I've been working on, categorized by technology:
 > *Hover over them to see related tasks*  
 > #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python
    
+### GitOps
+- [k3s-flux-homelab (Github)](https://github.com/hectorproko/laptop-cluster)
+
 ### CI/CD Jenkins:
 - [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE|CI Pipeline for Tooling Website]]
 - [[Project14 CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP|CI with Jenkins, Ansible, Artifactory, SonarQube & PHP]] 
