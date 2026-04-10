@@ -262,6 +262,7 @@ existing unseal keys shares. See "vault operator rekey" for more information.
 ```
 
  > [!attention] Important 👀 
+ > 
 > These keys must be stored securely and separately. Vault does **not** store the master key, if you lose enough key shares, access to the Vault is permanently lost.
 
 ### Unsealing Vault
