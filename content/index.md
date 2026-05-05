@@ -18,7 +18,7 @@ Here are some of the projects I've been working on, categorized by technology:
 
 > [!tip] Tags
 > *Hover over them to see related tasks*  
-> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python
+> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault 
    
 ### GitOps
 - [k3s-flux-homelab (Github)](https://github.com/hectorproko/laptop-cluster)
@@ -66,14 +66,17 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Packer:
 - [[Packer_To_AMI|Packer to AMI]] 
 
+### Vault
+- [[Installing and Configuring HashiCorp Vault with Consul on Ubuntu]]
+- [[Writing and Testing HashiCorp Vault Policies]]
 
-[[Take-Home Task]]
 
 <!--
 [[Azure Administrator Course for AZ-103 AZ-104|Azure Administrator]]
 [[Azure Devops BC = 2322102810|Azure DevOps]]
 [[Devops BC = 2330070508]]
 
+[[Take-Home Task]]
 
 [[IntelliPaat_Index]]
 

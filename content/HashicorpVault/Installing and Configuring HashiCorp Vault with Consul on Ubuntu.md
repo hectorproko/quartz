@@ -1,8 +1,8 @@
-
-**Cloud Security | Infrastructure | Secrets Management**
-
 ---
-
+tags:
+  - "#vault"
+  - SecretsManagement
+---
 ## Overview
 
 One of the most critical challenges in modern cloud infrastructure is **secrets management**, safely storing and controlling access to sensitive data like API keys, passwords, and certificates. In this lab, I set up **HashiCorp Vault** backed by **Consul** as a storage backend on an Ubuntu 18.04 AWS EC2 instance. This is a foundational skill for any DevOps or cloud security role.
@@ -349,6 +349,9 @@ Logging in with the root token gives us administrative access to perform tasks s
 
 ## What's Next
 
+[[Writing and Testing HashiCorp Vault Policies]]
+
+<!--
 With Vault up and running, the natural next steps would be:
 
 - Enabling secrets engines (KV, AWS, database credentials)
@@ -356,3 +359,6 @@ With Vault up and running, the natural next steps would be:
 - Configuring audit logging
 - Enabling TLS on the Vault listener
 - Setting up Vault agent for application-level secret injection
+
+-->
+
