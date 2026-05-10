@@ -360,3 +360,29 @@ jobs:
 - **`needs` is required for artifact sharing** - jobs run in parallel by default. Without explicit `needs`, a downstream job can start before its dependency has produced its output.
 - **Two-pass linting is a useful pattern** - separating hard failures (syntax errors) from informational warnings (style) lets you enforce quality gates without blocking on minor issues.
 
+
+
+<div class="code-container" style="margin: 1rem 0;">
+  <pre style="background: #1a1b26; padding: 1.5rem; border-radius: 8px; overflow-x: auto; border: 1px solid #3b4261;">
+<code id="live-github-workflow" style="color: #a9b1d6; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">
+Loading live workflow from GitHub...
+</code></pre>
+</div>
+
+<script>
+  (async () => {
+    const el = document.getElementById('live-github-workflow');
+    // Change 'main' to your branch name if it's different
+    const url = 'https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/main/.github/workflows/deploy-pipeline.yaml';
+    
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.res.text();
+      el.textContent = text;
+      // Optional: If you use Prism.js or similar, you can trigger highlight here
+    } catch {
+      el.textContent = 'Error: Could not load the live file. Check your connection or the file path.';
+    }
+  })();
+</script>
