@@ -2,11 +2,15 @@
 tags:
   - "#githubactions"
 ---
-# Creating a Versioned Release Pipeline with GitHub Actions
-
 ## Overview
 
 In this lab I extended an existing CI/CD pipeline to automatically publish a versioned GitHub Release — including a zipped artifact containing all application dependencies — every time new code is pushed. The goal was to give downstream teams a reliable, consistently named artifact they can pull without needing access to the build environment.
+
+---
+
+## Repository
+
+> 🔗 [hectorproko/content-github-actions-deep-dive-lesson](https://github.com/hectorproko/content-github-actions-deep-dive-lesson)
 
 ---
 
@@ -53,6 +57,8 @@ publish:
 
 **Why `github.sha`?** Embedding the commit SHA in the release body creates a direct traceability link — anyone reading the release notes can pinpoint the exact source code that was built.
 
+> 🔗 Commit: [Add publish step to deploy pipeline](https://github.com/hectorproko/content-github-actions-deep-dive-lesson/commit/fb7712872d93104227ced0641884e4055f09ef64)
+
 ---
 
 ## Step 2 — Troubleshooting Errors
@@ -62,7 +68,6 @@ The first run immediately surfaced two issues, both worth understanding because 
 ### Error 1 — YAML Indentation (`line 64`)
 
 **Symptom:**
-
 ```
 Invalid workflow file: .github/workflows/deploy-pipeline.yaml#L64
 You have an error in your yaml syntax on line 64
@@ -72,12 +77,13 @@ You have an error in your yaml syntax on line 64
 
 **Fix:** Corrected the indentation so the step was properly nested under `steps`. YAML is whitespace-sensitive, so even one extra space breaks parsing.
 
+> 🔗 Commit: [Fix with indentation](<!-- add commit URL -->)
+
 ---
 
 ### Error 2 — Python Syntax in `lint` Job
 
 **Symptom:**
-
 ```
 ./lambda_function.py:13:33: E999 SyntaxError: invalid syntax
 Error: Process completed with exit code 1.
@@ -86,7 +92,6 @@ Error: Process completed with exit code 1.
 **Cause:** The source file `lambda_function.py` had an invalid `print` statement — a Python 2 style `print` without parentheses, which `flake8` correctly flagged under Python 3.
 
 **Fix:** Updated the print statement to valid Python 3 syntax:
-
 ```python
 # Before (Python 2 style — invalid in Python 3)
 print "hello"
@@ -95,12 +100,13 @@ print "hello"
 print("hello")
 ```
 
+> 🔗 Commit: [Fix syntax error in print statement](<!-- add commit URL -->)
+
 ---
 
 ### Error 3 — Deprecated Action Versions
 
 **Symptom:**
-
 ```
 This request has been automatically failed because it uses a deprecated version
 of `actions/upload-artifact: v2`.
@@ -110,17 +116,18 @@ of `actions/upload-artifact: v2`.
 
 **Fix:** Upgraded all action versions to their current major releases:
 
-|Action|Old Version|Updated Version|
+| Action | Old Version | Updated Version |
 |---|---|---|
-|`actions/download-artifact`|`@v2`|`@v4`|
-|`actions/upload-release-asset`|`@v1`|Current|
+| `actions/download-artifact` | `@v2` | `@v4` |
+| `actions/upload-release-asset` | `@v1` | Current |
+
+> 🔗 Commit: [Upgrade GitHub Actions to latest versions](<!-- add commit URL -->)
 
 ---
 
 ### Error 4 — `GITHUB_TOKEN` Permission Denied
 
 **Symptom:**
-
 ```
 Error: Resource not accessible by integration
 ```
@@ -137,6 +144,8 @@ publish:
 ```
 
 This is a security-conscious default by GitHub — workflows should only request the minimum permissions they need, and `contents: write` explicitly grants the ability to create releases and attach assets.
+
+> 🔗 Commit: [Add permissions for contents in deploy pipeline](<!-- add commit URL -->)
 
 ---
 
@@ -174,6 +183,8 @@ publish:
 ```
 
 `steps.create_release.outputs.upload_url` is the key here — the `create_release` step exposes a dynamic upload URL in its output, which the upload step consumes. This is a good example of **step output chaining** in GitHub Actions.
+
+> 🔗 Commit: [Add release asset upload to publish job](<!-- add commit URL -->)
 
 ---
 
@@ -247,4 +258,4 @@ publish:
 
 ---
 
-_Lab source: [content-github-actions-deep-dive-lesson](https://github.com/hectorproko/content-github-actions-deep-dive-lesson)_
+*Lab source: [content-github-actions-deep-dive-lesson](https://github.com/hectorproko/content-github-actions-deep-dive-lesson)*
