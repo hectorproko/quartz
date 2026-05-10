@@ -373,7 +373,7 @@ Loading live workflow from GitHub...
   (async () => {
     const el = document.getElementById('live-github-workflow');
     // Change 'main' to your branch name if it's different
-    const url = 'https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/main/.github/workflows/deploy-pipeline.yaml';
+    const url = 'https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/refs/heads/lab/.github/workflows/deploy-pipeline.yaml';
     
     try {
       const res = await fetch(url);
