@@ -157,13 +157,15 @@ publish:
 
 ---
 
-## Step 4 - Troubleshooting Errors
+## Step 4 - Troubleshooting ❌Errors
 
 Getting all three jobs green required working through several errors. These are worth documenting because each one reflects a real-world CI/CD pitfall.
 
 ---
 
-### Error 1 - YAML Indentation (`line 64`)
+### ❌Error 1 - YAML Indentation (`line 64`)
+
+![[Pasted image 20260509191902.png]]
 
 **Symptom:**
 ```
@@ -179,7 +181,9 @@ You have an error in your yaml syntax on line 64
 
 ---
 
-### Error 2 - Python Syntax in `lint` Job
+### ❌Error 2 - Python Syntax in `lint` Job
+
+![[Pasted image 20260509184110.png|550]]
 
 **Symptom:**
 ```
@@ -195,7 +199,9 @@ Error: Process completed with exit code 1.
 
 ---
 
-### Error 3 - Deprecated Action Versions
+### ❌Error 3 - Deprecated Action Versions
+
+![[Pasted image 20260509201039.png]]
 
 **Symptom:**
 ```
@@ -217,7 +223,9 @@ of `actions/upload-artifact: v2`.
 
 ---
 
-### Error 4 - `GITHUB_TOKEN` Permission Denied
+### ❌Error 4 - `GITHUB_TOKEN` Permission Denied
+
+![[Pasted image 20260509184047.png|450]]
 
 **Symptom:**
 ```
