@@ -349,7 +349,22 @@ jobs:
           asset_content_type: application/zip
 ```
 
-<iframe src="https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/c3a6030f07e3d899603061694a6c59481f90b039/.github/workflows/deploy-pipeline.yaml" allow="fullscreen" allowfullscreen="" style="height: 100%; width: 100%; aspect-ratio: 1 / 1;"></iframe>
+
+
+<pre><code id="workflow-code">Loading workflow...</code></pre>
+
+<script>
+  const url = 'https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/c3a6030f07e3d899603061694a6c59481f90b039/.github/workflows/deploy-pipeline.yaml';
+  
+  fetch(url)
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('workflow-code').textContent = data;
+    })
+    .catch(err => {
+      document.getElementById('workflow-code').textContent = 'Error loading workflow.';
+    });
+</script>
 
 ---
 
