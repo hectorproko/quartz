@@ -258,7 +258,7 @@ After all fixes were committed, the full pipeline ran cleanly:
 The **Releases** section of the repository showed:
 
 ![[Pasted image 20260510112728.png|150]]
-``
+
 Clicking into the release revealed the attached `source_code_with_libraries.zip`, ready for any downstream consumer to download.
 
 ![[Pasted image 20260510112100.png]]
@@ -348,23 +348,6 @@ jobs:
           asset_name: source_code_with_libraries.zip
           asset_content_type: application/zip
 ```
-
-
-
-<pre><code id="workflow-code">Loading workflow...</code></pre>
-
-<script>
-  const url = 'https://raw.githubusercontent.com/hectorproko/content-github-actions-deep-dive-lesson/c3a6030f07e3d899603061694a6c59481f90b039/.github/workflows/deploy-pipeline.yaml';
-  
-  fetch(url)
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('workflow-code').textContent = data;
-    })
-    .catch(err => {
-      document.getElementById('workflow-code').textContent = 'Error loading workflow.';
-    });
-</script>
 
 ---
 
