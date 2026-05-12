@@ -257,7 +257,6 @@ I deployed two microservices (`frontend` and `backend`) and a utility `sleep` po
 ```bash
 kubectl apply -f frontend.yaml
 kubectl apply -f backend.yaml
-kubectl apply -f sleep.yaml
 ```
 
 ```
@@ -268,9 +267,6 @@ service/frontend created
 serviceaccount/backend-sa created
 deployment.apps/backend created
 service/backend created
-
-serviceaccount/sleep-sa created
-deployment.apps/sleep created
 ```
 
 After the pods started, I checked their status:
@@ -491,34 +487,33 @@ Istio uses an important pattern here: when you create an `ALLOW` policy for a wo
 
 I applied an `AuthorizationPolicy` that explicitly allows only the `frontend-sa` service account to access the `backend` service:
 
-bash
-
 ```bash
 kubectl apply -f authz-allow-frontend.yaml
 ```
+<!--
+- so the policies are applied to the service account not the resource itself? service account is the identity of the resource?
+- The Service Account IS the identity of the workload
+  Istio isn't saying "allow the frontend _pod_" or "allow traffic from IP `10.x.x.x`" — it's saying **"allow any workload presenting a certificate that was issued to `frontend-sa`."**
+-->
 
-yaml
-
-```yaml
-# authz-allow-frontend.yaml
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-frontend
-  namespace: zerotrust
-spec:
-  selector:
-    matchLabels:
-      app: backend
-  action: ALLOW
-  rules:
-  - from:
-    - source:
-        principals:
-        - cluster.local/ns/zerotrust/sa/frontend-sa
-```
-
-bash
+> [!NOTE]- authz-allow-frontend.yaml
+> ```yaml
+> apiVersion: security.istio.io/v1beta1
+> kind: AuthorizationPolicy
+> metadata:
+>   name: allow-frontend
+>   namespace: zerotrust
+> spec:
+>   selector:
+>     matchLabels:
+>       app: backend
+>   action: ALLOW
+>   rules:
+>   - from:
+>     - source:
+>         principals:
+>         - cluster.local/ns/zerotrust/sa/frontend-sa
+> ```
 
 ```bash
 kubectl get authorizationpolicy -n zerotrust
@@ -533,13 +528,9 @@ allow-frontend   ALLOW    54s
 
 **Frontend → Backend (should succeed):**
 
-bash
-
 ```bash
 kubectl exec -n zerotrust deploy/frontend -- curl -s http://backend
 ```
-
-html
 
 ```html
 <html><body><h1>Backend Service</h1><p>This is the backend microservice. Access is controlled by authorization policies.</p></body></html>
@@ -548,8 +539,6 @@ html
 ✅ Frontend has `frontend-sa` - matches the policy, access granted.
 
 **Sleep → Backend (should be denied):**
-
-bash
 
 ```bash
 kubectl exec -n zerotrust deploy/sleep -- curl -s -o /dev/null -w "%{http_code}" http://backend
@@ -562,8 +551,6 @@ kubectl exec -n zerotrust deploy/sleep -- curl -s -o /dev/null -w "%{http_code}"
 ❌ Sleep uses `sleep-sa` - not in the ALLOW policy, implicitly denied. No separate deny rule needed.
 
 ### Confirming Identity Mapping
-
-bash
 
 ```bash
 kubectl get pods -n zerotrust -o custom-columns=NAME:.metadata.name,SERVICE_ACCOUNT:.spec.serviceAccountName
