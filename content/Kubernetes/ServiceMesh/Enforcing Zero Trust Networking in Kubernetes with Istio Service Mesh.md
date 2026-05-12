@@ -147,7 +147,7 @@ zerotrust   Active   95s   istio-injection=enabled,kubernetes.io/metadata.name=z
 I deployed two microservices (`frontend` and `backend`) and a utility `sleep` pod for testing. Each service has its own **Kubernetes Service Account**, this is important because Istio uses service accounts as workload identities for access control.
 
 > [!NOTE]- frontend.yaml
-> ```
+> ```yaml
 > [cloud_user@ip-10-0-0-218 lab-files]$ cat frontend.yaml
 > apiVersion: v1
 > kind: ServiceAccount
@@ -201,7 +201,7 @@ I deployed two microservices (`frontend` and `backend`) and a utility `sleep` po
 > ```
 
 > [!NOTE]- backend.yaml
-> ```
+> ```yaml
 > [cloud_user@ip-10-0-0-218 lab-files]$ cat backend.yaml
 > apiVersion: v1
 > kind: ServiceAccount
@@ -302,7 +302,7 @@ Name:             frontend-5ccb44dbcc-44ncn
 Two images are present: `nginx:alpine` (the app) and `istio/proxyv2` (the Envoy sidecar). Sidecar injection confirmed.
 
 > [!NOTE]- sleep.yaml
-> ```
+> ```yaml
 > [cloud_user@ip-10-0-0-218 lab-files]$ cat sleep.yaml
 > apiVersion: v1
 > kind: ServiceAccount
@@ -366,37 +366,37 @@ kubectl exec -n zerotrust deploy/sleep -- curl -s http://backend
 
 ### What is mTLS?
 
-Standard TLS (like HTTPS) only verifies the _server's_ identity. **Mutual TLS (mTLS)** requires _both_ sides of a connection to present a valid certificate, the server verifies the client, and the client verifies the server. In a service mesh, Istio issues certificates automatically to every sidecar, making mTLS seamless to configure.
+[[Mutual TLS (two-way)]]
+
+In a service mesh, Istio issues certificates automatically to every sidecar, making mTLS seamless to configure.
 
 ### PeerAuthentication Policy
 
-I applied a `PeerAuthentication` resource set to `STRICT` mode. This tells Istio that every service in the `zerotrust` namespace must use mTLS, plaintext connections are rejected outright.
-
-bash
+I applied a `PeerAuthentication` resource set to `STRICT` mode. This tells Istio that every service in the `zerotrust` namespace must use mTLS, plaintext connections are rejected outright. **PeerAuthentication** handles the server side (what connections to accept).
 
 ```bash
 kubectl apply -f peer-authentication.yaml
 ```
 
-yaml
-
-```yaml
-# peer-authentication.yaml
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: default
-  namespace: zerotrust
-spec:
-  mtls:
-    mode: STRICT
-```
+> [!NOTE]- peer-authentication.yaml
+> ```yaml
+> apiVersion: security.istio.io/v1beta1
+> kind: PeerAuthentication
+> metadata:
+>   name: default
+>   namespace: zerotrust
+> spec:
+>   mtls:
+>     mode: STRICT
+> ```
+> 
+> `name: default` - The name `default` is special, Istio treats it as the namespace-wide policy, applying to every workload in the namespace *(`zerotrust`)* automatically
+   `mtls.mode: STRICT` - **Server-side enforcement** reject any connection that doesn't present a valid mTLS certificate|
+> 
 
 ```
 peerauthentication.security.istio.io/default created
 ```
-
-bash
 
 ```bash
 kubectl get peerauthentication -n zerotrust
@@ -409,31 +409,38 @@ default   STRICT   29s
 
 ### DestinationRule
 
-I also applied a `DestinationRule` to configure the _client side_, telling Envoy sidecars to use `ISTIO_MUTUAL` TLS when sending traffic to any service in the namespace. PeerAuthentication handles the server side (what connections to accept); DestinationRule handles the client side (how to initiate connections).
-
-bash
+I also applied a `DestinationRule` to configure the _client side_, telling Envoy sidecars to use `ISTIO_MUTUAL` TLS when sending traffic to any service in the namespace. **DestinationRule** handles the client side (how to initiate connections).
 
 ```bash
 kubectl apply -f destination-rule.yaml
 ```
 
-yaml
-
-```yaml
-# destination-rule.yaml
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: default
-  namespace: zerotrust
-spec:
-  host: "*.zerotrust.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
+> [!NOTE]- destination-rule.yaml 
+> ```yaml
+> apiVersion: networking.istio.io/v1beta1
+> kind: DestinationRule
+> metadata:
+>   name: default
+>   namespace: zerotrust
+> spec:
+>   host: "*.zerotrust.svc.cluster.local"
+>   trafficPolicy:
+>     tls:
+>       mode: ISTIO_MUTUAL
+> ```
+>
+> `host: "*.zerotrust.svc.cluster.local"` - it's telling the client-side Envoy _"when you're about to call any service matching this pattern, use these settings"_. The `*` wildcard covers all services in the namespace
+   `trafficPolicy.tls.mode: ISTIO_MUTUAL` - use Istio-managed certificates when initiating the connection
+<!--
 ```
-
-bash
+*.zerotrust.svc.cluster.local
+│  │         │   │
+│  │         │   └── cluster.local   → the default DNS domain for the entire cluster
+│  │         └────── svc             → indicates this is a Service (not a pod or node)
+│  └──────────────── zerotrust       → the namespace
+└─────────────────── *               → any service name
+```
+-->
 
 ```bash
 kubectl get destinationrule -n zerotrust
@@ -448,8 +455,6 @@ default   *.zerotrust.svc.cluster.local   52s
 
 To prove that STRICT mTLS actually rejects non-mesh clients, I created a separate namespace **without** sidecar injection and tried to reach the backend from there:
 
-bash
-
 ```bash
 kubectl create namespace no-mesh
 kubectl run curl-test --image=curlimages/curl:latest -n no-mesh -- sleep infinity
@@ -463,7 +468,15 @@ command terminated with exit code 56
 ```
 
 Exit code 56 means the connection was forcibly reset, the Envoy sidecar on the backend rejected the plaintext request because the client had no mTLS certificate. This is exactly the behavior we want: **no certificate, no access**.
+<!--
+### What Happens Step by Step
 
+1. `curl-test` initiates a plain **HTTP** connection to `backend.zerotrust` (no TLS, no cert)
+2. The request crosses the namespace boundary — Kubernetes networking allows this by default, namespaces are not network firewalls
+3. The request arrives at the **backend's Envoy sidecar**
+4. Envoy checks: _"Does this connection have a valid mTLS certificate?"_
+5. It doesn't — so Envoy **resets the connection**
+-->
 ---
 
 ## Part 3 - Identity-Based Authorization Policies
