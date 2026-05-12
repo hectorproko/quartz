@@ -1,6 +1,5 @@
 ---
 tags:
-  - githubactions
   - servicemesh
   - Kubernetes
   - istio
