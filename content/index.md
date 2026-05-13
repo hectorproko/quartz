@@ -51,7 +51,8 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[Project 22 Deploying applications into a Kubernetes cluster|Deploying applications into a Kubernetes cluster]]
 - [[Project23 Persisting data in Kubernetes|Persisting data in Kubernetes]]
 - [[Project24]] ==Pending==
-
+#### Service Mesh:
+- [[Enforcing Zero Trust Networking in Kubernetes with Istio Service Mesh]]
 ### Linux (stacks):
 - [[LAMP STACK IMPLEMENTATION|LAMP]], [[LEMP STACK IMPLEMENTATION|LEMP]], [[MERN STACK IMPLEMENTATION|MERN]], [[MEAN STACK IMPLEMENTATION|MEAN]] 
 - [[Project6 Web Solution Wordpress|Web Solution Wordpress]] 
