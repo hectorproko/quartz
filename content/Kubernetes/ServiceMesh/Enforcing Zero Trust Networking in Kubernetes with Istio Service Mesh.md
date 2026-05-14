@@ -582,3 +582,17 @@ This table makes the identity model clear, each workload has a distinct service 
 - **Implicit deny-all** removes the risk of misconfigured permissive defaults. Once an ALLOW policy exists, unlisted traffic is automatically blocked.
 
 This pattern, mesh enrollment, mTLS enforcement, identity-based authorization, is the production-ready Zero Trust blueprint for Kubernetes workloads.
+
+
+<!--
+### Post
+Finally got around to getting my hands dirty with Kubernetes Service Mesh using Istio, and it was a really valuable hands-on experience.
+
+I deployed Istio on Minikube, installed the control plane, created a dedicated namespace with automatic Envoy sidecar injection, and deployed a frontend and backend microservices stack, each with its own Service Account identity. I enforced STRICT mutual TLS across all service-to-service traffic using PeerAuthentication and DestinationRule policies, then validated that plaintext connections from outside the mesh were rejected. I also implemented identity-based access control with an AuthorizationPolicy that explicitly allows only the frontend service account to reach the backend, confirming Istio’s implicit deny-all behavior.
+
+This project helped me better understand how Istio fits into the Zero Trust methodology. I learned how it manages traffic for cluster ingress and egress, how it automatically injects a sidecar proxy for application traffic control and telemetry, and how it relies on Envoy as the data plane. One topic that particularly caught my attention was the use of Mutating Admission Webhooks for automatic sidecar injection, which gave me a great opportunity to revisit Kubernetes admission controllers and webhooks with a real use case. 
+
+Overall, it was a very interesting deep dive that strengthened my understanding of modern secure microservices architecture.
+
+#Kubernetes #Istio #ServiceMesh #ZeroTrust #CloudNative #DevOps
+-->
