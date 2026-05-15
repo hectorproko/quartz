@@ -418,3 +418,18 @@ sudo dnf config-manager --set-disabled <repo-name>
 ---
 
 _Lab completed on RHEL 9.7 | Podman container runtime | Apache httpd-24-centos8_
+
+
+<!--
+### Post
+Just finished my first hands-on lab with Podman on RHEL 9, and I’m impressed. If you’ve ever used Docker, the learning curve is almost nonexistent. The commands are nearly identical, podman run, podman ps, podman images, exec into a container, curling a web server, stopping, and cleaning up all feel very familiar.
+
+What really stands out are the daemonless and rootless capabilities. They offer clear advantages in terms of reliability and security, and I’m starting to see why many organizations are preferring Podman over Docker.
+
+Looking forward to diving deeper!
+
+#Podman #Containers #RHEL #Linux #CloudNative #DevOps 
+
+https://hectorproko.github.io/quartz/Podman/Running-My-First-Podman-Container-on-RHEL
+-->
+
