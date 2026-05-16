@@ -18,7 +18,7 @@ Here are some of the projects I've been working on, categorized by technology:
 
 > [!tip] Tags
 > *Hover over them to see related tasks*  
-> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault 
+> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault #SecretsManagement #githubactions #Podman 
    
 ### GitOps
 - [k3s-flux-homelab (Github)](https://github.com/hectorproko/laptop-cluster)
@@ -70,7 +70,11 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Vault
 - [[Installing and Configuring HashiCorp Vault with Consul on Ubuntu]]
 - [[Writing and Testing HashiCorp Vault Policies]]
+### Podman
+- [[Running My First Podman Container on RHEL]]
+- [[Managing Pods Using Podman on RHEL]]
 
+### Github Actions
 
 <!--
 [[Azure Administrator Course for AZ-103 AZ-104|Azure Administrator]]

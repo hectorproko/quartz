@@ -2,6 +2,7 @@
 tags:
   - "#vault"
   - SecretsManagement
+quartz: "True"
 ---
 ## Overview
 
