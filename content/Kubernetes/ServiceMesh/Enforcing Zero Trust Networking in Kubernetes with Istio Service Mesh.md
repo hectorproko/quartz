@@ -3,7 +3,12 @@ tags:
   - servicemesh
   - Kubernetes
   - istio
+linkedin: "True"
+quartz: "True"
 ---
+<!--
+Original [[Lab Enforcing Zero Trust Networking in Kubernetes with Istio Service Mesh]]
+-->
 ## Overview 
 
 In this hands-on lab, I implemented a **Zero Trust networking model** inside a Kubernetes cluster using **Istio**, an open-source service mesh. The goal was to prove that Istio can provide enterprise-grade security before migrating production workloads, specifically by encrypting all service-to-service traffic and enforcing identity-based access control.

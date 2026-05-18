@@ -2,7 +2,12 @@
 tags:
   - Podman
   - RHE
+quartz: "True"
+linkedin: "False"
 ---
+<!--Original Draft
+[[Lab Advanced Container Management Using Podman on RHEL]]
+-->
 ## Overview
 
 In this lab I went beyond the basics of running containers and practiced the day-to-day management skills that are actually needed in production environments. The lab covered four key areas: **persistent storage**, **container networking**, **health monitoring**, and **system resource management**. Each section built on the last, and by the end I had a realistic multi-container web server setup running on RHEL with shared volumes, published ports, health checks, and a cleaned-up system.

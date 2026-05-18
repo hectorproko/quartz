@@ -2,6 +2,8 @@
 tags:
   - githubactions
 title: Setting Up a Custom GitHub Actions Runner on AWS EC2
+quartz: "True"
+linkedin: "False"
 ---
 ## Overview
 

@@ -3,6 +3,7 @@ tags:
   - hands-on
   - Podman
 quartz: "True"
+linkedin: "True"
 ---
 ## Overview
 
@@ -409,3 +410,17 @@ Local Volumes  0      0       0B    0B (0%)
 - **Rootless = better security.** Running pods without root limits the blast radius if a container is compromised.
 - **Pause/unpause requires root.** Freezing processes via cgroups is a privileged operation not available to rootless containers.
 - **Podman pods mirror Kubernetes pods.** The mental model,  shared network, infra container, multi-container lifecycle,  maps directly to how Kubernetes pods work, making this excellent preparation for k8s.
+
+<!--
+### Post
+
+Continuing my Podman series, I recently published a hands-on guide on managing Pods with Podman on RHEL.
+
+In this post, I explore how Podman implements the pod concept (one or more containers sharing the same namespace), just like Kubernetes. I walked through setting up a complete multi-container application, WordPress with a MariaDB database, running inside a Pod, tested in both rootless and rootful modes.
+
+Coming from a Kubernetes and Docker background, the workflow felt very natural. What stood out to me was how rootful pods unlock extra capabilities (like pausing all processes in the pod) due to direct access to kernel cgroups, a great example of seeing theoretical concepts come to life.
+
+Full article here: [https://hectorproko.github.io/quartz/Podman/Managing-Pods-Using-Podman-on-RHEL](https://hectorproko.github.io/quartz/Podman/Managing-Pods-Using-Podman-on-RHEL)
+
+#Podman #Linux #Containers  #RHEL #DevOps
+-->

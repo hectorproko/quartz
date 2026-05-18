@@ -18,7 +18,7 @@ Here are some of the projects I've been working on, categorized by technology:
 
 > [!tip] Tags
 > *Hover over them to see related tasks*  
-> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault #SecretsManagement #githubactions #Podman 
+> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault #SecretsManagement #githubactions #Podman #security #RHEL #SElinux
    
 ### GitOps
 - [k3s-flux-homelab (Github)](https://github.com/hectorproko/laptop-cluster)
@@ -73,18 +73,14 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Podman
 - [[Running My First Podman Container on RHEL]]
 - [[Managing Pods Using Podman on RHEL]]
+- [[Advanced Container Management Using Podman on RHEL]]
 
 ### Github Actions
 
-<!--
-[[Azure Administrator Course for AZ-103 AZ-104|Azure Administrator]]
-[[Azure Devops BC = 2322102810|Azure DevOps]]
-[[Devops BC = 2330070508]]
+### Security
+- [[Configuring System Integrity Attestation with Keylime on RHEL 10]]
+#### SElinux
 
-[[Take-Home Task]]
 
-[[IntelliPaat_Index]]
-
--->
 
 

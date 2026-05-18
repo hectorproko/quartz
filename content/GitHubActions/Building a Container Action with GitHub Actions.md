@@ -1,6 +1,8 @@
 ---
 tags:
   - githubactions
+quartz: "True"
+linkedin: "False"
 ---
 ## Overview
 
