@@ -18,7 +18,7 @@ Here are some of the projects I've been working on, categorized by technology:
 
 > [!tip] Tags
 > *Hover over them to see related tasks*  
-> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault #SecretsManagement #githubactions #Podman #security #RHEL #SElinux#tomcat
+> #AWS #Terraform #IaC #Bash #Ansible #Docker #Linux #CI/CD #Kubernetes #Jenkins #azure #helm #AWSDevOps #Python #vault #SecretsManagement #githubactions #Podman #security #RHEL #SElinux #tomcat
    
 ### GitOps
 - [k3s-flux-homelab (Github)](https://github.com/hectorproko/laptop-cluster)
