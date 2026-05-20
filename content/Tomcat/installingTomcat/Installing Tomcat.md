@@ -1,11 +1,11 @@
 ---
-
 tags:
   - tomcat
   - Linux
   - RHEL
+  - RHEL8
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 title: Deploying Apache Tomcat 9 on Red Hat Enterprise Linux 8
 hardlinked: "True"
 ---
