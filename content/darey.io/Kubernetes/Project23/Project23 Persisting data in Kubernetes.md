@@ -6,9 +6,10 @@ tags:
   - AWS
   - EBS
   - ConfigMaps
+  - "#PersistentVolumes"
 hardlinked: "True"
-quartz: "False"
-linkedin: "False"
+quartz: "True"
+linkedin: "True"
 ---
 *~~(original [Project 23](https://github.com/hectorproko/PERSISTING-DATA-IN-KUBERNETES/blob/main/Project23_Steps.md))~~*
 
@@ -658,3 +659,17 @@ Without restarting the pod, the page now reflects the updated ConfigMap content:
 |**ConfigMap**|Configuration files (not data storage)|✅ Yes (survives pod restarts)|N/A - stored in etcd|
 
 Each approach has its place. Direct EBS attachment is simple but brittle. PVCs with a StorageClass are the production-grade solution for stateful data. ConfigMaps solve the narrower problem of keeping configuration files consistent and updatable without rebuilding or restarting pods.
+
+
+### Post
+
+Just completed refactoring and cleaning up a previous **Persisting Data in Kubernetes** on EKS documentation.
+
+This project tackles one of the most important challenges in Kubernetes: data persistence. 
+
+I also explore mounting volumes, common troubleshooting (like pods stuck in Pending), and using **ConfigMaps** to persist and dynamically update configuration without rebuilding images.
+
+[https://hectorproko.github.io/quartz/darey.io/Kubernetes/Project23/Project23-Persisting-data-in-Kubernetes](https://hectorproko.github.io/quartz/darey.io/Kubernetes/Project23/Project23-Persisting-data-in-Kubernetes)
+
+
+#Kubernetes #EKS #AWS #DevOps #CloudNative #PersistentVolumes #Storage #Containerization
