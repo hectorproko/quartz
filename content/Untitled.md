@@ -1,3 +1,0 @@
-<iframe src="https://hectorproko.github.io/quartz/Intellipaat/Azure-Administrator-Course-for-AZ-103-AZ-104" allow="fullscreen" allowfullscreen="" style="height:100%;width:100%; aspect-ratio: 16 / 9; "></iframe>
-
-5. [Managing Azure Storage Accounts Across Resource Groups](https://hectorproko.github.io/quartz/Intellipaat/Assignments/Azure/Azure-Administrator/Module2/Assignment1/Assignment-1_Module2_Azure-Administrator-Course-for-AZ-103-AZ-104)

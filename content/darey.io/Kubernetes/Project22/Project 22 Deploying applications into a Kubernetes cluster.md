@@ -3,298 +3,215 @@ title: Deploying Applications into a Kubernetes Cluster
 tags:
   - Kubernetes
   - EKS
+  - AWS
+  - CloudFormation
+hardlinked: "True"
+quartz: "True"
+linkedin: "False"
 ---
-*~~(old [Project 22](https://github.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/blob/main/Project22_Steps.md))~~*
+*~~(original [Project 22](https://github.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/blob/main/Project22_Steps.md))
 
-PROJECT 22 showcases the deployment and configuration of an Nginx web server in a Kubernetes cluster. The project involves various steps such as creating a Kubernetes cluster, deploying pods and services, configuring a LoadBalancer, using Deployments and **ReplicaSets**.
+## Overview
 
-## UNDERSTANDING THE CONCEPT
+In this project I deploy and configure an Nginx web server inside an Amazon EKS (Elastic Kubernetes Service) cluster. The goal is to get hands-on experience with core Kubernetes objects, Pods, Services, ReplicaSets, and Deployments, while understanding how they interact to keep applications running reliably at scale. I also explore the ephemeral nature of Pods and what that means for data persistence.
 
-- The service object in Kubernetes routes traffic to pods.
-- The service's type can be ClusterIP, which acts as an internal load balancer.
-- The service forwards requests to pods based on their respective selector labels.
-- Pods have virtual IP addresses assigned by Kubernetes network plugins.
-- Pods can have different IP addresses from the servers they are running on.
+**Tools & Technologies:** Kubernetes · Amazon EKS · AWS CLI · CloudFormation · kubectl · Nginx
 
-<!--
-Self Side Task
-- Build the Tooling app Dockerfile and push it to Dockerhub registry.
-- Write a Pod and a Service manifests to ensure access to the Tooling app's frontend using port-forwarding.
--->
+---
 
-#### Expose a Service on a Server's Public IP Address & Static Port
-- NodePort service type exposes the service on a static port on the node's IP address.
-- NodePorts are in the range of 30000-32767 by default.
-- NodePort allows direct access to the application using the node's public IP address and appended port.
-- Inbound traffic to the NodePort range needs to be allowed in the EC2's Security Group.  
-*(NodePort is typically used for accessing services from outside the cluster when there is no cloud provider load balancer available)*  
+## Key Concepts
 
-#### Maintaining Desired Number of Pods
-- **ReplicaSet** (**RS**) object ensures a stable set of pod replicas running.
-- RS guarantees the availability of a specified number of identical pods.
+Before diving into the steps it helps to understand a few Kubernetes fundamentals that come up throughout the project:
 
-*Note: **ReplicaSets** are recommended over the older ReplicationController (RC) object.*
+- **Service objects** route external or internal traffic to the correct Pods. They use **selector labels** to find matching Pods, so a Pod must carry the right label to receive traffic from a given Service.
+- The default Service type is **ClusterIP**, which acts as an internal load balancer, it is only reachable from inside the cluster.
+- **Pods** receive virtual IP addresses from the Kubernetes network plugin. These IPs are separate from the node's IP and change every time a Pod is recreated, which is why relying on a Pod IP directly is a bad practice.
+- A **NodePort** Service exposes an application on a static port (range 30000–32767) on each node's public IP, useful when no cloud load balancer is available. The NodePort range must be open in the EC2 Security Group.
+- A **ReplicaSet (RS)** ensures a stable, declared number of Pod replicas are always running.
 
-## COMMON KUBERNETES OBJECTS  
+---
 
-1. **Pod**: A Pod is the smallest deployable unit in Kubernetes. It represents a single instance of a running process in a cluster. Pods can contain one or more containers that are tightly coupled and share resources.
+## Setting Up Kubernetes on AWS (EKS)
 
-2. **Namespace**: A Namespace provides a way to group and isolate resources within a cluster. It allows multiple teams or projects to share the same cluster while keeping their resources separate.
+### Creating the VPC Stack
 
-3. **ReplicaSet**: A ReplicaSet ensures that a specified number of Pod replicas are running at all times. It is used to scale and manage the lifecycle of Pods. ReplicaSets are typically managed by higher-level controllers like Deployments.
+I start by provisioning the networking layer with an AWS CloudFormation stack. This creates the VPC with public and private subnets that the EKS cluster will live inside.
 
-4. **Deployment**: A Deployment provides declarative updates for Pods and ReplicaSets. It manages the creation and scaling of ReplicaSets, making it easier to manage application deployments and updates.
+```bash
+aws cloudformation create-stack \
+  --region us-east-1 \
+  --stack-name my-eks-vpc-stack \
+  --template-url https://s3.us-west-2.amazonaws.com/amazon-eks/cloudformation/2020-10-29/amazon-eks-vpc-private-subnets.yaml
+```
 
-5. **StatefulSet**: A StatefulSet is similar to a ReplicaSet but is used for managing stateful applications. It provides guarantees about the ordering and uniqueness of Pods, making it suitable for applications that require stable network identities and persistent storage.
+**Output:**
 
-6. **DaemonSet**: A DaemonSet ensures that a copy of a Pod is running on each node in the cluster. It is useful for running system daemons or agents that need to be present on every node.
-
-7. **Service**: A Service is an abstraction that defines a logical set of Pods and a policy for accessing them. It provides a stable network endpoint to access the Pods, allowing for load balancing and service discovery.
-
-8. **ConfigMap**: A ConfigMap is used to store configuration data as key-value pairs. It allows you to separate configuration from the container images and make it easier to manage and update configurations.
-
-9. **Volume**: A Volume is used to provide persistent storage for containers in a Pod. It allows data to outlive the lifecycle of individual containers and can be shared between containers within the same Pod.
-
-10. **Job/CronJob**: A Job represents a task or a batch job that runs to completion. It ensures that a specified number of Pods successfully complete their tasks before terminating. CronJob is a type of Job that runs on a schedule.
-
-The common YAML fields for every Kubernetes object include:
-
-- `kind`: Specifies the type of Kubernetes object being created, such as Pod, Deployment, or Service.
-- `version`: Indicates the version of the Kubernetes API used to create the resource.
-- `metadata`: Provides information about the resource, such as its name, labels, and annotations.
-- `spec`: Contains the core information about the resource, defining its desired state. This includes details like container images, number of replicas, environment variables, and volumes.
-- `status`: Represents the current status of the object and is updated by Kubernetes after creation. This field is not typically included in the YAML manifest provided by the user.
-
-These fields help define the characteristics and behavior of the Kubernetes objects and guide Kubernetes in managing and maintaining the desired state of the cluster.
-
-
-
-## Kubernetes on AWS (EKS)
-
-So following [Getting started with Amazon EKS – AWS Management Console and AWS CLI - Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html)
-
-Once again we will utilize the existing **AWS CLI** setup *(from [Project 15](https://github.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/blob/main/Project15_Steps.md))* using sub-account **DevOps**
-
-<!--
-Need to put the part of setup
-54. Kubernetes on AWS (EKS)
--->
-
-Create Stack
-``` css
-hector@hector-Laptop:~/Project22$ aws cloudformation create-stack \
-> --region us-east-1 \
-> --stack-name my-eks-vpc-stack \
-> --template-url https://s3.us-west-2.amazonaws.com/amazon-eks/cloudformation/2020-10-29/amazon-eks-vpc-private-subnets.yaml
+```json
 {
     "StackId": "arn:aws:cloudformation:us-east-1:199055125796:stack/my-eks-vpc-stack/1fbf1cc0-1842-11ed-b05c-0e1c47e12f6b"
 }
-hector@hector-Laptop:~/Project22$
 ```
 
-<!--kube user is for EKS not creating Stack-->
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/stacks.png)
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/stacks.png)
 
+---
 
-As per [aws documentation](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html)
+### Creating the IAM Cluster Role
 
-Create a cluster **IAM** role and attach the required Amazon **EKS** **IAM** managed policy to it. Kubernetes clusters managed by Amazon **EKS** make calls to other AWS services on our behalf to manage the resources that we use with the service.
+EKS needs permission to call other AWS services (like EC2 and ELB) on our behalf. I create a dedicated IAM role and attach the required managed policy to it.
 
-1. We create file `cluster-role-trust-policy.json`.  
-    ```css
+**Step 1 - Create the trust policy file** (`cluster-role-trust-policy.json`). This tells AWS that the EKS service is allowed to assume this role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
     {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Effect": "Allow",
-          "Principal": {
-            "Service": "eks.amazonaws.com"
-          },
-          "Action": "sts:AssumeRole"
-        }
-      ]
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "eks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
     }
-    ```
-
-
-2. Created the role **myAmazonEKSClusterRole**.  
-  `--assume-role-policy-document` is used during role creation to define the trust policy document, which determines who can assume the role.  
-
-```css
-    hector@hector-Laptop:~$ aws iam create-role \
-    >   --role-name myAmazonEKSClusterRole \
-    >   --assume-role-policy-document file://"cluster-role-trust-policy.json"
-    {
-        "Role": {
-            "Path": "/",
-            "RoleName": "myAmazonEKSClusterRole",
-            "RoleId": "AROAS4WE4FUSEZXBGIH4R",
-            "Arn": "arn:aws:iam::199055125796:role/myAmazonEKSClusterRole",
-            "CreateDate": "2022-07-26T13:26:57Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "eks.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            }
-        }
-    }
+  ]
+}
 ```
 
-3. Attach the required Amazon **EKS** managed **IAM** policy (**AmazonEKSClusterPolicy**) to the role (**myAmazonEKSClusterRole**).
+**Step 2 - Create the role** using `--assume-role-policy-document` to attach the trust policy at creation time:
 
-    `attach-role-policy` is used to attach an **IAM** policy to an existing role, granting permissions and actions to the role.  
-
-    ```css
-    hector@hector-Laptop:~$ aws iam attach-role-policy \
-    >   --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy \
-    >   --role-name myAmazonEKSClusterRole
-    hector@hector-Laptop:~$
-    ```
-
-
-**Creating Cluster** 
-
-<details close>
-<summary>Using the <b>Console</b> (web-based graphical user interface):</summary>
-
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/clusters.png)
-
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/configure.png)
-
-Notice how the role we previously created appears as an option  
-
-Click **Next** to **Specify networking**
-
-Make sure I pick the VPC created by the stack leave everything else default
-
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/specifynetworking.png)
-
-Click **Next** to  **Configure logging (leave defaults)**
-
-Click **Next** to **Review and create**
-
-Click **Create**
-
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/project22cluster.png)
-
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/project22cluster2.png)
-
-We need to specify the IDs of the VPC we want when creating cluster from **AWS CLI**
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/subnets.png)
-</details>
-
-
-<details close>
-<summary>Using <b>AWS CLI</b>:</summary>
-
-```css
-hector@hector-Laptop:~/Project22$ aws eks create-cluster --profile kube --region us-east-1 --name Project22 --kubernetes-version 1.22 \
->    --role-arn arn:aws:iam::199055125796:role/myAmazonEKSClusterRole \
->    --resources-vpc-config subnetIds=subnet-039252ecb19e19d4e,subnet-09d3ea8fadca3b869,subnet-0c015424187074885,subnet-040dadfc9ad38ed59
-CLUSTER arn:aws:eks:us-east-1:199055125796:cluster/Project22    2022-08-09T22:03:06.047000-04:00        Project22       eks.5   arn:aws:iam::199055125796:role/myAmazonEKSClusterRole   CREATING        1.22
-KUBERNETESNETWORKCONFIG ipv4    10.100.0.0/16
-CLUSTERLOGGING  False
-TYPES   api
-TYPES   audit
-TYPES   authenticator
-TYPES   controllerManager
-TYPES   scheduler
-RESOURCESVPCCONFIG      False   True    vpc-0b531a7a1ca65e1c8
-PUBLICACCESSCIDRS       0.0.0.0/0
-SUBNETIDS       subnet-039252ecb19e19d4e
-SUBNETIDS       subnet-09d3ea8fadca3b869
-SUBNETIDS       subnet-0c015424187074885
-SUBNETIDS       subnet-040dadfc9ad38ed59
-hector@hector-Laptop:~/Project22$
+```bash
+aws iam create-role \
+  --role-name myAmazonEKSClusterRole \
+  --assume-role-policy-document file://"cluster-role-trust-policy.json"
 ```
-</details><br>
 
-**Configuring Computer to Communicate with Kubernetes Cluster**  
+**Output:**
 
-- Deleted the existing kubeconfig file located at `~/.kube/config` to make way for a new configuration.  
+```json
+{
+    "Role": {
+        "Path": "/",
+        "RoleName": "myAmazonEKSClusterRole",
+        "RoleId": "AROAS4WE4FUSEZXBGIH4R",
+        "Arn": "arn:aws:iam::199055125796:role/myAmazonEKSClusterRole",
+        "CreateDate": "2022-07-26T13:26:57Z"
+    }
+}
+```
 
-- This **AWS CLI** command is used to update the kubeconfig file with the necessary configuration for accessing the **EKS** cluster named "Project22" in the AWS region "us-east-1". The --profile option specifies the AWS profile to use for authentication and authorization.  
-  ``` css
-  hector@hector-Laptop:~/Project22$ aws eks update-kubeconfig --profile kube --region us-east-1 --name Project22
-  Added new context arn:aws:eks:us-east-1:199055125796:cluster/Project22 to /home/hector/.kube/config
-  ```
+**Step 3 - Attach the `AmazonEKSClusterPolicy` managed policy** to grant the role its EKS permissions:
 
-- This kubectl command is used to retrieve information about the Kubernetes cluster. It provides details such as the URL of the Kubernetes control plane and the URL of CoreDNS, which is responsible for DNS resolution within the cluster.
-  ``` css
-  hector@hector-Laptop:~/Project22$ kubectl cluster-info
-  Kubernetes control plane is running at https://522B9ADEF131F42CC77EB11C3FB33A42.gr7.us-east-1.eks.amazonaws.com
-  CoreDNS is running at https://522B9ADEF131F42CC77EB11C3FB33A42.gr7.us-east-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+```bash
+aws iam attach-role-policy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy \
+  --role-name myAmazonEKSClusterRole
+```
 
-  To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-  hector@hector-Laptop:~/Project22$
-  ```
-  ![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/clusterinfo.png)
+No output on success, an empty response from `attach-role-policy` confirms the policy was attached.
 
-- I attempted to create a **Pod** in the Kubernetes cluster, the **Pod** remained in the "Pending" state.   
-*(In Kubernetes, a "Pending" status means that the **Pod** has been scheduled to run on a node but is waiting for the necessary resources, such as CPU and memory, to become available)*  
+---
 
-- The cause was that the cluster had no active worker nodes available to schedule  and run Pods.  
-*(Worker nodes are responsible for executing and hosting Pods in a Kubernetes cluster)*
+### Creating the EKS Cluster
 
-- To address the problem, I had to create a **Node group**.  
-  (**Node group**s are a way to provision and manage worker nodes in an Amazon **EKS** cluster. By creating a **Node group**, we added worker nodes to the cluster, providing the necessary resources for Pods to be scheduled and run)  
+With the VPC and IAM role ready, I create the EKS cluster via the AWS CLI, referencing the subnet IDs from the CloudFormation stack and the role ARN from the previous step:
 
-  ![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/configureNodeGroup.png)
-  *(Everything else defaults)*  
+```bash
+aws eks create-cluster \
+  --profile kube \
+  --region us-east-1 \
+  --name Project22 \
+  --kubernetes-version 1.22 \
+  --role-arn arn:aws:iam::199055125796:role/myAmazonEKSClusterRole \
+  --resources-vpc-config subnetIds=subnet-039252ecb19e19d4e,subnet-09d3ea8fadca3b869,subnet-0c015424187074885,subnet-040dadfc9ad38ed59
+```
 
-  ![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/nodegroups.png)
+**Output (abbreviated):**
 
+```
+CLUSTER  arn:aws:eks:us-east-1:199055125796:cluster/Project22  Project22  CREATING  1.22
+KUBERNETESNETWORKCONFIG  ipv4  10.100.0.0/16
+RESOURCESVPCCONFIG  vpc-0b531a7a1ca65e1c8
+```
 
+The `CREATING` status confirms the cluster is being provisioned. In the AWS Console, the role created earlier appears as a selectable option during the cluster wizard, which is a good way to visually verify everything is wired up correctly.
 
-<details close>
-<summary>Once we delete the <b>Node group</b>, whatever <b>pod</b> was running disappears</summary>
+<!-- IMAGE: media/logo-8.png — Console cluster creation wizard showing the IAM role --> 
+<!-- IMAGE: media/logo-7.png — Console showing cluster in ACTIVE state -->
 
-``` css
-hector@hector-Laptop:~/Project22$ cat nginx-pod.yaml
+---
+
+### Configuring kubectl to Communicate with the Cluster
+
+Once the cluster is active, I need to point my local `kubectl` at it. I first delete the old kubeconfig file at `~/.kube/config` to avoid stale contexts, then run the `update-kubeconfig` command to generate a fresh one:
+
+```bash
+aws eks update-kubeconfig --profile kube --region us-east-1 --name Project22
+```
+
+**Output:**
+
+```
+Added new context arn:aws:eks:us-east-1:199055125796:cluster/Project22 to /home/hector/.kube/config
+```
+
+I can verify connectivity with `kubectl cluster-info`, which returns the control plane and CoreDNS endpoints:
+
+```bash
+kubectl cluster-info
+```
+
+**Output:**
+
+```
+Kubernetes control plane is running at https://522B9ADEF131F42CC77EB11C3FB33A42.gr7.us-east-1.eks.amazonaws.com
+CoreDNS is running at https://...eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+```
+
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/clusterinfo.png)
+
+#### Troubleshooting: Pods Stuck in Pending State
+
+After configuring kubectl I tried to create a Pod, but it stayed in `Pending` status indefinitely.
+
+**Root cause:** The cluster had no worker nodes. In EKS, the control plane is managed by AWS, but worker nodes must be added separately. A `Pending` Pod means Kubernetes has accepted the request but cannot find a node with the resources to run it.
+
+**Fix:** I created a **Node Group** through the AWS Console, which provisions EC2 instances and registers them as worker nodes in the cluster. Once the Node Group was active, newly created Pods could be scheduled and transitioned to `Running`.
+
+```bash
+# After the Node Group was created, applying a pod manifest now succeeds
+kubectl apply -f nginx-pod.yaml
+# pod/nginx-pod created
+
+kubectl get pods -o wide
+```
+
+**Output:**
+
+```
+NAME        READY   STATUS    RESTARTS   AGE   IP               NODE
+nginx-pod   1/1     Running   0          31s   192.168.13.153   ip-192-168-10-26.ec2.internal
+```
+
+![Example Image|500](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/configureNodeGroup.png)
+
+![Example Image|600](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/nodegroups.png)
+
+---
+
+## Deploying and Accessing Nginx
+
+### Creating the Nginx Pod
+
+With worker nodes available, I define the Nginx Pod in a YAML manifest. The `containerPort: 80` declaration is informational, it tells Kubernetes which port the container listens on, but does not expose it outside the cluster by itself.
+
+```yaml
+# nginx-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-pod
-spec:
-  containers:
-    - image: nginx:latest
-      name: nginx-pod
-      ports:
-      - containerPort: 80
-        protocol: TCP
-
-hector@hector-Laptop:~/Project22$ kubectl apply -f nginx-pod.yaml
-pod/nginx-pod created
-
-hector@hector-Laptop:~/Project22$ kubectl get pods -o wide
-NAME        READY   STATUS              RESTARTS   AGE   IP       NODE                            NOMINATED NODE   READINESS GATES
-nginx-pod   0/1     ContainerCreating   0          7s    <none>   ip-192-168-10-26.ec2.internal   <none>           <none>
-
-hector@hector-Laptop:~/Project22$ kubectl get pods -o wide
-NAME        READY   STATUS    RESTARTS   AGE   IP               NODE                            NOMINATED NODE   READINESS GATES
-nginx-pod   1/1     Running   0          31s   192.168.13.153   ip-192-168-10-26.ec2.internal   <none>           <none>
-```
-</details>
-
-
-
-## ACCESSING THE APP FROM THE BROWSER
-
-Let's create a **Pod** named **nginx-pod** by defining a YAML manifest on master node.  
-
-```css
-sudo cat <<EOF | sudo tee ./nginx-pod.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx-pod
+  labels:
+    app: nginx-pod
 spec:
   containers:
   - image: nginx:latest
@@ -302,90 +219,32 @@ spec:
     ports:
     - containerPort: 80
       protocol: TCP
-EOF
 ```
-We should have a YAML file named nginx-pod.yaml with the necessary specifications for the **Pod**. It defines a single container running the latest version of the nginx image, named **nginx-pod**. Port 80 is exposed using the TCP protocol.
 
-To create the **Pod** we apply the manifest using `kubectl`  
-```css
+```bash
 kubectl apply -f nginx-pod.yaml
-pod/nginx-pod created <<< output
+# pod/nginx-pod created
+
+kubectl get pods
 ```
 
-To verify the status of the running Pods in the cluster `kubectl get pods`
-```css
+**Output:**
+
+```
 NAME        READY   STATUS    RESTARTS   AGE
 nginx-pod   1/1     Running   0          19m
 ```
 
+> **Why not use the Pod's IP directly?** Pods are ephemeral, when one dies and is replaced, it receives a new IP address. Any client hard-coded to the old IP breaks. Kubernetes solves this with a **Service** object that provides a stable DNS name and IP regardless of which Pod instances are behind it.
 
-<!--
-We use **kubectl** to create a new Pod named "curl" and allocate an interactive shell within the container to run the `curl` command inside the container to perform a `GET` request to verify that the nginx service is up and running properly
+---
 
-<details close>
-<summary>Output</summary>
-##An example of using the IP directly to access the pod
-``` css
-hector@hector-Laptop:~/Project22$ kubectl run curl --image=dareyregistry/curl -i --tty
-If you don't see a command prompt, try pressing enter.
-/ # curl -v 192.168.13.153:80
-> GET / HTTP/1.1
-> User-Agent: curl/7.35.0
-> Host: 192.168.13.153
-> Accept: */*
->
-< HTTP/1.1 200 OK
-< Server: nginx/1.23.1
-< Date: Wed, 10 Aug 2022 03:00:26 GMT
-< Content-Type: text/html
-< Content-Length: 615
-< Last-Modified: Tue, 19 Jul 2022 14:05:27 GMT
-< Connection: keep-alive
-< ETag: "62d6ba27-267"
-< Accept-Ranges: bytes
-<
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-html { color-scheme: light dark; }
-body { width: 35em; margin: 0 auto;
-font-family: Tahoma, Verdana, Arial, sans-serif; }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
+### Creating the ClusterIP Service
 
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
+I create a Service manifest that selects the Nginx Pod using its `app: nginx-pod` label. The default `ClusterIP` type makes the service reachable only from inside the cluster.
 
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-/ #
-```
-*(In the provided output, the response indicates an HTTP status code of 200 OK)*
-</details>
--->
-
-
-
-*Assuming that the requirement is to access the Nginx **Pod** internally, using the Pod’s IP address directly is not a reliable choice because Pods are ephemeral. They are not designed to run forever. When they die and another **Pod** is brought back up, the IP address will change and any application that is using the previous IP address directly will break.*  
-*To solve this problem, kubernetes uses **Service** – An object that abstracts the underlining IP addresses of Pods. A service can serve as a load balancer, and a reverse proxy which basically takes the request using a human readable DNS name, resolves to a **Pod** IP that is running and forwards the request to it. This way, we do not need to use an IP address. Rather, we can simply refer to the service name directly.*
-
-
-Since we want to provide access to the **Nginx Pod** from the outside world, such as a web browser, we create a **Service**.
-
-1. Create a Service `yaml` manifest file `nginx-service.yaml`
-
-
-``` css
-hector@hector-Laptop:~/Project22$ cat nginx-service.yaml
+```yaml
+# nginx-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -399,80 +258,86 @@ spec:
       targetPort: 80
 ```
 
-Apply the manifest using the `kubectl apply -f nginx-service.yaml` command. This creates the **Service** in the Kubernetes cluster.
-```
-hector@hector-Laptop:~/Project22$ kubectl apply -f nginx-service.yaml
-service/nginx-service created
+```bash
+kubectl apply -f nginx-service.yaml
+# service/nginx-service created
+
+kubectl get service
 ```
 
-To verify that the **Service** is created, run `kubectl get service` command. This will list the Services in our cluster, including the newly created nginx-service.
+**Output:**
+
 ```
-hector@hector-Laptop:~/Project22$ kubectl get service
 NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
 kubernetes      ClusterIP   10.100.0.1     <none>        443/TCP   56m
 nginx-service   ClusterIP   10.100.15.31   <none>        80/TCP    64s
 ```
-*(The output will show the CLUSTER-IP, PORT(S), and other information about the **Service**. Note that the EXTERNAL-IP is \<none> at this stage, indicating that the **Service** is not yet externally accessible)*  
 
-Attempting to port forward using `kubectl port-forward` command to forward traffic from local port 8089 to port 80 of the nginx-service results in a timeout error. This error occurs because the **Pod** associated with the **Service** does not have the necessary labels for the **Service** to select it.
+The `EXTERNAL-IP` is `<none>` at this point, that is expected for a ClusterIP Service, since it is only accessible internally.
+
+#### Troubleshooting: Port-Forward Timeout Due to Missing Labels
+
+I attempted to forward local port 8089 to the service to test it in a browser:
+
+```bash
+kubectl port-forward svc/nginx-service 8089:80
+❌ error: timed out waiting for the condition
 ```
-hector@hector-Laptop:~/Project22$ kubectl port-forward svc/nginx-service 8089:80
-error: timed out waiting for the condition
+
+**Root cause:** The Service uses a **selector** (`app: nginx-pod`) to find Pods to route traffic to. The original Pod manifest did not include that label, so the Service could not find any backing Pod and the forward timed out.
+
+✅ **Fix:** I deleted the existing Pod, added the matching label to the Pod manifest (`labels: app: nginx-pod`), and reapplied it. Once the label was present the Service selector matched and port-forwarding worked immediately.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx-pod
+spec:
+  containers:
+  - image: nginx:latest
+    name: nginx-pod
+    ports:
+    - containerPort: 80
+      protocol: TCP
 ```
 
-To establish the required connection, we need to modify the **Pod** manifest to include **labels** that align with the **selectors** specified in the **Service** manifest.
+```bash
+kubectl delete pod nginx-pod
 
-1. Deleted the existing **Pod** to start fresh `kubectl delete pod nginx-pod`
-2. Updated the YAML manifest file of the pod `nginx-pod.yaml` with the necessary changes (added labels)
-    ``` css
-    hector@hector-Laptop:~/Project22$ cat nginx-pod.yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: nginx-pod
-      labels:
-        app: nginx-pod
-    spec:
-      containers:
-      - image: nginx:latest
-        name: nginx-pod
-        ports:
-        - containerPort: 80
-          protocol: TCP
-    ```
+# After updating nginx-pod.yaml with the label:
+kubectl apply -f nginx-pod.yaml
+# pod/nginx-pod created
 
-3. Applied the updated manifest file creating a new pod 
-    ```css
-    hector@hector-Laptop:~/Project22$ kubectl apply -f nginx-pod.yaml
-    pod/nginx-pod created
-    ```
+kubectl port-forward svc/nginx-service 8089:80
+```
 
-This output signifies that now the port forwarding is functioning correctly. Requests made to `127.0.0.1:8089` or `[::1]:8089` on our local machine will be redirected to port 80 of the Nginx service.  
-```css
-hector@hector-Laptop:~/Project22$ kubectl  port-forward svc/nginx-service 8089:80
+**Output:**
+
+```
 Forwarding from 127.0.0.1:8089 -> 80
 Forwarding from [::1]:8089 -> 80
 Handling connection for 8089
 Handling connection for 8089
 ```
 
+Accessing `127.0.0.1:8089` in a text browser confirms the Nginx welcome page loads successfully.
+
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/testingNginxPod.gif)
 
 
-When we execute the command `lynx 127.0.0.1:8089`, the Nginx web page will appear in the lynx text-based web browser. This confirms that we can now access the Nginx service running on the **Pod** through the forwarded port.  
+---
 
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/testingNginxPod.gif)
+## Working with ReplicaSets
 
+### Basic ReplicaSet
 
+A **ReplicaSet** guarantees that a specified number of identical Pod replicas are running at all times. If a Pod is deleted, the ReplicaSet automatically creates a replacement. I define one with 3 replicas:
 
-
-
-
-## CREATE A REPLICA SET
-
-Let us create a **rs.yaml** manifest for a **ReplicaSet** object. **ReplicaSet** (**RS**) object ensures a stable set of pod replicas running
-
-```css
-# Part 1
+```yaml
+# rs.yaml
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
@@ -482,7 +347,6 @@ spec:
   selector:
     matchLabels:
       app: nginx-pod
-# Part 2
   template:
     metadata:
       name: nginx-pod
@@ -495,111 +359,76 @@ spec:
         ports:
         - containerPort: 80
           protocol: TCP
-
 ```
 
-The **ReplicaSet** named **nginx-rs** was created successfully.  
-```css
-hector@hector-Laptop:~/Project22$ kubectl apply -f rs.yaml
-replicaset.apps/nginx-rs created
+```bash
+kubectl apply -f rs.yaml
+# replicaset.apps/nginx-rs created
+
+kubectl get pods
 ```
-Listed the pods using `kubectl get pods` command. It shows the status of the existing pods, including nginx-pod and the pods managed by the **ReplicaSet** (**nginx-rs-6qshv** and **nginx-rs-ch9tp**).  
-``` css
-hector@hector-Laptop:~/Project22$ kubectl get pods
+
+**Output:**
+
+```
 NAME             READY   STATUS    RESTARTS   AGE
 nginx-pod        1/1     Running   0          49m
 nginx-rs-6qshv   1/1     Running   0          17m
 nginx-rs-ch9tp   1/1     Running   0          17m
 ```
 
-Deleting one of the **ReplicaSet** pods **nginx-rs-ch9tp** 
-```
-hector@hector-Laptop:~/Project22$ kubectl delete pod nginx-rs-ch9tp
-pod "nginx-rs-ch9tp" deleted
+To test self-healing, I delete one of the ReplicaSet Pods:
+
+```bash
+kubectl delete pod nginx-rs-ch9tp
+# pod "nginx-rs-ch9tp" deleted
+
+kubectl get pods
 ```
 
-Listing the pods it shows that a new **ReplicaSet** pod **nginx-rs-tqvs8** was created to maintain the desired number of replicas.  
+**Output:**
+
 ```
-hector@hector-Laptop:~/Project22$ kubectl get pods
 NAME             READY   STATUS    RESTARTS   AGE
 nginx-pod        1/1     Running   0          50m
 nginx-rs-6qshv   1/1     Running   0          18m
-nginx-rs-tqvs8   1/1     Running   0          21s
+nginx-rs-tqvs8   1/1     Running   0          21s   ← new replacement pod
 ```
 
-Listing the **ReplicaSets** shows **nginx-rs** with the desired, current, and ready replicas set to 3. 
-```
-hector@hector-Laptop:~/Project22$ kubectl get rs -o wide
-NAME       DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES         SELECTOR
-nginx-rs   3         3         3       19m   nginx-pod    nginx:latest   app=nginx-pod
-```
+The ReplicaSet immediately created `nginx-rs-tqvs8` to replace the deleted Pod and bring the count back to 3. Running `kubectl get rs -o wide` confirms the desired/current/ready state:
 
 ```
-hector@hector-Laptop:~/Project22$ kubectl describe rs nginx-rs
-Name:         nginx-rs
-Namespace:    default
-Selector:     app=nginx-pod
-Labels:       <none>
-Annotations:  <none>
-Replicas:     3 current / 3 desired
-Pods Status:  3 Running / 0 Waiting / 0 Succeeded / 0 Failed
-Pod Template:
-  Labels:  app=nginx-pod
-  Containers:
-   nginx-pod:
-    Image:        nginx:latest
-    Port:         80/TCP
-    Host Port:    0/TCP
-    Environment:  <none>
-    Mounts:       <none>
-  Volumes:        <none>
-Events:
-  Type    Reason            Age   From                   Message
-  ----    ------            ----  ----                   -------
-  Normal  SuccessfulCreate  19m   replicaset-controller  Created pod: nginx-rs-6qshv
-  Normal  SuccessfulCreate  19m   replicaset-controller  Created pod: nginx-rs-ch9tp
-  Normal  SuccessfulCreate  106s  replicaset-controller  Created pod: nginx-rs-tqvs8
+NAME       DESIRED   CURRENT   READY   AGE   SELECTOR
+nginx-rs   3         3         3       19m   app=nginx-pod
 ```
 
-**Scaling the ReplicaSet:** We can use the **imperative** command `kubectl scale` to scale up the **ReplicaSet** named **nginx-rs** to have 5 replicas.  
+I can also scale the ReplicaSet imperatively without editing the manifest:
 
-``` css
-hector@hector-Laptop:~/Project22$ kubectl scale rs nginx-rs --replicas=5
-replicaset.apps/nginx-rs scaled
+```bash
+kubectl scale rs nginx-rs --replicas=5
+
+kubectl get pods
 ```
 
-There are now a total of 5 pods running, including the original nginx-pod and the newly created pods by the **ReplicaSet**.
+**Output:**
+
 ```
-hector@hector-Laptop:~/Project22$ kubectl get pods
 NAME             READY   STATUS    RESTARTS   AGE
 nginx-pod        1/1     Running   0          54m
 nginx-rs-6qshv   1/1     Running   0          23m
 nginx-rs-gzn6q   1/1     Running   0          26s
 nginx-rs-hkpfm   1/1     Running   0          26s
 nginx-rs-tqvs8   1/1     Running   0          5m6s
-hector@hector-Laptop:~/Project22$
-```
-The **ReplicaSet** name **nginx-rs** has been scaled to have 5 replicas.
-``` css
-hector@hector-Laptop:~/Project22$ kubectl get rs
-NAME       DESIRED   CURRENT   READY   AGE
-nginx-rs   5         5         5       29m
 ```
 
-Deleting previous **ReplicaSet**
-```
-hector@hector-Laptop:~/Project22$ kubectl delete rs nginx-rs
-replicaset.apps "nginx-rs" deleted
-hector@hector-Laptop:~/Project22$
-```
+---
 
-The new **ReplicaSet** manifest `rs2.yaml` introduces more advanced label selection and customization options.
-``` css
-hector@hector-Laptop:~/Project22$ cat rs2.yaml
-apiVersion: apps/v1
-kind: ReplicaSet
-metadata:
-  name: nginx-rs
+### Advanced Label Selection with matchExpressions
+
+The first ReplicaSet used a simple `matchLabels` selector. A second manifest (`rs2.yaml`) demonstrates more expressive selection using `matchExpressions`, which supports operators like `In`, `NotIn`, and `Exists`:
+
+```yaml
+# rs2.yaml
 spec:
   replicas: 3
   selector:
@@ -609,40 +438,35 @@ spec:
     - { key: tier, operator: In, values: [frontend] }
   template:
     metadata:
-      name: nginx
       labels:
         env: prod
         tier: frontend
-    spec:
-      containers:
-      - name: nginx-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-          protocol: TCP
 ```
 
-The new **ReplicaSet** `nginx-rs` with the advanced label selection and customization options has been created.  
-```
-hector@hector-Laptop:~/Project22$ kubectl apply -f rs2.yaml
-replicaset.apps/nginx-rs created
-```
+```bash
+kubectl apply -f rs2.yaml
+# replicaset.apps/nginx-rs created
 
-The **ReplicaSet** `nginx-rs` now has a desired replica count of 3, and all replicas are running and ready. The selector specifies that the replicas should have labels matching `env=prod` and `tier=frontend`.  
-```
-hector@hector-Laptop:~/Project22$ kubectl get rs nginx-rs -o wide
-NAME       DESIRED   CURRENT   READY   AGE   CONTAINERS        IMAGES         SELECTOR
-nginx-rs   3         3         3       15s   nginx-container   nginx:latest   env=prod,tier in (frontend)
+kubectl get rs nginx-rs -o wide
 ```
 
+**Output:**
 
-## USING AWS LOAD BALANCER TO ACCESS OUR SERVICE IN KUBERNETES.
+```
+NAME       DESIRED   CURRENT   READY   AGE   SELECTOR
+nginx-rs   3         3         3       15s   env=prod,tier in (frontend)
+```
 
-We previously used the ClusterIP service type to access the Nginx service internally. Now, we'll switch to the LoadBalancer service type, which creates an actual load balancer in AWS. This allows us to expose the Nginx service to the external world and benefit from load balancing capabilities provided by the external load balancer. <br>
+The SELECTOR column confirms that both criteria, `env=prod` and `tier in (frontend)`, must be satisfied for a Pod to be managed by this ReplicaSet.
 
-New service manifest using the LoadBalancer type:  
-``` css
-hector@hector-Laptop:~/Project22$ cat nginx-service.yaml
+---
+
+## Exposing the Service via AWS Load Balancer
+
+Using ClusterIP or port-forwarding is fine for internal testing, but for real external access on AWS we switch the Service type to `LoadBalancer`. Kubernetes automatically provisions an AWS Elastic Load Balancer and routes public traffic to the Pods.
+
+```yaml
+# nginx-service.yaml (updated)
 apiVersion: v1
 kind: Service
 metadata:
@@ -657,107 +481,46 @@ spec:
       targetPort: 80
 ```
 
-Applying the manifest to create the service:  
-```
-hector@hector-Laptop:~/Project22$ kubectl apply -f nginx-service.yaml
-service/nginx-service configured
+```bash
+kubectl apply -f nginx-service.yaml
+# service/nginx-service configured
+
+kubectl get service nginx-service
 ```
 
-Retrieving information about the service shows it is of type LoadBalancer:  
+**Output:**
+
 ```
-hector@hector-Laptop:~/Project22$ kubectl get service nginx-service
 NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)        AGE
 nginx-service   LoadBalancer   10.100.15.31   a0e08a526ccb04426acb64895c03dc0d-651336585.us-east-1.elb.amazonaws.com   80:30466/TCP   95m
 ```
 
-If we navigate to the AWS console, we can confirm that the Load Balancer was created along with associated tags.  
-<!--
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/createLB.png)
--->
+Two things to notice in this output:
 
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/description.png)
+- **EXTERNAL-IP** is now an AWS ELB DNS hostname, this is the public address to hit from a browser.
+- **PORT(S)** shows `80:30466/TCP`, meaning port 80 on the load balancer maps to NodePort 30466 on the worker nodes. The NodePort range (30000–32767) must be open in the EC2 Security Group inbound rules.
 
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/tags.png)  
+Even though the Service type is `LoadBalancer`, Kubernetes still assigns a `clusterIP` internally to route traffic from the load balancer through the cluster. The ELB is the public entry point; the clusterIP handles internal forwarding.
 
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/description.png)
 
-In the following command output, we are retrieving the YAML representation of the nginx-service **Service** object. The YAML provides detailed information about the service configuration, including annotations, creation timestamp, finalizers, metadata, spec, and status.
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/tags.png)
 
-<details close>
-<summary>kubectl get service nginx-service -o yaml</summary>
+Using the DNS name of the load balancer `a0e08a526ccb04426acb64895c03dc0d-651336585.us-east-1.elb.amazonaws.com`, I tested the service by accessing it in a web browser.
 
-``` css
-hector@hector-Laptop:~/Project22$ kubectl get service nginx-service -o yaml
-apiVersion: v1
-kind: Service
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"nginx-service","namespace":"default"},"spec":{"ports":[{"port":80,"protocol":"TCP","targetPort":80}],"selector":{"tier":"frontend"},"type":"LoadBalancer"}}
-  creationTimestamp: "2022-08-10T03:04:53Z"
-  finalizers:
-  - service.kubernetes.io/load-balancer-cleanup
-  name: nginx-service
-  namespace: default
-  resourceVersion: "25770"
-  uid: 0e08a526-ccb0-4426-acb6-4895c03dc0da
-spec:
-  allocateLoadBalancerNodePorts: true
-  clusterIP: 10.100.15.31
-  clusterIPs:
-  - 10.100.15.31
-  externalTrafficPolicy: Cluster
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
-  ports:
-  - nodePort: 30466
-    port: 80
-    protocol: TCP
-    targetPort: 80
-  selector:
-    tier: frontend
-  sessionAffinity: None
-  type: LoadBalancer
-status:
-  loadBalancer:
-    ingress:
-    - hostname: a0e08a526ccb04426acb64895c03dc0d-651336585.us-east-1.elb.amazonaws.com
-hector@hector-Laptop:~/Project22$
-```
-</details>
-
-*A clusterIP key is updated in the manifest and assigned an IP address. Even though we have specified a Loadbalancer service type, internally it still requires a clusterIP to route the external traffic through.*
-
-*In the ports section, nodePort is still used. This is because Kubernetes still needs to use a dedicated port on the worker node to route the traffic through. Ensure that port range 30000-32767 is opened in our inbound Security Group configuration.*
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/testingNginxLoadBalancer.gif)
 
 
-Using the DNS name of the load balancer `a0e08a526ccb04426acb64895c03dc0d-651336585.us-east-1.elb.amazonaws.com`, I tested the service by accessing it in a web browser.
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/testingNginxLoadBalancer.gif)  
+---
 
+## Using Deployment Controllers
 
+While ReplicaSets work, the recommended approach is to use a **Deployment**, which wraps and manages a ReplicaSet and adds powerful capabilities on top: rolling updates, rollback history, and declarative state management.
 
+### Creating a Deployment
 
-## USING DEPLOYMENT CONTROLLERS
-
-Officially, it is highly recommended to use Deployments to manage replica sets rather than using replica sets directly.  
-
-A Deployment is another layer above **ReplicaSets** and Pods, newer and more advanced level concept than **ReplicaSets**. It manages the deployment of **ReplicaSets** and allows for easy updating of a **ReplicaSet** as well as the ability to roll back to a previous version of deployment. It is declarative and can be used for rolling updates of micro-services, ensuring there is no downtime.  
-
-<!--
-If I scale to 15 with the name of the replicate set, it is brought down to 3, because the replicaset was a result of a deployment and the demployment is set to 3, so terminates untils it goes down to 3
--->
-
-<details close>
-<summary>In this series of commands, we demonstrate the behavior of a Kubernetes Deployment and its associated ReplicaSet.</summary>
-
-``` css
-hector@hector-Laptop:~/Project22$ kubectl delete rs nginx-rs
-replicaset.apps "nginx-rs" deleted
-```
-Initially, we created a Deployment, specifying 3 replicas of a pod running the nginx container. This Deployment automatically created a **ReplicaSet** to manage these pods, maintaining the desired state of 3 active nginx pods
-```
-hector@hector-Laptop:~/Project22$ cat deployment.yaml
+```yaml
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -778,236 +541,167 @@ spec:
       - name: nginx
         image: nginx:latest
         ports:
-        - containerPort: 8
+        - containerPort: 80
 ```
+
+```bash
+kubectl apply -f deployment.yaml
+# deployment.apps/nginx-deployment created
+
+kubectl get deployment
 ```
-hector@hector-Laptop:~/Project22$ kubectl apply -f deployment.yaml
-deployment.apps/nginx-deployment created
+
+**Output:**
+
 ```
-```
-hector@hector-Laptop:~/Project22$ kubectl get deployment
 NAME               READY   UP-TO-DATE   AVAILABLE   AGE
 nginx-deployment   3/3     3            3           20s
 ```
+
+The Deployment automatically created a ReplicaSet to manage the Pods:
+
+```bash
+kubectl get rs
 ```
-hector@hector-Laptop:~/Project22$ kubectl get rs
+
+**Output:**
+
+```
 NAME                          DESIRED   CURRENT   READY   AGE
 nginx-deployment-5cb44ffccf   3         3         3       32s
 ```
-```
-hector@hector-Laptop:~/Project22$ kubectl get pods
-NAME                                READY   STATUS    RESTARTS   AGE
-nginx-deployment-5cb44ffccf-4m86n   1/1     Running   0          44s
-nginx-deployment-5cb44ffccf-8rrkf   1/1     Running   0          44s
-nginx-deployment-5cb44ffccf-p8w6q   1/1     Running   0          44s
+
+---
+
+### Declarative Control: Deployment Overrides Manual ReplicaSet Scaling
+
+This experiment demonstrates a key principle of Kubernetes Deployments, the desired state always wins. I manually scale the underlying ReplicaSet to 15 replicas to see what happens:
+
+```bash
+kubectl scale rs nginx-deployment-5cb44ffccf --replicas=15
+# replicaset.apps/nginx-deployment-5cb44ffccf scaled
+
+kubectl get pods
 ```
 
-Later, we attempted to manually scale the **ReplicaSet** to 15 replicas using the `kubectl scale` command. However, as the **ReplicaSet** is managed by a Deployment, the Deployment immediately noticed this change and reverted it back to the desired state of 3 replicas. This was evident from the 'Terminating' status of the additional pods.
+**Output (immediately after):**
+
 ```
-hector@hector-Laptop:~/Project22$ kubectl scale rs nginx-deployment-5cb44ffccf --replicas=15
-replicaset.apps/nginx-deployment-5cb44ffccf scaled
-```
-```
-hector@hector-Laptop:~/Project22$ kubectl get pods
 NAME                                READY   STATUS        RESTARTS   AGE
 nginx-deployment-5cb44ffccf-4m86n   1/1     Running       0          2m16s
 nginx-deployment-5cb44ffccf-87bqs   1/1     Terminating   0          6s
 nginx-deployment-5cb44ffccf-8rrkf   1/1     Running       0          2m16s
 nginx-deployment-5cb44ffccf-lsgcc   1/1     Terminating   0          6s
-nginx-deployment-5cb44ffccf-mcwjr   1/1     Terminating   0          6s
-nginx-deployment-5cb44ffccf-p8w6q   1/1     Running       0          2m16s
-nginx-deployment-5cb44ffccf-pr2lf   1/1     Terminating   0          6s
-nginx-deployment-5cb44ffccf-qjhrl   1/1     Terminating   0          6s
-nginx-deployment-5cb44ffccf-wvlzn   1/1     Terminating   0          6s
+...
 ```
+
+The Deployment controller detected that the ReplicaSet no longer matched the desired state of 3 replicas and immediately began terminating the extra Pods. A moment later:
+
+```bash
+kubectl get pods
 ```
-hector@hector-Laptop:~/Project22$ kubectl get pods
+
+**Output:**
+
+```
 NAME                                READY   STATUS    RESTARTS   AGE
 nginx-deployment-5cb44ffccf-4m86n   1/1     Running   0          2m41s
 nginx-deployment-5cb44ffccf-8rrkf   1/1     Running   0          2m41s
 nginx-deployment-5cb44ffccf-p8w6q   1/1     Running   0          2m41s
 ```
-```
-hector@hector-Laptop:~/Project22$ kubectl get deployment
-NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-nginx-deployment   3/3     3            3           5m52s
-```
 
-This exercise essentially illustrates the declarative nature of Deployments in Kubernetes. When a **ReplicaSet** is managed by a Deployment, the Deployment ensures that the desired state is preserved. Any manual changes to the **ReplicaSet** are overridden by the Deployment to maintain the state defined in the Deployment specification.
-</details>
+Back to exactly 3. This illustrates the **declarative nature** of Deployments, the spec is the source of truth, and the controller continuously reconciles the live state to match it. Any manual change to the ReplicaSet is treated as drift and corrected automatically.
 
+---
 
-<details close>
-<summary>Exec into one of the Pod’s container to run Linux commands</summary>
+### Exec into a Pod Container
 
-```css
-hector@hector-Laptop:~/Project22$ kubectl get pods
-NAME                                READY   STATUS    RESTARTS   AGE
-nginx-deployment-5cb44ffccf-4m86n   1/1     Running   0          7m23s
-nginx-deployment-5cb44ffccf-8rrkf   1/1     Running   0          7m23s
-nginx-deployment-5cb44ffccf-p8w6q   1/1     Running   0          7m23s
+Sometimes you need to inspect what is happening inside a running container. `kubectl exec` opens an interactive shell:
+
+```bash
+kubectl exec -it nginx-deployment-5cb44ffccf-4m86n bash
 ```
 
-```css
-hector@hector-Laptop:~/Project22$ kubectl exec -it nginx-deployment-5cb44ffccf-4m86n bash
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+From inside the container I can inspect the Nginx configuration:
+
+```bash
+ls -ltr /etc/nginx/
 ```
 
-```css
-root@nginx-deployment-5cb44ffccf-4m86n:/# ls -ltr /etc/nginx/
+**Output:**
+
+```
 total 24
 -rw-r--r-- 1 root root  664 Jul 19 14:05 uwsgi_params
 -rw-r--r-- 1 root root  636 Jul 19 14:05 scgi_params
 -rw-r--r-- 1 root root 5349 Jul 19 14:05 mime.types
 -rw-r--r-- 1 root root 1007 Jul 19 14:05 fastcgi_params
 -rw-r--r-- 1 root root  648 Jul 19 15:06 nginx.conf
-lrwxrwxrwx 1 root root   22 Jul 19 15:06 modules -> /usr/lib/nginx/modules
 drwxr-xr-x 1 root root   26 Aug 10 04:53 conf.d
 ```
 
-```css
-root@nginx-deployment-5cb44ffccf-4m86n:/# cat  /etc/nginx/conf.d/default.conf
+```bash
+cat /etc/nginx/conf.d/default.conf
+```
+
+**Output (excerpt):**
+
+```nginx
 server {
     listen       80;
-    listen  [::]:80;
     server_name  localhost;
-
-    #access_log  /var/log/nginx/host.access.log  main;
 
     location / {
         root   /usr/share/nginx/html;
         index  index.html index.htm;
     }
-
-    #error_page  404              /404.html;
-
-    # redirect server error pages to the static page /50x.html
-    #
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-
-    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
-    #
-    #location ~ \.php$ {
-    #    proxy_pass   http://127.0.0.1;
-    #}
-
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    #location ~ \.php$ {
-    #    root           html;
-    #    fastcgi_pass   127.0.0.1:9000;
-    #    fastcgi_index  index.php;
-    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
-    #    include        fastcgi_params;
-    #}
-
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    #location ~ /\.ht {
-    #    deny  all;
-    #}
 }
-
-root@nginx-deployment-5cb44ffccf-4m86n:/#
-```
-</details>
-
-## PERSISTING DATA FOR PODS
-*(In [Project 23](https://github.com/hectorproko/PERSISTING-DATA-IN-KUBERNETES/blob/main/Project23_Steps.md), we demonstrate how to persist data)*  
-
-When a **Pod** is deleted in Kubernetes, any data stored within that **Pod**'s container is lost. Pods in Kubernetes are **ephemeral**, meaning they can be created, deleted, and replaced dynamically. This behavior is intentional to ensure scalability, fault-tolerance, and efficient resource utilization.
-
-First we Scale the Pods down to 1 replica.
-``` css
-hector@hector-Laptop:~/Project22$ kubectl get deployment
-NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-nginx-deployment   3/3     3            3           20m
-
-hector@hector-Laptop:~/Project22$ kubectl autoscale deployment nginx-deployment --max=1 --min=1
-horizontalpodautoscaler.autoscaling/nginx-deployment autoscaled
-
-hector@hector-Laptop:~/Project22$ kubectl get deployment
-NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-nginx-deployment   3/3     3            3           21m
-
-hector@hector-Laptop:~/Project22$ kubectl get deployment
-NAME               READY   UP-TO-DATE   AVAILABLE   AGE
-nginx-deployment   1/1     1            1           21m
 ```
 
-Confirming that we currently have only one pod running.
+> **Note:** The `kubectl exec [POD] [COMMAND]` syntax is deprecated. The current recommended form is `kubectl exec [POD] -- [COMMAND]`.
+
+---
+
+## Persisting Data for Pods
+
+Pods in Kubernetes are **ephemeral**, when a Pod is deleted, any data written inside its container is permanently lost. To demonstrate this, I scale the deployment down to a single replica, exec in, and edit the Nginx `index.html` to display a custom message.
+
+```bash
+kubectl autoscale deployment nginx-deployment --max=1 --min=1
+
+kubectl get pods
 ```
-hector@hector-Laptop:~/Project22$ kubectl get pods
+
+**Output:**
+
+```
 NAME                                READY   STATUS    RESTARTS   AGE
 nginx-deployment-5cb44ffccf-ws8b5   1/1     Running   0          9m9s
-hector@hector-Laptop:~/Project22$
 ```
 
-<!--
-How I figured out to scale https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
--->
+Inside the Pod I install `vim`, edit `/usr/share/nginx/html/index.html`, and change the `<h1>` to read **"Welcome to an EDITED PAGE!"**. The browser confirms the change:
 
-Accessing the running pod *(nginx-deployment-5cb44ffccf-ws8b5)* using `exec`. Performing an `apt-get update` and installing `vim` to enable editing of the **index.html** file.
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/editedPage.png)
 
-``` css
-hector@hector-Laptop:~/Project22$ kubectl exec -it nginx-deployment-5cb44ffccf-ws8b5 bash
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+When the Pod is deleted, Kubernetes creates a fresh replacement from the original image, and the edit is gone.
 
-root@nginx-deployment-5cb44ffccf-ws8b5:/# apt-get update
-Get:1 http://deb.debian.org/debian bullseye InRelease [116 kB]
-Get:2 http://deb.debian.org/debian-security bullseye-security InRelease [48.4 kB]
-Get:3 http://deb.debian.org/debian bullseye-updates InRelease [44.1 kB]
-Get:4 http://deb.debian.org/debian bullseye/main amd64 Packages [8182 kB]
-Get:5 http://deb.debian.org/debian-security bullseye-security/main amd64 Packages [175 kB]
-Get:6 http://deb.debian.org/debian bullseye-updates/main amd64 Packages [2592 B]
-Fetched 8567 kB in 2s (5092 kB/s)
-Reading package lists... Done
+![Example Image](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/editedNginxPage.gif)
 
-root@nginx-deployment-5cb44ffccf-ws8b5:/# apt-get install vim
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-...
-```
+This behavior is **by design**. Pods are intentionally stateless to support scalability and fault tolerance. Persisting data across Pod restarts requires a dedicated storage solution such as **PersistentVolumes** and **PersistentVolumeClaims**, which are covered in the follow-up project.
 
-After editing the page, we modify it to display the message "**Welcome to an EDITED PAGE!**". To confirm the changes, we can check the content of the index.html file by running the command `cat /usr/share/nginx/html/index.html`.
+---
 
-``` css
-root@nginx-deployment-5cb44ffccf-ws8b5:/# cat /usr/share/nginx/html/index.html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-html { color-scheme: light dark; }
-body { width: 35em; margin: 0 auto;
-font-family: Tahoma, Verdana, Arial, sans-serif; }
-</style>
-</head>
-<body>
-<h1>Welcome to an EDITED PAGE!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
+## Summary
 
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
+| Concept                | What I Practiced                                                |
+| ---------------------- | --------------------------------------------------------------- |
+| EKS Cluster Setup      | VPC stack, IAM role, cluster creation, kubeconfig               |
+| Pod                    | Defined and deployed an Nginx Pod via YAML manifest             |
+| Service (ClusterIP)    | Exposed the Pod internally; used port-forwarding                |
+| Service (LoadBalancer) | Provisioned an AWS ELB for external access                      |
+| ReplicaSet             | Ensured desired replica count; tested self-healing and scaling  |
+| Deployment             | Managed ReplicaSets declaratively; observed reconciliation loop |
+| kubectl exec           | Inspected and modified a running container                      |
+| Ephemeral Storage      | Demonstrated data loss on Pod deletion                          |
 
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-root@nginx-deployment-5cb44ffccf-ws8b5:/#
-```
-
-Below is the updated output of the page viewed in a web browser after editing the content of the pod  
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/editedPage.png
-)  
-
-Below we see what happens when we delete the pod and refresh the page. We lose the change made in **index.html**  
-![logo](https://raw.githubusercontent.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/main/images/editedNginxPage.gif)
-
+---
