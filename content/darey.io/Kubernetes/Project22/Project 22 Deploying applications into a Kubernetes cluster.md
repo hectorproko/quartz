@@ -705,3 +705,17 @@ This behavior is **by design**. Pods are intentionally stateless to support scal
 | Ephemeral Storage      | Demonstrated data loss on Pod deletion                          |
 
 ---
+
+<!--
+### Post
+Just finished refactoring and cleaning up an old project documentation where I deployed applicatios into a Kubernetes Cluster (EKS)**.
+
+The project walks through provisioning a full EKS cluster using AWS CloudFormation, then dives into deploying real applications using core Kubernetes resources.
+
+It covers Pods and their ephemeral nature, ReplicaSets, Deployments with scaling and rolling updates, as well as different Service types, especially ClusterIP and LoadBalancer to expose applications both internally and externally. You’ll also find practical sections on label selectors, common troubleshooting scenarios, and key considerations when running workloads on AWS EKS.
+
+#Kubernetes #EKS #AWS #DevOps #CloudNative #Containerization
+
+https://hectorproko.github.io/quartz/darey.io/Kubernetes/Project22/Project-22-Deploying-applications-into-a-Kubernetes-cluster
+
+-->
