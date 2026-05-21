@@ -7,7 +7,7 @@ tags:
   - CloudFormation
 hardlinked: "True"
 quartz: "True"
-linkedin: "False"
+linkedin: "True"
 ---
 ~~(original [Project 22](https://github.com/hectorproko/DEPLOYING-APPLICATIONS-INTO-KUBERNETES-CLUSTER/blob/main/Project22_Steps.md))
 
