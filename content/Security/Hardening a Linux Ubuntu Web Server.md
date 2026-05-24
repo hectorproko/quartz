@@ -1,11 +1,10 @@
 ---
-
 tags:
   - hardening
   - Linux
   - security
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 refactored: "False"
 pluralsight: "True"
 hands-on: "True"

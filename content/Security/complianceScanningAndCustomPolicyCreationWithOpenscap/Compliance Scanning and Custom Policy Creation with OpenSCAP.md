@@ -1,5 +1,4 @@
 ---
-
 tags:
   - draft
   - security
@@ -14,6 +13,7 @@ refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 hardlinked: "True"
+title: Compliance Scanning and Custom Policy Creation with OpenSCAP
 ---
 ## Overview
 
