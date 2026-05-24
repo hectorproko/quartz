@@ -341,6 +341,7 @@ Port 389 (LDAP) is gone. Only the three ports required for this server's functio
 
 Hardening is not a one-time task, it is an ongoing process. This lab covered foundational steps: removing unnecessary exposure, enforcing least privilege on administrative access, and implementing host-based firewall rules. In a production environment, additional steps would include disabling port 80 in favor of HTTPS-only, configuring fail2ban to block brute-force attempts, and auditing user accounts regularly.
 
+Diving move into the security side sysems staring out with hardenign an apache server running in ubuntu, first i remeove unecessary exposure, surface attacks, least privilege on admin access, impleted host based firewall
 
 <!--
 

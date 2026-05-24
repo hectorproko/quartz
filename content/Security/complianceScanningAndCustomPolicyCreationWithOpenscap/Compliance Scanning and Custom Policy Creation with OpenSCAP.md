@@ -13,7 +13,7 @@ refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 hardlinked: "True"
-title: Compliance Scanning and Custom Policy Creation with OpenSCAP
+title: Compliance Scanning and Policy Creation with OpenSCAP
 ---
 ## Overview
 
