@@ -269,7 +269,7 @@ sudo ausearch -m AVC -ts recent | grep apachelogger
 recenet keyword for  10minutes
 [[ausearch (Audit Search)|ausearch]]
 --> 
-[[AVC (Access Vector Cache)]] [[ausearch (Audit Search)|ausearch]]
+[[AVC (Access Vector Cache)]] 
 **Example output (relevant AVC lines):**
 
 ```
