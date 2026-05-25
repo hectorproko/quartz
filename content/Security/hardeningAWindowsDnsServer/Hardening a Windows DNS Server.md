@@ -5,8 +5,8 @@ tags:
   - security
   - applocker
   - server2022
-linkedin: "False"
-quartz: "False"
+linkedin: "True"
+quartz: "True"
 refactored: "True"
 pluralsight: "True"
 hands-on: "True"
@@ -228,7 +228,14 @@ Nmap done: 1 IP address (1 host up) scanned in 23.16 seconds
 This lab reinforced a fundamental mindset in system hardening: **start from a position of denial and explicitly allow only what is needed.** Whether it's open ports, installed roles, enabled accounts, running services, or executable applications, if it isn't required for the server's primary function, it should be removed or disabled.
 
 <!--
+#### DRAFT ######
+Continuing my journey into server security and hardening, I recently worked on a Windows Server 2022 DNS server. Starting with a baseline Nmap scan to assess the initial attack surface, I removed the unnecessary IIS role (which was exposing port 80), hardened user accounts by renaming the default Administrator account and disabling unused ones, and disabled non-essential services such as Print Spooler, ActiveX Installer, and Downloaded Maps Manager. I also applied the principle of least functionality by configuring AppLocker to restrict which applications can run on the server.
 
+This followed the same core mindset as my Linux hardening project: identify what’s exposed, eliminate what’s not needed, and reduce the overall attack surface.
+#Cybersecurity #WindowsServer #ServerHardening #DNS #InfoSec
+https://hectorproko.github.io/quartz/Security/hardeningAWindowsDnsServer/Hardening-a-Windows-DNS-Server
+
+-------------------------------------------
 ```
 ## OBJECTIVE 2
 
