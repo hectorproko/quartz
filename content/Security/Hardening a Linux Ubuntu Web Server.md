@@ -3,9 +3,9 @@ tags:
   - hardening
   - Linux
   - security
-linkedin: "False"
+linkedin: "True"
 quartz: "True"
-refactored: "False"
+refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 hardlinked: "True"
@@ -13,7 +13,7 @@ hardlinked: "True"
 
 **Lab Environment:** 
 Ubuntu Server - `172.31.24.10` 
-[[Nmap]] - `172.31.24.30` 
+[[Nmap (Network Mapper)]] - `172.31.24.30` 
 **Tools Used:** `nmap`, `vi`, `systemctl`, `apt`, `ufw`
 
 ---
@@ -339,12 +339,19 @@ Port 389 (LDAP) is gone. Only the three ports required for this server's functio
 |Enable firewall|`ufw allow` + `ufw enable`|Only SSH, HTTP, HTTPS permitted|
 |Verify hardening|`nmap 172.31.24.10`|Confirmed port 389 closed, firewall active|
 
-Hardening is not a one-time task, it is an ongoing process. This lab covered foundational steps: removing unnecessary exposure, enforcing least privilege on administrative access, and implementing host-based firewall rules. In a production environment, additional steps would include disabling port 80 in favor of HTTPS-only, configuring fail2ban to block brute-force attempts, and auditing user accounts regularly.
+Hardening is not a one-time task, it is an ongoing process. This lab covered foundational steps: removing unnecessary exposure, enforcing least privilege on administrative access, and implementing host-based firewall rules. In a production environment, additional steps would include disabling port 80 in favor of HTTPS-only, configuring [[fail2ban]] to block brute-force attempts, and auditing user accounts regularly.
 
-Diving move into the security side sysems staring out with hardenign an apache server running in ubuntu, first i remeove unecessary exposure, surface attacks, least privilege on admin access, impleted host based firewall
+
 
 <!--
+#### POST ####
+### Post
+Diving deeper into the security side of systems, I started with a hands-on hardening exercise on an Apache server running Ubuntu. I focused on reducing the attack surface by removing unnecessary services and packages, enforcing least privilege principles,  including disabling direct root SSH access, and implementing a host-based firewall with UFW. Starting from a default setup, I trimmed the open ports significantly, keeping only those required for the server's function. This exercise reinforced core security practices like minimizing exposure and following the principle of least privilege.
 
+#Cybersecurity #Linux #ServerHardening
+https://hectorproko.github.io/quartz/Security/Hardening-a-Linux-Ubuntu-Web-Server
+
+------------------------------------------------------
 #### DRAFT#####
 ## OBJECTIVE 1
 

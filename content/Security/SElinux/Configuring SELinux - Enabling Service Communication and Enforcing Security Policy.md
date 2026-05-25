@@ -1,12 +1,14 @@
 ---
-
 title: "Configuring SELinux: Enabling Service Communication and Enforcing Security Policy"
 tags:
   - selinux
   - RHEL
-quartz: "False"
+  - hands-on
+quartz: "True"
 linkedin: "False"
 hardlinked: "True"
+refactored: "True"
+pluralsight: "True"
 ---
 ## Overview
 
@@ -116,11 +118,11 @@ zabbix_run_sudo --> off
 
 ### Understanding SELinux Modes
 
-|Mode|Behavior|
-|---|---|
-|`Enforcing`|Actively blocks policy violations and logs them|
-|`Permissive`|Logs violations but **does not block**, useful for testing|
-|`Disabled`|SELinux is completely off, not recommended|
+| Mode         | Behavior                                                   |
+| ------------ | ---------------------------------------------------------- |
+| `Enforcing`  | Actively blocks policy violations and logs them            |
+| `Permissive` | Logs violations but **does not block**, useful for testing |
+| `Disabled`   | SELinux is completely off, not recommended                 |
 
 The system was in **permissive** mode, which means violations were being logged but not stopped. The network team needed it in **enforcing** mode to properly test security behavior.
 
@@ -223,11 +225,179 @@ SELINUXTYPE=targeted
 
 ## Commands Reference
 
-|Command|Purpose|
-|---|---|
-|`getsebool -a \| grep <name>`|List and filter SELinux booleans|
-|`setsebool -P <boolean> on\|off`|Set a boolean persistently|
-|`getenforce`|Show current SELinux mode|
-|`setenforce 1\|0`|Switch mode at runtime (non-persistent)|
-|`vi /etc/selinux/config`|Edit persistent SELinux config|
-|`cat /etc/selinux/config`|Verify config file contents|
+| Command                          | Purpose                                 |
+| -------------------------------- | --------------------------------------- |
+| `getsebool -a \| grep <name>`    | List and filter SELinux booleans        |
+| `setsebool -P <boolean> on\|off` | Set a boolean persistently              |
+| `getenforce`                     | Show current SELinux mode               |
+| `setenforce 1\|0`                | Switch mode at runtime (non-persistent) |
+| `vi /etc/selinux/config`         | Edit persistent SELinux config          |
+| `cat /etc/selinux/config`        | Verify config file contents             |
+
+
+<!--
+
+**"Enabling Service Communication"** → refers to **Part 1**, where you used `setsebool` to allow `httpd` to talk to Zabbix.
+
+By default, SELinux blocks services from communicating with each other unless explicitly permitted. You _enabled_ that communication channel by flipping the boolean on. Without this step, Zabbix simply wouldn't work through `httpd` — SELinux would silently block it.
+
+---
+
+**"Enforcing Security Policy"** → refers to **Part 2 & 3**, where you switched SELinux from `Permissive` to `Enforcing` mode and made it persistent.
+
+In permissive mode, SELinux watches but doesn't act — it's essentially not protecting anything. Switching to enforcing mode means the security policy is now _actively applied_. That's the whole point of SELinux existing on the system.
+
+
+**Cloud Server public instance**
+
+Username
+cloud_user
+
+Password
+7|Cxw(g^
+
+Private ip address of public instance
+10.0.0.31
+
+Public ip address of public instance
+54.91.128.208
+## Lab Overview
+
+In this lab we will edit SELinux settings, using booleans to allow communications between services. Then we will place SELinux into _enforcing_ mode and ensure that setting is persistent.
+
+_This course is not approved or sponsored by Red Hat._
+
+# Configuring SELinux
+
+_This course is not approved or sponsored by Red Hat._
+
+## Introduction
+
+The network team needs help setting up SELinux to function with their new Zabbix network monitoring application. We need configure SELinux to permit `httpd` to communicate with Zabbix. Then we have to put SELinux into enforcing mode so that the network team can test our settings. We need to be sure enforcing mode is persistent.
+
+## Setting Up the Environment
+
+1. Open your terminal application, and log in to the environment using the credentials provided on the lab instructions page. (Remember to replace `<PUBLIC_IP_ADDRESS>` with the actual public IP address.)
+
+```
+ssh cloud_user@&lt;PUBLIC_IP_ADDRESS&gt;
+```
+
+2. Type `yes` at the prompt.
+    
+3. Enter your password at the prompt.
+    
+4. Become `root` (by executing `su -`).
+    
+
+## Permit `httpd` to Communicate with Zabbix
+
+1. Find the necessary boolean to permit `httpd` to communicate with Zabbix
+
+```
+[root@host]# getsebool -a | grep zabbix
+```
+
+We'll see the boolean is _off_
+
+2. Set the boolean to "on"
+
+```
+[root@host]# setsebool -P httpd_can_connect_zabbix on
+```
+
+3. Verify that change took effect
+
+```
+[root@host]# getsebool -a | grep zabbix
+```
+
+Now we'll see that the boolean is _on_.
+
+my output
+```
+[cloud_user@ip-10-0-0-31 ~]$ sudo su
+[sudo] password for cloud_user:
+[root@ip-10-0-0-31 cloud_user]# getsebool -a | grep zabbix
+httpd_can_connect_zabbix   off
+zabbix_can_network   off
+zabbix_run_sudo   off
+[root@ip-10-0-0-31 cloud_user]# setsebool -P httpd_can_connect_zabbix on
+[root@ip-10-0-0-31 cloud_user]# getsebool -a | grep zabbix
+httpd_can_connect_zabbix  on
+zabbix_can_network   off
+zabbix_run_sudo   off
+[root@ip-10-0-0-31 cloud_user]#
+```
+## Put SELinux into _enforcing_ Mode and Ensure That the Setting Is Persistent
+
+1. Check the SELinux state
+
+```
+[root@host]# getenforce
+```
+
+This will show that it is in _permissive_ mode, so we need to change it to _enforcing_ mode.
+
+2. Put SELinux into enforcing mode
+
+```
+[root@host]# setenforce 1
+```
+
+3. Check to make sure SELinux is now in enforcing mode
+
+```
+[root@host]# getenforce
+```
+
+We can see our change worked and SELinux is now in enforcing mode.
+
+4. Ensure SELinux boots into enforcing mode
+    
+    Edit the SELinux configuration file:
+    
+    ```
+    [root@host]# vi /etc/selinux/config
+    ```
+    
+    Type `i` to enter _Insert_ mode, arrow down to the `SELINUX` line, and set it to `enforcing`:
+    
+    ```
+    SELINUX=enforcing
+    ```
+    
+    Type `Esc`, then `:wq` to exit. When the server boots again, SELinux will remain in _enforcing_ mode.
+    
+
+```
+[root@ip-10-0-0-31 cloud_user]# getenforce
+Permissive
+[root@ip-10-0-0-31 cloud_user]# setenforce 1
+[root@ip-10-0-0-31 cloud_user]# getenforce
+Enforcing
+[root@ip-10-0-0-31 cloud_user]# vi /etc/selinux/config
+[root@ip-10-0-0-31 cloud_user]# cat /etc/selinux/config
+
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+SELINUX=enforcing
+# SELINUXTYPE= can take one of three two values:
+#     targeted - Targeted processes are protected,
+#     minimum - Modification of targeted policy. Only selected processes are protected.
+#     mls - Multi Level Security protection.
+SELINUXTYPE=targeted
+
+
+[root@ip-10-0-0-31 cloud_user]#
+```
+## Conclusion
+
+Congratulations, you've successfully completed this hands-on lab!
+
+Refactored ✅ [[Configuring SELinux - Enabling Service Communication and Enforcing Security Policy]]
+
+

@@ -1,9 +1,10 @@
 ---
-
 tags:
   - RHEL
   - "#windows"
   - activedirectory
+  - server2022
+  - RHEL9
 linkedin: "False"
 quartz: "False"
 hardlinked: "True"
