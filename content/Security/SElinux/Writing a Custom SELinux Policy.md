@@ -34,7 +34,7 @@ semanage port -a -t http_port_t -p tcp 8080   # assign a port type
 
 ## Environment
 
-**OS:** RHEL 9 (AWS cloud instance) 
+**OS:** RHEL 9 (AWS cloud instance)
 **Tools used:** `sepolicy`, `ausearch`, `audit2allow`, `vim`, `systemctl`, `ps`
 
 ---
@@ -270,6 +270,7 @@ recenet keyword for  10minutes
 [[ausearch (Audit Search)|ausearch]]
 --> 
 [[AVC (Access Vector Cache)]] 
+
 **Example output (relevant AVC lines):**
 
 ```
