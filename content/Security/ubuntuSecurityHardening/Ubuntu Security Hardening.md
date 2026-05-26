@@ -1,9 +1,14 @@
 ---
-
 tags:
-  - draft
+  - Linux
+  - ubuntu
+  - security
+  - ufw
+  - apparmor
+  - hardening
+  - auditd
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 refactored: "True"
 pluralsight: "True"
 hands-on: "True"
@@ -822,7 +827,7 @@ The security boundary was intact after refinement, this is the point of `aa-logp
 ---
 
 ## Skills Demonstrated
-[[sshd]]
+
 
 |Tool / Technique|What I Did|
 |---|---|
@@ -846,6 +851,9 @@ The security boundary was intact after refinement, this is the point of `aa-logp
 - **Explicit `deny` rules in AppArmor override the profile mode.** A `deny` path blocks in both complain and enforce modes, this is a feature, not a limitation.
 - **`ausearch -m AVC` returning `<no matches>` is not a failure.** Ubuntu 24.04 AMIs may route AppArmor events under different record types; the denial still occurs, and `aa-logprof` will still find the events.
 - **Log correlation is the core audit skill.** The same privileged event appearing in `auditd`, `journalctl`, and `auth.log` simultaneously is what gives you confidence the audit trail is trustworthy, and lets you spot gaps if one source is missing.
+
+
+
 
 
 <!--
