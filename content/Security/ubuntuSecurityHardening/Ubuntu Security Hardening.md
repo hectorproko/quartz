@@ -19,7 +19,7 @@ hardlinked: "True"
 <!--
 *implements* [[fail2ban]] mention udner
 -->
-**Platform:** Pluralsight Hands-On Lab 
+**Platform:** Pluralsight Hands-On Lab \n
 **Environment:** Ubuntu 24.04 (AWS EC2) 
 
 ---
