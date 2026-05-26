@@ -339,7 +339,7 @@ Port 389 (LDAP) is gone. Only the three ports required for this server's functio
 |Enable firewall|`ufw allow` + `ufw enable`|Only SSH, HTTP, HTTPS permitted|
 |Verify hardening|`nmap 172.31.24.10`|Confirmed port 389 closed, firewall active|
 
-Hardening is not a one-time task, it is an ongoing process. This lab covered foundational steps: removing unnecessary exposure, enforcing least privilege on administrative access, and implementing host-based firewall rules. In a production environment, additional steps would include disabling port 80 in favor of HTTPS-only, configuring [[fail2ban]] to block brute-force attempts, and auditing user accounts regularly.
+Hardening is not a one-time task, it is an ongoing process. This lab covered foundational steps: removing unnecessary exposure, enforcing least privilege on administrative access, and implementing host-based firewall rules. In a production environment, additional steps would include disabling port 80 in favor of HTTPS-only, [[Ubuntu Security Hardening#Configure `fail2ban` for SSH Defense|configuring fail2ban]] to block brute-force attempts, and auditing user accounts regularly.
 
 
 
