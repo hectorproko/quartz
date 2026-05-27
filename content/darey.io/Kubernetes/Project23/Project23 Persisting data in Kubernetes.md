@@ -660,7 +660,7 @@ Without restarting the pod, the page now reflects the updated ConfigMap content:
 
 Each approach has its place. Direct EBS attachment is simple but brittle. PVCs with a StorageClass are the production-grade solution for stateful data. ConfigMaps solve the narrower problem of keeping configuration files consistent and updatable without rebuilding or restarting pods.
 
-
+<!--
 ### Post
 
 Just completed refactoring and cleaning up a previous **Persisting Data in Kubernetes** on EKS documentation.
@@ -673,3 +673,4 @@ I also explore mounting volumes, common troubleshooting (like pods stuck in Pend
 
 
 #Kubernetes #EKS #AWS #DevOps #CloudNative #PersistentVolumes #Storage #Containerization
+-->

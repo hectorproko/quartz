@@ -7,7 +7,7 @@ tags:
   - apparmor
   - hardening
   - auditd
-linkedin: "False"
+linkedin: "True"
 quartz: "True"
 refactored: "True"
 pluralsight: "True"
@@ -854,10 +854,22 @@ The security boundary was intact after refinement, this is the point of `aa-logp
 
 
 
+<!--
+Continuing with Security Hardening hands-on series!
+
+I moved into more advanced topics by configuring **fail2ban** for brute-force protection, setting up **auditd** for detailed system auditing, and working with **AppArmor** (including profile tuning with **aa-logprof**).
+
+On the intermediate side, I hardened **sshd** configuration and enabled **UFW** firewall with a strict deny-by-default policy. Each step added another solid layer of defense.
+
+[https://hectorproko.github.io/quartz/Security/ubuntuSecurityHardening/Ubuntu-Security-Hardening](https://hectorproko.github.io/quartz/Security/ubuntuSecurityHardening/Ubuntu-Security-Hardening)
+
+#CyberSecurity #Ubuntu #LinuxHardening #InfoSec #apparmor #ufw #auditd
+-->
 
 
 <!--
 ---
+########DRAFT#########
 ## OBJECTIVE 1
 
 ### Harden SSH Access and Validate with fail2ban
