@@ -7,7 +7,7 @@ tags:
   - "#RHEL"
   - hardening
   - RHEL7
-linkedin: "False"
+linkedin: "True"
 quartz: "True"
 refactored: "True"
 pluralsight: "True"
@@ -228,9 +228,22 @@ OpenSCAP is a powerful addition to any security operations or compliance workflo
 
 ---
 
+<!--
+###### POST
+Continuing with security hardening topics. Recently got some solid hands-on time with **OpenSCAP** and SCAP Workbench. I started by running a compliance scan specifically against the **baseline C2S (Common Cloud Security) profile** for RHEL 7.
+
+Then I went ahead and built my own **custom scan policy** tailored to specific internal security rules, for example, disabling legacy services like Telnet and FTP, and ensuring firewalld is active. Finally, generated clean, professional HTML reports for both scans.
+
+It was a very informative hand-on that demystifies compliance scanning and policy creation. 
+
+[https://hectorproko.github.io/quartz/Security/complianceScanningAndCustomPolicyCreationWithOpenscap/Compliance-Scanning-and-Custom-Policy-Creation-with-OpenSCAP](https://hectorproko.github.io/quartz/Security/complianceScanningAndCustomPolicyCreationWithOpenscap/Compliance-Scanning-and-Custom-Policy-Creation-with-OpenSCAP)
+
+#CyberSecurity #Compliance #OpenSCAP #RHEL #SecurityHardening #InfoSec
+
+
 
 <!--
-# Drafts
+####### Drafts
 
 # Run an OpenSCAP Compliance Scan on a Host
 

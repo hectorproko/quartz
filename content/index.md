@@ -49,7 +49,7 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[Project 21 Kubernetes cluster from scratch|Kubernetes cluster from scratch]] 
 - [[Project 22 Deploying applications into a Kubernetes cluster|Deploying applications into a Kubernetes cluster]]
 - [[Project23 Persisting data in Kubernetes|Persisting data in Kubernetes]]
-- [[Project24]] ==Pending==
+- [[Project24 Building Elastic Kubernetes Service (EKS) with Terraform|Building Elastic Kubernetes Service (EKS) with Terraform]] 
 #### Service Mesh:
 - [[Enforcing Zero Trust Networking in Kubernetes with Istio Service Mesh]]
 ### Linux (stacks):
@@ -78,7 +78,14 @@ Here are some of the projects I've been working on, categorized by technology:
 
 ### Security
 - [[Configuring System Integrity Attestation with Keylime on RHEL 10]]
+- [[Compliance Scanning and Custom Policy Creation with OpenSCAP]]
+- [[Configuring Audit Settings for STIG Compliance on Red Hat]]
+- [[Hardening a Linux Ubuntu Web Server]]
+- [[Ubuntu Security Hardening]]
+- [[Hardening a Windows DNS Server]]
+- [[Implementing Post‑Quantum Crypto Policies on RHEL 10]]
 #### SElinux
+- [[Enhancing SELinux and Compliance with RHEL System Roles]]
 
 
 
