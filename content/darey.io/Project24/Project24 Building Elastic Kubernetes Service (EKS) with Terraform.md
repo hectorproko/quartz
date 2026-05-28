@@ -11,9 +11,8 @@ darey.io: "True"
 hands-on: "True"
 completed: "True"
 title: Building Elastic Kubernetes Service (EKS) with Terraform
+hardlinked: "True"
 ---
-
-
 Original [Project 24](https://github.com/hectorproko/BUILDING-ELASTIC-KUBERNETES-SERVICE-EKS-WITH-TERRAFORM)
 ## Overview
 
@@ -110,7 +109,7 @@ Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
 
 With the S3 bucket and DynamoDB table in place, the backend configuration was activated by renaming `backend.tfX` back to `backend.tf`:
 
-```hcl
+```yaml
 # backend.tf
 terraform {
   backend "s3" {
@@ -185,18 +184,21 @@ This networking layer is a prerequisite for the EKS cluster, nodes in private su
 ### Configuration Files
 
 The following files were created to define the EKS cluster:
+<!--
+https://github.com/hectorproko/BUILDING-ELASTIC-KUBERNETES-SERVICE-EKS-WITH-TERRAFORM/blob/main/eks/eks.tf
+-->
 
-| File | Purpose |
-|------|---------|
-| `eks.tf` | Calls the [terraform-aws-modules/eks](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest) module to provision the cluster and managed node groups |
-| `locals.tf` | Defines reusable local values shared across configurations |
-| `variables.tf` | Declares all input variables (cluster name, instance types, scaling limits, etc.) |
-| `terraform.tfvars` | Supplies concrete values for all declared variables (auto-loaded by Terraform) |
-| `data.tf` | Data sources, queries available AZs and the current AWS account identity |
+| File               | Purpose                                                                                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `eks.tf`           | Calls the [terraform-aws-modules/eks](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest) module to provision the cluster and managed node groups |
+| `locals.tf`        | Defines reusable local values shared across configurations                                                                                                                |
+| `variables.tf`     | Declares all input variables (cluster name, instance types, scaling limits, etc.)                                                                                         |
+| `terraform.tfvars` | Supplies concrete values for all declared variables (auto-loaded by Terraform)                                                                                            |
+| `data.tf`          | Data sources, queries available AZs and the current AWS account identity                                                                                                  |
 
 The additional input variables added to `variables.tf` cover cluster scaling, instance types, and user access:
 
-```hcl
+```yaml
 # variables.tf (additions)
 variable "admin_users" {
   type        = list(string)
@@ -226,15 +228,15 @@ variable "autoscaling_average_cpu" {
 
 Variable values were customized for this environment. Note the `name_prefix` and `admin_users` were updated from the lab template to reflect personal AWS IAM users:
 
-```hcl
+```yaml
 # terraform.tfvars (customized values)
 cluster_name                   = "tooling-app-eks"
 iac_environment_tag            = "development"
-name_prefix                    = "hector-eks"          # changed from "darey-io-eks"
+name_prefix                    = "hector-eks"          
 main_network_block             = "10.0.0.0/16"
 subnet_prefix_extension        = 4
 zone_offset                    = 8
-admin_users                    = ["hector", "solomon"] # changed from ["dare", "solomon"]
+admin_users                    = ["hector", "solomon"]
 developer_users                = ["leke", "david"]
 asg_instance_types             = ["t3.small", "t2.small"]
 autoscaling_minimum_size_by_az = 1
@@ -316,11 +318,11 @@ var.cluster_name
 # ... and so on for every variable
 ```
 
-**Root Cause:** Variable values were stored in a file named `variables.tfvars`. Terraform does **not** automatically load `.tfvars` files with custom names, it only auto-loads files named exactly `terraform.tfvars` or matching the pattern `*.auto.tfvars`.
+**Root Cause:** Variable values were stored in a file named `variables.tfvars`. Terraform does **not** automatically load `.tfvars` files with **custom names**, it only auto-loads files named exactly `terraform.tfvars` or matching the pattern `*.auto.tfvars`.
 
 **Resolution:** The full contents of `variables.tfvars` were moved into `terraform.tfvars` (which Terraform loads automatically), and the original file was disabled by renaming it:
 
-```hcl
+```yaml
 # contents moved from variables.tfvars → terraform.tfvars
 cluster_name                   = "tooling-app-eks"
 iac_environment_tag            = "development"
@@ -341,7 +343,10 @@ hector@hector-Laptop:~/Project24/eks$ mv variables.tfvars variables.tfvarsX
 ```
 
 After that, `terraform plan` ran cleanly without prompting for any values.
-
+<!--
+seems like
+initially there was a variables.tfvars file aim to suppliesvalues to he var definitions in variables.tf, but we wanted to not get prompeted for variables input so we need a way to upload the input automatically there fore renaming it to terraform.tfvars?
+-->
 ---
 
 #### Troubleshooting - EKS Cluster Fails Due to Availability Zone Capacity
@@ -362,7 +367,7 @@ When attempting to deploy the cluster, `terraform apply` failed with the followi
 **Attempts to fix this in `data.tf`:**
 
 *Attempt 1 - `skip_names` attribute (not a valid argument):*
-```hcl
+```yaml
 data "aws_availability_zones" "available_azs" {
   state      = "available"
   skip_names = [us-east-1e]  # ← Error: Unsupported argument
@@ -370,7 +375,7 @@ data "aws_availability_zones" "available_azs" {
 ```
 
 *Attempt 2 - `names` attribute (read-only, cannot be set):*
-```hcl
+```yaml
 data "aws_availability_zones" "available_azs" {
   state = "available"
   names = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
@@ -379,7 +384,7 @@ data "aws_availability_zones" "available_azs" {
 ```
 
 *Attempt 3 - `filter` with `name = "names"` (not a valid EC2 filter):*
-```hcl
+```yaml
 filter {
   name   = "names"
   values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
@@ -389,7 +394,7 @@ filter {
 
 **Resolution:** Using the correct EC2 filter key `zone-name` as documented in the [AWS EC2 API Reference](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html) and the [Terraform `aws_availability_zones` filter block docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones#filter-configuration-block):
 
-```hcl
+```yaml
 # data.tf
 data "aws_availability_zones" "available_azs" {
   state = "available"
@@ -829,5 +834,6 @@ filter {
 
 
 > So [this error] let me know the keyword next to name is a parameter. Then in Terraform Documentation I found name in the [filter Configuration Block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones#filter-configuration-block) of [aws_availability_zones](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones#filter-configuration-block) which led me to aws documenation where all parameter are listed and I found which one I needed to use [zone-name](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html#:~:text=local%2Dzone.-,zone%2Dname,-%2D%20The%20name%20of)
+
 
 
