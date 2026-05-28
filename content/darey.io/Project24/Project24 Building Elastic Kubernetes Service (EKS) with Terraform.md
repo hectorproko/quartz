@@ -1,12 +1,12 @@
 ---
 tags:
-  - draft
   - Kubernetes
-  - helm
   - EKS
-linkedin: "False"
-quartz: "False"
-refactored: "False"
+  - "#Terraform"
+  - "#IaC"
+linkedin: "True"
+quartz: "True"
+refactored: "True"
 darey.io: "True"
 hands-on: "True"
 completed: "True"
@@ -413,17 +413,27 @@ The error message itself was the key clue, it said `The filter 'name' is invalid
 
 ## Summary
 
-| Phase | What Was Accomplished |
-|---|---|
-| Bootstrap | S3 bucket + DynamoDB table provisioned for remote state |
-| Backend Migration | Local state migrated to S3; locking enabled via DynamoDB |
-| Networking | VPC, private/public subnets, NAT Gateway defined in `network.tf` |
-| EKS Modules | `eks.tf`, `locals.tf`, `variables.tf`, `terraform.tfvars` configured |
-| Cluster Deploy | EKS cluster and managed node groups successfully provisioned |
+| Phase             | What Was Accomplished                                                |
+| ----------------- | -------------------------------------------------------------------- |
+| Bootstrap         | S3 bucket + DynamoDB table provisioned for remote state              |
+| Backend Migration | Local state migrated to S3; locking enabled via DynamoDB             |
+| Networking        | VPC, private/public subnets, NAT Gateway defined in `network.tf`     |
+| EKS Modules       | `eks.tf`, `locals.tf`, `variables.tf`, `terraform.tfvars` configured |
+| Cluster Deploy    | EKS cluster and managed node groups successfully provisioned         |
 
 The biggest learning in this project was understanding Terraform's bootstrapping order, you cannot configure a backend in the same apply that creates it. The AZ filtering issue also reinforced that Terraform data source `filter` blocks map directly to AWS API filter parameters, so the Terraform docs and AWS API docs must be read together to use them correctly.
 
+<!--
+### Post
+Continuing to refactor some of my older projects, and just finished rebuilding the Elastic Kubernetes Service (EKS) setup using Terraform.
 
+In this one I used an S3 bucket and DynamoDB to manage Terraform remote state, migrated from local state to S3, set up a VPC with subnets and a NAT Gateway, and used the EKS module to provision the cluster and managed node groups.
+
+Nothing groundbreaking, but going back to older work and doing it cleaner is its own kind of progress.
+
+#Terraform #Kubernetes #EKS #AWS #DevOps #IaC
+
+https://hectorproko.github.io/quartz/darey.io/Project24/Project24-Building-Elastic-Kubernetes-Service-(EKS)-with-Terraform
 
 <!--
 # BUILDING ELASTIC KUBERNETES SERVICE (EKS) WITH TERRAFORM
