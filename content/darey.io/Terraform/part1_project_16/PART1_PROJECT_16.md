@@ -47,11 +47,12 @@ Rather than using a root account or a personal IAM user, I create a dedicated `t
 |2|Policy|`AdministratorAccess`|
 |3|Tag|Name = `terraform`|
 
-> ⚠️ **Important:** On [[#Step 5, Install Terraform|Step 5]], save the **Access Key ID** and **Secret Access Key**, these are only shown once.
+> ⚠️ **Important:** On [[PART1_PROJECT_16#Step 5 - Installing Terraform Linux Install Terraform|Step 5]], save the **Access Key ID** and **Secret Access Key**, these are only shown once.
 
 The result is two users visible in IAM: my personal user and the new `terraform` service user.
 
 ![IAM Users list showing Hector and terraform users](https://claude.ai/chat/media/Markdown_Logo-3.png)
+![Example Image]([https://example.com/images/example.jpg](https://claude.ai/chat/media/Markdown_Logo-3.png))
 
 ---
 
