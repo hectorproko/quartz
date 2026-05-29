@@ -47,7 +47,7 @@ Rather than using a root account or a personal IAM user, I create a dedicated `t
 |2|Policy|`AdministratorAccess`|
 |3|Tag|Name = `terraform`|
 
-> ⚠️ **Important:** On [[PART1_PROJECT_16#Step 5 - Installing Terraform Linux Install Terraform|Step 5]], save the **Access Key ID** and **Secret Access Key**, these are only shown once.
+> ⚠️ **Important:** At the final step of the IAM wizard (**Review & Download**), save the **Access Key ID** and **Secret Access Key**, these are only shown once.
 
 The result is two users visible in IAM: my personal user and the new `terraform` service user.
 
@@ -58,6 +58,8 @@ The result is two users visible in IAM: my personal user and the new `terraform`
 ---
 
 ## Step 2 - Install and Verify Dependencies
+<!--
+Removed this is only used as verification of credentials down the line when we could just do aws cli s3 list or something
 
 ### boto3 (AWS Python SDK)
 
@@ -74,6 +76,8 @@ hector@hector-Laptop:~$ pip list | grep boto3
 boto3                        1.17.112
 ```
 
+-->
+
 ### AWS CLI
 
 I'll use the AWS CLI to authenticate the `terraform` IAM user locally.
@@ -82,12 +86,18 @@ I'll use the AWS CLI to authenticate the `terraform` IAM user locally.
 hector@hector-Laptop:~$ aws --version
 aws-cli/1.22.71 Python/3.8.10 Linux/5.4.0-109-generic botocore/1.24.16
 ```
+<!--
+**`botocore`** is the low-level foundation library that handles all the raw AWS API communication — building HTTP requests, signing them with AWS credentials, parsing responses, and handling errors.
 
+**`boto3`** is built on top of `botocore`. It's the high-level, developer-friendly Python SDK. When you write `boto3.resource('s3')`, boto3 is translating that into botocore calls, which then hit the actual AWS API.
+
+**`awscli`** is also built on top of `botocore` — independently from boto3. So both the AWS CLI and boto3 share the same underlying engine.
+-->
 ---
 
 ## Step 3 - Configure AWS CLI Authentication
 
-With the Access Key ID and Secret Access Key from Step 1, I configure the AWS CLI to authenticate as the `terraform` user.
+With the Access Key ID and Secret Access Key from [[#Step 1 - Create a Dedicated IAM User for Terraform|Step 1]], I configure the AWS CLI to authenticate as the `terraform` user.
 
 ```bash
 hector@hector-Laptop:~$ aws configure
@@ -112,7 +122,20 @@ I create an S3 bucket now as a prerequisite, it will be configured as a remote T
 |AWS Region|`us-east-1`|
 |Tag|Name = `hector-dev-terraform-bucket`|
 
-![S3 bucket created, hector-dev-terraform-bucket in us-east-1](https://claude.ai/chat/media/Markdown_Logo-2.png)
+![[Markdown_Logo-2.png]]
+
+### Verify AWS CLI Authentication
+
+With credentials configured, I run a quick check to confirm the AWS CLI can authenticate and reach AWS:
+
+```bash
+hector@hector-Laptop:~$ aws s3 ls
+2022-05-11 16:27:09 hector-dev-terraform-bucket
+```
+
+The bucket we just created comes back, credentials are working correctly.
+<!--
+replaced it with above
 
 ### Verify Programmatic Access with boto3
 
@@ -130,7 +153,10 @@ hector-dev-terraform-bucket   # ✅ Our bucket is returned
 ```
 
 This confirms that both the credentials and the bucket are set up correctly.
-
+<!--
+boto3 looks for the aws cli credentials in the file it saved it in ~/.aws/credentials
+so we just using  boto3  to test that the credentials we configured thru aws cli are working
+-->
 ---
 
 ## Step 5 - [[Installing Terraform#Linux|Install Terraform]]
@@ -193,25 +219,23 @@ Before running any commands, Terraform needs to download the AWS **provider plug
 hector@hector-Laptop:~/Project16-17/PBL$ terraform init
 ```
 
-<details> <summary>Output</summary>
-
-```bash
-Initializing the backend...
-
-Initializing provider plugins...
-- Finding latest version of hashicorp/aws...
-- Installing hashicorp/aws v4.13.0...
-- Installed hashicorp/aws v4.13.0 (signed by HashiCorp)
-
-Terraform has created a lock file .terraform.lock.hcl to record the provider
-selections it made above. Include this file in your version control repository
-so that Terraform can guarantee to make the same selections by default when
-you run "terraform init" in the future.
-
-Terraform has been successfully initialized!
-```
-
-</details>
+> [!NOTE]- Output
+> ```bash
+> Initializing the backend...
+> 
+> Initializing provider plugins...
+> - Finding latest version of hashicorp/aws...
+> - Installing hashicorp/aws v4.13.0...
+> - Installed hashicorp/aws v4.13.0 (signed by HashiCorp)
+> 
+> Terraform has created a lock file .terraform.lock.hcl to record the provider
+> selections it made above. Include this file in your version control repository
+> so that Terraform can guarantee to make the same selections by default when
+> you run "terraform init" in the future.
+> 
+> Terraform has been successfully initialized!
+> ```
+> 
 
 A `.terraform/` directory is created to store the downloaded plugins. It's safe to delete and recreate by running `terraform init` again.
 
@@ -238,12 +262,39 @@ hector@hector-Laptop:~/Project16-17/PBL$ ls
 main.tf  terraform.tfstate  terraform.tfstate.backup
 ```
 
-|File|Purpose|
-|---|---|
-|`terraform.tfstate`|Tracks the exact current state of all provisioned resources|
-|`terraform.tfstate.backup`|Previous state, used for rollback|
-|`terraform.tfstate.lock.info`|Temporary lock file while Terraform is running, prevents concurrent modifications|
+| File                          | Purpose                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| `terraform.tfstate`           | Tracks the exact current state of all provisioned resources                       |
+| `terraform.tfstate.backup`    | Previous state, used for rollback                                                 |
+| `terraform.tfstate.lock.info` | Temporary lock file while Terraform is running, prevents concurrent modifications |
+<!--
+### `terraform.tfstate.backup`
 
+Terraform automatically creates this file every time `terraform apply` runs — it's a snapshot of the **previous** state, saved before the new state is written. Think of it as a one-step undo.
+
+---
+
+#### Scenario: You accidentally destroy a resource
+
+Say your `main.tf` had 2 public subnets and someone on your team edits it down to 1, then runs `terraform apply`. Terraform sees only 1 subnet declared and **destroys** the second one. The `terraform.tfstate` now reflects that — only 1 subnet exists.
+
+You catch the mistake. The resource is gone. Here's how you recover:
+
+bash
+
+```bash
+# 1. Look at what the backup contains
+cat terraform.tfstate.backup
+
+# 2. Restore it by overwriting the current state
+cp terraform.tfstate.backup terraform.tfstate
+
+# 3. Fix the code back to 2 subnets in main.tf, then re-apply
+terraform apply
+```
+
+Terraform reads the restored state, sees 2 subnets should exist but only 1 does, and recreates the missing one.
+-->
 ---
 
 ## Step 7 - Add Public Subnets
