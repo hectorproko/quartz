@@ -47,7 +47,7 @@ Rather than using a root account or a personal IAM user, I create a dedicated `t
 |2|Policy|`AdministratorAccess`|
 |3|Tag|Name = `terraform`|
 
-> ⚠️ **Important:** On Step 5, save the **Access Key ID** and **Secret Access Key**, these are only shown once.
+> ⚠️ **Important:** On [[#Step 5, Install Terraform|Step 5]], save the **Access Key ID** and **Secret Access Key**, these are only shown once.
 
 The result is two users visible in IAM: my personal user and the new `terraform` service user.
 
@@ -131,7 +131,7 @@ This confirms that both the credentials and the bucket are set up correctly.
 
 ---
 
-## Step 5, Install Terraform
+## Step 5 - [[Installing Terraform#Linux|Install Terraform]]
 
 I download the Terraform binary, extract it, and move it into the system `PATH` so it's available globally.
 
