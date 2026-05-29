@@ -51,8 +51,9 @@ Rather than using a root account or a personal IAM user, I create a dedicated `t
 
 The result is two users visible in IAM: my personal user and the new `terraform` service user.
 
-![IAM Users list showing Hector and terraform users](https://claude.ai/chat/media/Markdown_Logo-3.png)
-![Example Image]([https://example.com/images/example.jpg](https://claude.ai/chat/media/Markdown_Logo-3.png))
+![[Markdown_Logo-3.png]]
+
+
 
 ---
 
