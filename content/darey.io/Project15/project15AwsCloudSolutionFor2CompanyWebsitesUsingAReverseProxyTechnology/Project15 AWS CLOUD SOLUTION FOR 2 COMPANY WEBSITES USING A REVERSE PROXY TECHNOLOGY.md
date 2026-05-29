@@ -2,11 +2,18 @@
 title: AWS Solution for 2 Company Websites using a Reverse Proxy
 tags:
   - AWS
+hardlinked: "True"
+aliases:
+  - AWS Solution for 2 Company Websites using a Reverse Proxy
 ---
 ~~*(old [Project 15](https://github.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/blob/main/Project15_Steps.md))*~~
 
 > [!attention] Provisioning with Terraform
 > [AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL)
+> [[PART1_PROJECT_16]]
+> [[PART2_PROJECT_17]]
+> [[PART3_PROJECT18_Backends]]
+> [[PART4_PROJECT19_TerraformCloud]]
 
 > [!NOTE]
 > PROJECT 15

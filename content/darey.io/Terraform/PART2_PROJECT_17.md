@@ -1,21 +1,27 @@
 ---
+
+
 tags:
   - "#Terraform"
   - IaC
+hardlinked: "True"
 ---
+[Hector's LearningHub Link](https://hectorproko.github.io/quartz/darey.io/Project15/Project15-AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY)
 
 # AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-2/4
+Project 17 Terraform
 
-> [!info] Best practices Tagging  
-> **Tagging** helps you manage your resources much more efficiently:
-> * Resources are much better organized in ‘virtual’ groups
-> * They can be easily filtered and searched from console or programmatically
-> * Billing team can easily generate reports and determine how much each part of infrastructure costs how much (by department, by type, by environment, etc.)
-> * You can easily determine resources that are not being used and take actions accordingly
-> * If there are different teams in the organization using the same account, tagging can help differentiate who owns which resources  
+Best practices Tagging  
 
-Let's add multiple tags as a default set. For example, in our [terraform.tfvars](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/terraform.tfvars) file, we can define default tags.
+**Tagging** helps you manage your resources much more efficiently:
+* Resources are much better organized in ‘virtual’ groups
+* They can be easily filtered and searched from console or programmatically
+* Billing team can easily generate reports and determine how much each part of infrastructure costs how much (by department, by type, by environment, etc.)
+* You can easily determine resources that are not being used and take actions accordingly
+* If there are different teams in the organization using the same account, tagging can help differentiate who owns which resources  
 
+
+Lets add multiple tags as a default set. for example, in out [terraform.tfvars](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/terraform.tfvars) file we can have default tags defined.
 ``` bash
 tags = {
   Enviroment      = "development" 
@@ -24,8 +30,16 @@ tags = {
   Billing-Account = "1234567890"
 }
 ```
-*Now every time we need to make a change to the **tags**, we can do that in one single place `terraform.tfvars`*  
 
+Now we can tag all resources using the format below
+``` bash
+tags = merge(
+    var.tags,
+    {
+      Name = "Name of the resource"
+    },
+  )
+```
 
 We need to to declare the variable `tags` in [variables.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/variables.tf) using the following format
 ``` bash
@@ -35,20 +49,10 @@ variable "tags" {
   default     = {}
 }
 ```
-
-Now we can tag all resources using the format below
-``` bash
-tags = merge(
-    var.tags,
-    {
-      Name = "<Name for the resource>"
-    },
-  )
-```
+Now every time we need to make a change to the **tags**, we can do that in one single place `terraform.tfvars`  
 
 
-### Internet Gateways & `format()` function
-
+**Internet Gateways & `format()` function**  
 Create an **Internet Gateway** in a separate Terraform file [internet_gateway.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/VPC/internet_gateway.tf)  
 
 We have can use `format()` function to dynamically generate a unique name for a resource  
@@ -66,13 +70,12 @@ tags = merge(
 ```
 
 
-> [!NOTE] format()
-> `format("%s-%s!", aws_vpc.main.id,"IG")`
-> In this example the **first** of the `%s` takes the interpolated value of `aws_vpc.main.id` while the **second** `%s` appends a literal string IG and finally an exclamation mark is added in the end.  
-> 
+In the example above the **first** of the `%s` takes the interpolated value of `aws_vpc.main.id` while the **second** `%s` appends a literal string IG and finally an exclamation mark is added in the end.  
 
-> [!info]
-> This is useful when creating a resource with a `count` function or creating multiple resources using a `loop` which requires the **key-value pair** to be unique  
+This is useful when creating a resource with a `count` function or creating multiple resources using a `loop` which requires the **key-value pair** to be unique  
+
+
+
 
 For example, each of our subnets should have a unique name in the **tag** section. We can accomplish this with `format()` function.
 
@@ -90,10 +93,44 @@ The output should look something like this
 `Name = PrvateSubnet-2`  
 
 
-### NAT Gateway
 
-To create 1 **NAT Gateway** and 1 **Elastic IP (EIP)** address, we'll use a new file called [natgateway.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/VPC/natgateway.tf). We'll also create an Elastic IP for the NAT Gateway and introduce the use of `depends_on` [Documentation](https://www.terraform.io/language/meta-arguments/depends_on) to ensure that the Internet Gateway resource must be available before creating the NAT Gateway.
+NAT Gateways
+Create 1 NAT Gateways and 1 Elastic IP (EIP) addresses
+Now use similar approach to create the NAT Gateways in a new file called natgateway.tf.
 
+Note: We need to create an Elastic IP for the NAT Gateway, and you can see the use of depends_on to indicate that the Internet Gateway resource must be available before this should be created. Although Terraform does a good job to manage dependencies, but in some cases, it is good to be explicit.
+You can read more on dependencies here
+resource "aws_eip" "nat_eip" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.ig]
+tags = merge(
+    var.tags,
+    {
+      Name = format("%s-EIP", var.name)
+    },
+  )
+}
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = element(aws_subnet.public.*.id, 0)
+  depends_on    = [aws_internet_gateway.ig]
+tags = merge(
+    var.tags,
+    {
+      Name = format("%s-Nat", var.name)
+    },
+  )
+}
+
+
+
+**NAT Gateways**  
+
+Creating 1 **NAT Gateway** and 1 **Elastic IP (EIP)** address in a new file called [natgateway.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/VPC/natgateway.tf)  
+
+We need to create an **Elastic IP** for the **NAT Gateway**, and we introduce the use of `depends_on` to indicate that the **Internet Gateway** resource must be available before this should be created.  
+
+`depends_on` [Documentation](https://www.terraform.io/language/meta-arguments/depends_on)  
 
 ``` bash
 resource "aws_eip" "nat_eip" {
@@ -169,8 +206,7 @@ resource "aws_route_table_association" "public-subnets-assoc" {
 ```
 
 
-Now, when we run `terraform plan` and `terraform apply`, it should add the following resources to **AWS** in a **multi-AZ** setup:
-
+Now we run `terraform plan` and `terraform apply` it should add the following resources to **AWS** in **multi-az** set up:
 * Our main VPC
 * 2 Public subnets
 * 4 Private subnets
@@ -179,22 +215,19 @@ Now, when we run `terraform plan` and `terraform apply`, it should add the follo
 * 1 EIP
 * 2 Route tables  
   
+This concludes the **Networking** part of **AWS** set up
 
-> [!done] This concludes the **Networking** part of **AWS** set up
-> 
+Moving on to **Compute and Access Control** configuration automation using Terraform!
 
-## Compute and Access Control
+**AWS Identity and Access Management**  
 
-### AWS Identity and Access Management
-
-> Documentation: [**IAM**](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) and [**Roles**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)  
-
-We want to pass an **IAM** role to our **EC2** instances to grant them access to specific resources. To implement this, we will add the following code to a new file named [roles.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/VPC/roles.tf)
-
-#### 1. Create [AssumeRole](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)  
+[**IAM**](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) and [**Roles**](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)  
+We want to pass an **IAM role** to our **EC2 instances** to give them **access** to some specific resources, so we need to do the following:  
+1. Create [AssumeRole](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)  
    
-> Assume Role uses Security Token Service (STS) API that returns a set of temporary security credentials that you can use to access AWS resources that you might not normally have access to. These temporary credentials consist of an access key ID, a secret access key, and a security token. Typically, you use AssumeRole within your account or for cross-account access.  
+*Assume Role uses Security Token Service (STS) API that returns a set of temporary security credentials that you can use to access AWS resources that you might not normally have access to. These temporary credentials consist of an access key ID, a secret access key, and a security token. Typically, you use AssumeRole within your account or for cross-account access.*  
 
+Adding the following code to a new file named [roles.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/VPC/roles.tf)
 
 ``` bash
 resource "aws_iam_role" "ec2_instance_role" {
@@ -222,7 +255,7 @@ resource "aws_iam_role" "ec2_instance_role" {
 ```
 In this code we are creating **AssumeRole** with **AssumeRole policy**. It grants to an entity, in our case it is an **EC2**, permissions to assume the role.  
 
-#### 2. Create **IAM policy** for this role  
+2. Create **IAM policy** for this role  
    
 This is where we need to define a required policy (i.e., permissions) according to our requirements. For example, allowing an **IAM role** to perform action **describe** applied to **EC2** instances:  
 ``` bash
@@ -250,8 +283,7 @@ tags = merge(
 }
 ```
 
-#### 3. Attach the **Policy** to the **IAM Role**
-
+3. Attach the **Policy** to the **IAM Role**
 This is where, we will be attaching the policy which we created above, to the role we created in the first step.  
 ``` bash
 resource "aws_iam_role_policy_attachment" "test-attach" {
@@ -259,23 +291,23 @@ resource "aws_iam_role_policy_attachment" "test-attach" {
   policy_arn = aws_iam_policy.policy.arn
 }
 ```
-
-#### 4. Create an **Instance Profile** and interpolate the IAM Role  
-
+4. Create an **Instance Profile** and interpolate the IAM Role  
 ``` bash
 resource "aws_iam_instance_profile" "ip" {
   name = "aws_instance_profile_test"
   role =  aws_iam_role.ec2_instance_role.name
 }
 ```
+For now we are done with **Identity and Management**  
 
-> [!done] For now we are done with **Identity and Management**  
- 
 ### CREATE SECURITY GROUPS
 
-> Terraform Documentation: [Security Group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) and [Security Group Rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule)  
+**Terraform Documentation:** [Security Group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) and [Security Group Rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule)  
 
-We will create all the security groups in a single file named `security.tf` and then we will reference these security groups within each resource as needed.
+
+We are going to create all the **security groups** in a single file `security.tf`, then we are going to reference a security group within each resources that needs it  
+
+**NOTE**: We used the `aws_security_group_rule` to reference another **security group** in a **security group**  
 
 <details close>
 <summary>security.tf</summary>
@@ -487,18 +519,12 @@ resource "aws_security_group_rule" "inbound-mysql-webserver" {
 ```
 </details>
 
-> [!NOTE]- Note on `aws_security_group_rule`:
-> The `aws_security_group_rule` resource in Terraform is instrumental for detailed management of ingress and egress rules within AWS security groups. It allows the creation of granular and specific rules, separate from the main security group configuration.
-> 
-> A key attribute of this resource is `source_security_group_id`. This attribute enables referencing another security group as the source of traffic. This is particularly useful when setting up network rules based on the source security group, rather than specific IP addresses or CIDR ranges. It simplifies configurations where instances in different security groups need to communicate with each other, ensuring dynamic and scalable security management.
-
 
 ### CREATE CERTIFICATE FROM AMAZON CERIFICATE MANAGER
 
 Created [cert.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/edit/main/PBL/modules/ALB/cert.tf) file and add the following code snippets to it.  
 
-> Terraform Documentation: [AWS Certificate manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) 
-
+**Terraform Documentation**: [AWS Certificate manager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) 
 <details close>
 <summary>cert.tf</summary>
 
@@ -577,14 +603,16 @@ resource "aws_route53_record" "wordpress" {
 </details>
 
 
-### (External) Application Load Balancer (ALB)
-*Internet facing*
+Creating an **external** *(Internet facing)* **Application Load Balancer (ALB)**  
+Create a file called alb.tf  
+First we will create the **ALB**, then we create the **target group** and lastly we will create the **listener rule**.  
 
-Created a file called [alb.tf](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PBL/modules/ALB/alb.tf) to create the **ALB**, then we create the **target group** and lastly we will create the **listener rule**.  
-
-> Terraform Documentation: [ALB](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb), [ALB-target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group), [ALB-listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener)
+**Terraform Documentation** of resources:
+* [ALB](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb)
+* [ALB-target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group)
+* [ALB-listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener)
   
-We create the **ALB** to balance the traffic between the Instances:  
+We need to create an **ALB** to balance the traffic between the Instances:  
 ``` bash
 resource "aws_lb" "ext-alb" {
   name     = "ext-alb"
@@ -652,10 +680,10 @@ output "alb_target_group_arn" {
 
 
 
-### (Internal) [Application Load Balancer (ALB)](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internal-load-balancers.html)
+**Create an (Internal) [Application Load Balancer (ALB)](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internal-load-balancers.html)**   
+For the **Internal Load balancer** we will follow the same concepts with the external load balancer.  
 
-For the **Internal Load Balancer**, we will apply the same concepts as with the external load balancer. We will achieve this by creating an `alb.tf` file with the following content.
-
+Add the code snippets inside the `alb.tf` file  
 ``` bash
 #Internal Load Balancers for webservers
 #---------------------------------
@@ -680,8 +708,7 @@ resource "aws_lb" "ialb" {
 }
 ```
 
-To instruct our **ALB** on where to route traffic, we need to create a [**Target Group**](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) to define its targets:
-
+To inform our **ALB** to where route the traffic we need to create a [**Target Group**](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) to point to its targets:
 ``` bash
 # --- target group  for wordpress -------
 resource "aws_lb_target_group" "wordpress-tgt" {
@@ -717,7 +744,7 @@ name        = "tooling-tgt"
 }
 ```
 
-Then we create a [**Listener**](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html) for this **Target Group** 
+Then we will need to create a [**Listener**](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html) for this **Target Group** 
 ``` bash 
 # For this aspect a single listener was created for the wordpress which is default,
 # A rule was created to route traffic to tooling when the host header changes
@@ -747,20 +774,25 @@ resource "aws_lb_listener_rule" "tooling-listener" {
 }
 ```
 
-### CREATING AUTOSCALING GROUPS
+### CREATING AUSTOALING GROUPS
 
-In this section, we will create the **Auto Scaling Group (ASG)** to enable automatic scaling of the **EC2** instances based on application traffic.
 
-Before configuring an ASG, we need to create the launch template.
+In this Section we will create the **Auto Scaling Group (ASG)** to be able to scale the **EC2s** out and in depending on the application traffic.
 
-Considering our architecture, we require Auto Scaling Groups for **bastion**, **nginx**, **wordpress**, and **tooling**. Therefore, we will create two separate files.
+Before we start configuring an ASG, we need to create the launch template
 
-- `asg-bastion-nginx.tf` will contain **Launch Template** and **Auto Scaling Group** for **Bastion** and **Nginx**  
-- `asg-wordpress-tooling.tf` will contain **Launch Template** and **Auto Scaling group** for **wordpress** and **tooling**  
+Based on our Architecture we need **Auto Scaling Groups** for **bastion**, **nginx**, **wordpress** and **tooling**, so we will create two files     
 
-> Terraform Documentation: [SNS-topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic), [SNS-notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_notification), [AutoScaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group), [Launch-template](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template)
+`asg-bastion-nginx.tf` will contain **Launch Template** and **Auto Scaling Group** for **Bastion** and **Nginx**  
+`asg-wordpress-tooling.tf` will contain **Launch Template** and **Auto Scaling group** for **wordpress** and **tooling**  
 
-Created `asg-bastion-nginx.tf` with the following content:
+Useful Terraform Documentation, go through this documentation and understand the arguement needed for each resources:
+* [SNS-topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic)
+* [SNS-notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_notification)
+* [Austoscaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group)
+* [Launch-template](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template)
+
+Create `asg-bastion-nginx.tf` and paste all the code snippet below;
 
 <details close>
 <summary>asg-bastion-nginx.tf</summary>
@@ -899,7 +931,8 @@ resource "aws_autoscaling_attachment" "asg_attachment_nginx" {
 ```
 </details>
 
-Created `asg-wordpress-tooling.tf` with the following content:
+
+Autoscaling for **wordpress** and **tooling** will be created in a separate file `asg-wordpress-tooling.tf` with the following code  
 
 <details close>
 <summary>asg-wordpress-tooling.tf</summary>
@@ -1014,16 +1047,22 @@ resource "aws_autoscaling_attachment" "asg_attachment_tooling" {
 ```
 </details>
 
+
+
+
 ### STORAGE AND DATABASE
 
-> Terraform Documentation: [RDS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group), [EFS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system), [KMS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key)  
+Terraform Documentation:  
+* [RDS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group)
+* [EFS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system)
+* [KMS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key)  
   
-#### Creating Elastic File System (EFS)
-
+**Create Elastic File System (EFS)**
 In order to create an EFS we need to create a [KMS key](https://aws.amazon.com/kms/getting-started/)  
-> **AWS Key Management Service (KMS)** makes it easy to create and manage cryptographic keys and control their use across a wide range of AWS services and in applications.  
 
-Creating `efs.tf`  with the following content:  
+**AWS Key Management Service (KMS)** makes it easy to create and manage cryptographic keys and control their use across a wide range of AWS services and in applications.  
+
+Creating `efs.tf`  with the following code  
 
 <details close>
 <summary>efs.tf</summary>
@@ -1114,9 +1153,10 @@ resource "aws_efs_access_point" "tooling" {
 ```
 </details>
 
-#### Creating [**MySQL RDS**](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)  
+  
+**Create** [**MySQL RDS**](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)  
 
-Creating `rds.tf`  with the following content:
+Creating **RDS** itself using the following snippet of code in `rds.tf` file  
 ``` bash
 # This section will create the subnet group for the RDS  instance using the private subnet
 resource "aws_db_subnet_group" "HRA-rds" {
@@ -1147,7 +1187,8 @@ resource "aws_db_instance" "HRA-rds" {
 }
 ```
 
-Defining variables in `variables.tf`
+
+Declaring in `variables.tf` variables that we previosly gave reference to
 
 <details close>
 <summary>variables.tf</summary>
@@ -1165,7 +1206,7 @@ variable "enable_dns_support" {
   type = bool
 }
 variable "enable_dns_hostnames" {
-  type = bool
+  dtype = bool
 }
 variable "enable_classiclink" {
   type = bool
@@ -1213,7 +1254,8 @@ variable "master-password" {
 ```
 </details>
 
-We need to update `terraform.tfvars` to declare the values for the variables defined in our `variables.tf`.
+
+We need to update `terraform.tfvars`  to declare the **values** for the variables in our `varibales.tf `  
 
 ``` bash
 region = "us-east-1"
@@ -1239,8 +1281,7 @@ tags = {
 }
 ```
 
-Up to this point, we have a long list of files, which is not a bad start. However, we are going to enhance our organization by implementing the concept of **modules** in [[PART3_PROJECT18_Backends_Modules]].
-
+So far we have a long list of files that is not a bad start, but we are going to fix this using the concepts of **modules** in [Project 18](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/blob/main/PART3_PROJECT_18.md)  
 
 <!--
 Secondly, our application wont work because in out shell script that was passed into the launch some endpoints like the RDs and EFS point is needed in which they have not been created yet. So in project 19 we will use our Ansible knowledge to fix this.
