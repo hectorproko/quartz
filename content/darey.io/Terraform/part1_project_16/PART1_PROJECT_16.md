@@ -325,7 +325,7 @@ Running `terraform plan` and `terraform apply` provisions both subnets. But this
 
 ## Step 8 - Refactoring: Removing Hard-Coded Values
 
-### Problem 1: Hard-Coded Values
+### 👀Problem 1: Hard-Coded Values
 
 The `availability_zone` and `cidr_block` arguments are hard-coded strings. Any infrastructure change requires editing the code directly, this is fragile and not reusable.
 
