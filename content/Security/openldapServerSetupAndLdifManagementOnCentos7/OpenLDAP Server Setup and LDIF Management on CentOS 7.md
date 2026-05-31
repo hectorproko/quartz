@@ -14,7 +14,7 @@ hardlinked: "True"
 ---
 <!--
 [[LDAP Configuring an OpenLDAP Server]] + [[LDAP Create LDIF File]] 
--->[[LDAP Configuring an OpenLDAP Server]]
+-->
 ## Overview
 
 Authentication and authorization are foundational pillars of any data center environment. When multiple systems need a centralized, standards-based way to manage user identities and access permissions, a **directory service** becomes essential.
@@ -246,8 +246,6 @@ base.ldif  dadcorp.key  dadcorp.pem  dbinit.ldif  key.ldif  monitor.ldif  pem.ld
 > ou: Printers
 > ```
 
-^3cbe8d
-
 > [!NOTE]- key.ldif
 > ```
 > [root@localhost ldifs]# cat key.ldif
@@ -265,8 +263,6 @@ base.ldif  dadcorp.key  dadcorp.pem  dbinit.ldif  key.ldif  monitor.ldif  pem.ld
 > replace: olcAccess
 > olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external, cn=auth" read by dn.base="cn=ldapadm,dc=dadcorp,dc=com" read by * none
 > ```
-
-^93e69a
 
 > [!NOTE]- pem.ldif
 > ```
