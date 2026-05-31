@@ -1,5 +1,4 @@
 ---
-
 tags:
   - pacemaker
   - AlmaLinux
@@ -184,7 +183,7 @@ No match for argument: resource-agents
 Error: Unable to find a match: pacemaker pcs resource-agents
 ```
 
-**Fix:** The High Availability repository must be explicitly enabled first:
+**✅ Fix:** The High Availability repository must be explicitly enabled first:
 
 ```bash
 dnf config-manager --enable highavailability
@@ -220,12 +219,14 @@ cockpit dhcpv6-client high-availability ssh
 
 ## Phase 4 - Create the Cluster
 
-With both nodes prepped, I initialized the cluster from **server1 only**. The `pcs host auth` command establishes trust between the two nodes using the `hacluster` credentials set earlier.
+With both nodes prepped, I initialized the cluster from **server1 only**. The `pcs host auth` command establishes trust between the two nodes (both directions) using the `hacluster` credentials set earlier.
 
 ```bash
 pcs host auth server1.example.com server2.example.com \
   -u hacluster -p Password1
 ```
+
+>When you run `pcs host auth`, pcsd on server1 contacts pcsd on server2 and exchanges a **token**, essentially a shared secret stored on disk. From that point on, when server1 sends a cluster management command (like "start this resource" or "here's an updated config"), server2's pcsd recognizes the token and accepts it without asking for the `hacluster` password again.
 
 Create the cluster (named `peanut` here, the name is arbitrary):
 
@@ -268,7 +269,7 @@ server2.example.com: Cluster Enabled
 
 ---
 
-### Troubleshooting - STONITH / CIB Validation Errors After First `pcs status`
+### Troubleshooting - [[STONITH (Shoot The Other Node in the Head)|STONITH]] / CIB Validation Errors After First `pcs status`
 
 **Symptom:** Running `pcs status` immediately after cluster creation showed STONITH warnings and marked both nodes as UNCLEAN:
 
@@ -287,9 +288,10 @@ Node List:
 
 ---
 
-## Phase 5 - Disable STONITH and Quorum Policy
+## Phase 5 - Disable [[STONITH (Shoot The Other Node in the Head)|STONITH]] and [[Quorum]] Policy
 
-> ⚠️ **Lab only.** Never disable STONITH in a production cluster that uses shared storage, it exists to prevent split-brain data corruption.
+> [!attention]
+> **Lab only.** Never disable STONITH in a production cluster that uses shared storage, it exists to prevent split-brain data corruption.
 
 ```bash
 pcs property set stonith-enabled=false
@@ -321,7 +323,9 @@ Daemon Status:
 ## Phase 6 - Create a Clustered Virtual IP Resource
 
 The Virtual IP (VIP) is the address clients connect to. Pacemaker assigns this IP to whichever node is currently active. When that node fails, Pacemaker moves the IP to the other node, transparent to the client.
-
+<!--
+transparent it means something is **hidden or invisible** in the sense that it happens without you having to think about it or do anything about it.
+-->
 Run this on **server1 only**:
 
 ```bash
@@ -421,8 +425,10 @@ Usage: pcs cluster ...
 
 ## Phase 8 - Install and Configure Apache
 
-With IP failover working, I added Apache as a second cluster-managed resource. The key principle here is that Pacemaker, not systemd, controls the service lifecycle. If systemd manages Apache independently, it could restart the service on the wrong node and conflict with cluster logic.
-
+With IP failover working, I added Apache as a second **cluster-managed resource**. The key principle here is that Pacemaker, not systemd, **controls the service lifecycle**. If systemd manages Apache independently, it could restart the service on the wrong node and conflict with cluster logic.
+<!--
+Pacemaker needs to be able to start, stop, and restart Apache on demand. If systemd is also set to restart Apache automatically, you get a conflict — Pacemaker tries to stop it as part of a failover and systemd immediately brings it back up. That causes unpredictable behavior and can break the cluster logic entirely.
+-->
 Install Apache on **both servers**, then immediately disable it from systemd:
 
 ```bash
@@ -430,7 +436,9 @@ dnf install -y httpd
 systemctl stop httpd
 systemctl disable httpd
 ```
-
+<!--
+`systemctl disable httpd` removes the **autostart symlinks** for the Apache service — it stops Apache from automatically starting on boot.
+-->
 Open HTTP through the firewall on **both servers**:
 
 ```bash
@@ -470,7 +478,9 @@ apachectl configtest
 
 ## Phase 9 - Create the Apache Cluster Resource and Co-location Constraint
 
-Now I register Apache with Pacemaker so the cluster owns it, and then add a co-location constraint so Apache always runs on the same node as the VIP. Without this constraint, Pacemaker might start Apache on server1 while the VIP is on server2, requests would reach the wrong node.
+Now I register Apache with Pacemaker so the cluster owns it, and then add a co-location constraint so Apache always runs on the same node as the VIP. Without this constraint, Pacemaker might start Apache on server1 while the VIP is on server2, requests would reach the wrong node.<!--
+so we ahre using the VIP as a guide to where start the apache
+-->
 
 On **server1 only**, create the Apache resource:
 
@@ -590,7 +600,7 @@ Daemon Status:
   pcsd: active/enabled
 ```
 
-Both resources moved back to server1 and the cluster reports no errors, failover is working end to end.
+Both resources remained on server1, where they migrated when server2 went into standby, and the cluster reports no errors. This is expected behavior. Pacemaker uses resource stickiness to avoid unnecessary migrations; once a resource is running cleanly on a node, it stays there even after the previously failed node rejoins. The cluster is healthy and failover is working end to end.
 
 ---
 
