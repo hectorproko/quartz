@@ -682,7 +682,9 @@ dadcorp.com
 ```
 
 Only after this structure exists can users be added into their respective places. This command authenticates as ldapadm using **simple bind** (`-x`) rather than `-Y EXTERNAL`, because `base.ldif` writes to the directory data tree, not the server config. Note that ldapadm doesn't exist as a real directory entry yet at this point, it was defined as a **virtual root DN** in `dbinit.ldif` ([[#Step 3 - Initialize the LDAP Database|Step 3]])., and `base.ldif` is what gives it an actual entry in the tree.
-
+<!--
+so in this lab we dont seem to use the actual ldapadm in the directory because we never assign it a password we keep using the virtual root DN
+-->
 ```bash
 ldapadd -x -w 1234 -D cn=ldapadm,dc=dadcorp,dc=com -f base.ldif
 ```
@@ -777,7 +779,7 @@ By Step 6, `base.ldif` has already run so `cn=ldapadm,dc=dadcorp,dc=com` exists 
 
 Here's why: when OpenLDAP receives a bind request for `cn=ldapadm,dc=dadcorp,dc=com`, it checks `olcRootDN`/`olcRootPW` from the engine config first. That's the password `1234` we set in `dbinit.ldif`. The real directory entry created by `base.ldif` is an `organizationalRole` object — it never had a `userPassword` attribute set on it.
 
-in this lab we dont use the real ldapadm at all, because doesnt have password?
+in this lab we dont use the real ldapadm at all, because doesnt have password? seems correct
 -->
 **Output:**
 
