@@ -708,7 +708,7 @@ It's called "simple" to distinguish it from the other LDAP authentication mechan
 This command failed twice with the same error:
 
 ```
-ldap_bind: Invalid credentials (49)
+❌ ldap_bind: Invalid credentials (49)
 ```
 
 ![[Pasted image 20260511124750.png]] 
@@ -844,7 +844,7 @@ May 30 22:04:05 localhost.localdomain slapd[1751]: main: TLS init def ctx failed
 May 30 22:04:05 localhost.localdomain slapd[1751]: slapd stopped.
 ```
 
-**Root cause:** This is the deferred consequence of the `key.ldif` error `(80)` from Step 4. During Part 1, `slapd` was already running when TLS was configured and was never restarted, so it kept using its in-memory state. On a cold start, it tried to open the TLS key file from its saved config, and that path was wrong.
+**Root cause:** This is the deferred consequence of the `key.ldif` error `(80)` from [[#Step 4 - Enable TLS|Step 4 - Enable TLS]]. During Part 1, `slapd` was already running when TLS was configured and was never restarted, so it kept using its in-memory state. On a cold start, it tried to open the TLS key file from its saved config, and that path was wrong.
 
 I verified this by inspecting the active config directly:
 
@@ -951,9 +951,7 @@ The task for Part 2 is to:
 
 ---
 
-### Step 8 - Create the `Printers` OU Under Sales
-
-#### Write the OU LDIF
+### Step 8 - Create the `Printers` OU LDIF Under Sales
 
 I created `ou.ldif` to define the new Organizational Unit:
 
@@ -990,7 +988,7 @@ My first attempt to add the printer user failed before I had the OU correctly na
 [root@localhost ~]# ldapmodify -a -x -D "cn=ldapadm,dc=dadcorp,dc=com" -w 1234 \
   -H ldapi:/// -f printer.ldif
 adding new entry "uid=sales_printer,ou=Printers,ou=Sales,dc=dadcorp,dc=com"
-ldap_add: No such object (32)
+❌ldap_add: No such object (32)
         matched DN: ou=Sales,dc=dadcorp,dc=com
 ```
 
@@ -1024,7 +1022,14 @@ Then applied the corrected `ou.ldif` shown above.
 ### Step 9 - Create the `sales_printer` User Entry
 
 To build the new user LDIF, I used the `fd_printer` entry from the directory as a template since it is the same type of object (a printer service account). I created `printer.ldif` and edited it with the new values:
+<!--[[#Step 7 - Inspect the Existing Directory|Step 7]]
+Good catch — "template" is misleading because it implies a separate file. What actually happened was:
 
+1. We ran `ldapsearch -x -h localhost -b dc=dadcorp,dc=com` in Step 7 to dump the whole directory
+2. We found the `fd_printer` entry in that output
+3. We **copied that entry directly from the terminal output** into a new `printer.ldif` file
+4. Then edited the values to match `sales_printer`
+-->
 ```bash
 vim printer.ldif
 ```
