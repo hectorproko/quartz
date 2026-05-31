@@ -134,7 +134,7 @@ Job for slapd.service failed because the control process exited with error code.
 See "systemctl status slapd.service" and "journalctl -xe" for details.
 
 [root@localhost ~]# systemctl status slapd
-● slapd.service - OpenLDAP Server Daemon
+🔴 slapd.service - OpenLDAP Server Daemon
    Active: failed (Result: exit-code)
 
 May 30 20:29:15 localhost.localdomain slapd[1995]: tlsmc_cert_create_hash_symlink:
@@ -772,7 +772,13 @@ With the directory structure in place, I added the user accounts defined in `use
 ```bash
 ldapadd -x -w 1234 -D cn=ldapadm,dc=dadcorp,dc=com -f users.ldif
 ```
+<!--
+By Step 6, `base.ldif` has already run so `cn=ldapadm,dc=dadcorp,dc=com` exists as a real entry in the directory. However the authentication is **still going through the virtual root DN mechanism** — not the real entry.
 
+Here's why: when OpenLDAP receives a bind request for `cn=ldapadm,dc=dadcorp,dc=com`, it checks `olcRootDN`/`olcRootPW` from the engine config first. That's the password `1234` we set in `dbinit.ldif`. The real directory entry created by `base.ldif` is an `organizationalRole` object — it never had a `userPassword` attribute set on it.
+
+in this lab we dont use the real ldapadm at all, because doesnt have password?
+-->
 **Output:**
 
 ```
@@ -825,13 +831,13 @@ The entry returned with the correct OU path (`ou=People,ou=Engineering`) and all
 
 ---
 
-### Pre-Lab - Fixing `slapd` After Reboot
+#### Troubleshooting - `slapd` Fails to Start After Reboot (`TLS init def ctx failed: -1`)
 
 After taking a snapshot and powering the VM back on to begin Part 2, `slapd` failed to start:
 
 ```
 [root@localhost ~]# systemctl status slapd
-● slapd.service - OpenLDAP Server Daemon
+🔴 slapd.service - OpenLDAP Server Daemon
    Active: failed (Result: exit-code)
 
 May 30 22:04:05 localhost.localdomain slapd[1751]: main: TLS init def ctx failed: -1
@@ -877,7 +883,7 @@ systemctl status slapd
 ```
 
 ```
-Active: active (running)
+🟢 Active: active (running)
 ```
 
 > **Lesson learned:** `slaptest -u` validates config file syntax, not whether the file paths it references actually exist. A failed `ldapmodify` that returns error `(80)` can leave a stale value in the config that appears fine until the next cold start. Always verify the actual config values after a TLS-related change.
