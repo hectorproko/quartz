@@ -503,6 +503,18 @@ The repo names `CentOS 7.2 - FTP` and `AlmaLinux 9 Minimal - FTP` at the top of 
 
 **[[PXE Lab 4 - Configuring PXE Boot]]** completes the series. It installs a TFTP server, places the PXE bootloader and kernel/initrd files in `/var/lib/tftpboot/`, creates a boot menu, and builds a Kickstart file that automates the entire CentOS 7.2 installation over the network.
 
+
+%%### Post
+Part 3 of my PXE lab series is up. This one covers vsftpd and setting up the OS installation media over FTP.
+
+The goal was simple: copy the full contents of a CentOS 7.2 and AlmaLinux 9 ISO into an FTP directory so the network installer can pull packages from it. What caught me was that tcp_wrappers was removed from AlmaLinux 9 but the default vsftpd config still includes it, which causes a silent 500 error on every connection. Took a minute to track down.
+
+This lab sits between DHCP (part 2) and the final PXE boot setup (part 4). Without the FTP server, the client has nowhere to pull the OS from once it boots over the network.
+
+https://hectorproko.github.io/quartz/Mixed/pxeLab3-ConfiguringFtp(vsftpd)/PXE-Lab-3---Configuring-FTP-(vsftpd)
+
+`#Linux #Sysadmin #Networking #FTP #vsftpd #AlmaLinux #FileServer #Infrastructure `%%
+
 %%
 [[FTP (File Transfer Protocol)#Installing the vsftpd Service]]
 ## Prerequisites

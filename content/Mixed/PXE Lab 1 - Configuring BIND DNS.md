@@ -487,6 +487,18 @@ Running the same query a second time returns a much lower query time (typically 
 
 **[[PXE Lab 2 - Configuring a DHCP Server]]** builds directly on this. The DHCP configuration will point clients to `192.168.56.106` as their DNS server and set `example.vm` as the search domain, so clients can resolve short names like `server1` instead of needing the full FQDN `server1.example.vm`.
 
+%%### Post
+I've been working on a 4-part home lab series where I build a full PXE network boot server from scratch on AlmaLinux 9. This is part 1.
+
+Before anything else can work, you need DNS. I installed and configured BIND on Server 1, set up a private example.vm zone, and pointed external queries to Google's resolvers as forwarders. Sounds straightforward until NetworkManager starts pulling DNS from three different interfaces and your resolv.conf looks nothing like you expected.
+
+Wrote up the full process including the troubleshooting steps. Parts 2, 3, and 4 cover DHCP, FTP, and PXE boot respectively, each building on this foundation.
+
+https://hectorproko.github.io/quartz/Mixed/PXE-Lab-1---Configuring-BIND-DNS
+
+`#Linux #Sysadmin #Networking #DNS #BIND #AlmaLinux #Homelab #Infrastructure 
+`
+%%
 %%
 [[BIND (Berkeley Internet Name Domain)]] #reconcile 
 [[LDAP Configuring an OpenLDAP Server]]

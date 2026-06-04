@@ -522,6 +522,18 @@ The hostname `server3` confirms the Kickstart `network --hostname=server3.exampl
 | `/var/ftp/pub/centos72/isolinux/` | CentOS 7.2 kernel and initrd source |
 | `/var/ftp/pub/almalinux9/isolinux/` | AlmaLinux 9 kernel and initrd source |
 
+%%### Post
+Part 4 of my PXE lab series is up, and this is the one everything else was building toward.
+
+A VM with no OS, no disk, no boot media powers on, gets an IP from DHCP, downloads a bootloader over TFTP, loads a menu, and installs CentOS 7.2 completely unattended using a Kickstart file served over FTP. The whole thing runs without touching a single installer prompt. Watching it work the first time was genuinely satisfying.
+
+The DNS, DHCP, and FTP setup from parts 1, 2, and 3 all had to be correct for any of this to work. If you're interested in how it all fits together the full write-up walks through each piece.
+
+https://hectorproko.github.io/quartz/Mixed/pxeLab4-ConfiguringPxeBoot/PXE-Lab-4---Configuring-PXE-Boot
+
+`#Linux #Sysadmin #Networking #PXE #TFTP #Kickstart #Automation #AlmaLinux  #Infrastructure `
+%%
+
 %%
 ## Prerequisites
 
@@ -566,7 +578,7 @@ menu.c32  pxelinux.0
 
 ## Overview
 
-In this lab you will turn Server 1 into a PXE boot server. By the end, a client VM with no OS will boot over the network and install AlmaLinux 9 automatically using a Kickstart file. CentOS 7.2 is also available as a manual install option.
+In this lab you will turn Server 1 into a PXE boot server. By the end, a client VM with no OS will boot over the network and install AlmaLinux 9 automatically using a [[Kickstart file]]. CentOS 7.2 is also available as a manual install option.
 
 **What runs on Server 1 after this lab:**
 
