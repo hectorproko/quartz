@@ -61,6 +61,8 @@ sudo ip link set enp0s3 up
 sudo dhclient enp0s3
 ```
 
+^08deda
+
 To make this survive reboots, I edited the interface config file:
 
 ```bash
@@ -1156,3 +1158,22 @@ dc=dadcorp,dc=com
 **Parent containers must exist before child entries.** LDAP enforces referential integrity, you cannot add `uid=sales_printer,ou=Printers,ou=Sales,...` if `ou=Printers,ou=Sales,...` does not already exist. Always verify the parent OU is present and correctly named before adding entries beneath it.
 
 **Schemas must be loaded before the object classes that depend on them.** Attempting to add entries with `posixAccount` or `shadowAccount` attributes before loading the `nis` and `cosine` schemas will fail with an `objectClass` error.
+
+
+**Recently implemented an OpenLDAP Server from scratch on CentOS 7** to get hands-on experience with the LDAP protocol.
+
+I successfully set up a fully functional OpenLDAP directory server, configured the base directory structure, and secured it with TLS. I then created multiple users and organizational units using LDIF files, added them to the directory, and performed various operations including modifying user attributes, searching the directory, and managing entries.
+
+This project helped me deeply understand how LDAP works in practice — from server setup and schema management to real directory operations like adding, modifying, and querying user data.
+
+
+<!--
+### Post
+
+Recently implemented an OpenLDAP Server from scratch to get hands-on experience with the LDAP protocol.
+
+I successfully set up a fully functional OpenLDAP directory server, configured the base directory structure, and secured it with TLS. I then created multiple users and organizational units using LDIF files, added them to the directory, and performed various operations including modifying user attributes, searching the directory, and managing entries.
+
+This project helped me deeply understand how LDAP works in practice, from server setup and schema management to real directory operations like adding, modifying, and querying user data.
+
+#OpenLDAP #LDAP #DirectoryServices #Linux #IdentityAndAccessManagement #Cybersecurity

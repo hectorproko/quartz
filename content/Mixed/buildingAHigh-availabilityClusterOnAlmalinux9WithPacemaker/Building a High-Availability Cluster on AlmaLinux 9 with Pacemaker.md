@@ -7,8 +7,8 @@ tags:
   - high-availability
   - apache
 linkedin: "False"
-quartz: "False"
-refactored: "False"
+quartz: "True"
+refactored: "True"
 hands-on: "True"
 completed: "True"
 hardlinked: "True"
