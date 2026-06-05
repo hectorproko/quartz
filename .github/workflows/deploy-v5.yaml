@@ -20,6 +20,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      
+      - name: Restore file timestamps from git
+        run: |
+          git ls-files | while read file; do
+            ts=$(git log -1 --format="%ct" -- "$file")
+            if [ -n "$ts" ]; then
+              touch -d "@$ts" "$file"
+            fi
+          done
 
       - name: Setup Node
         uses: actions/setup-node@v4
