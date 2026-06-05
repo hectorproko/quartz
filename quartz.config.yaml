@@ -22,25 +22,25 @@ configuration:
       code: IBM Plex Mono
     colors:
       lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
+        light: "#EEE6DD"      # Rosé Pine base
+        lightgray: "#DCD3CB"  # surface0
+        gray: "#A1A0B0"       # overlay2
+        darkgray: "#575279"   # text
+        dark: "#575279"       # text
+        secondary: "#1A7DA4"  # custom teal
+        tertiary: "#56949F"   # green
+        highlight: "rgba(26, 125, 164, 0.15)"
+        textHighlight: "#EA9D3488"
       darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+        light: "#303246"      # Frappe base
+        lightgray: "#414559"  # surface0
+        gray: "#737891"       # overlay0
+        darkgray: "#C6CEEF"   # text
+        dark: "#C6CEEF"       # text
+        secondary: "#11B7C5"  # custom teal
+        tertiary: "#A6D189"   # green
+        highlight: "rgba(17, 183, 197, 0.15)"
+        textHighlight: "#E5C89088"
 plugins:
   - source: github:quartz-community/created-modified-date
     enabled: true

@@ -1,3 +1,40 @@
 @use "./variables.scss" as *;
 
-// put your custom CSS here!
+/* H1: Red, weight 900, with divider */
+h1 { color: #E78284 !important; font-weight: 900 !important; border-bottom: 1px solid #E78284; padding-bottom: 2px; }
+/* H2: Peach, weight 100 */
+h2 { color: #EF9F76 !important; font-weight: 100 !important; }
+/* H3: Green */
+h3 { color: #A6D189 !important; font-weight: 700 !important; }
+/* H4: Teal */
+h4 { color: #11B7C5 !important; font-weight: 700 !important; }
+/* H5: Lavender */
+h5 { color: #BABBF1 !important; font-weight: 700 !important; }
+/* H6: Mauve */
+h6 { color: #CA9EE6 !important; font-weight: 700 !important; }
+
+/* Bold: Red | Italic: Green */
+strong, b { color: #E78284; }
+em, i { color: #A6D189; }
+
+/* Tags: pill shape */
+.tag-link, a.tag-link { border-radius: 2em !important; }
+
+/* Callouts: sleek style */
+.callout { border-radius: 4px; padding: 0; background-color: rgba(41, 44, 60, 0.4); }
+.callout .callout-title { padding: 8px; }
+.callout .callout-content { padding: 8px; border-top: 1px dashed rgba(255,255,255,0.15); }
+
+/* Callout colors */
+.callout[data-callout="note"] { --callout-color: 140, 170, 238; }
+.callout[data-callout="info"], .callout[data-callout="tip"] { --callout-color: 17, 183, 197; }
+.callout[data-callout="success"], .callout[data-callout="check"] { --callout-color: 166, 209, 137; }
+.callout[data-callout="warning"], .callout[data-callout="caution"] { --callout-color: 229, 200, 144; }
+.callout[data-callout="danger"], .callout[data-callout="error"] { --callout-color: 231, 130, 132; }
+.callout[data-callout="example"] { --callout-color: 202, 158, 230; }
+.callout[data-callout="quote"] { --callout-color: 98, 103, 126; }
+
+/* Smooth transitions */
+body, h1, h2, h3, h4, h5, h6, p, a, code, pre {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
