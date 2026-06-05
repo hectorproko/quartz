@@ -1,0 +1,4 @@
+- Only the _server_ presents a certificate
+- The client verifies the server is who it claims to be
+- The server has no idea who the client is
+- This is what happens every time you visit a website over HTTPS

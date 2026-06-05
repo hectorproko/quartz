@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Web, App, and DB tiers with Route53 setup
+
+Parameters:
+  VPCId:
+    Description: The VPC ID
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0a2b36fb028de677a
+  PublicSubnetId:
+    Description: The public subnet ID
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-021672cc5cec03bd8
+  PrivateSubnetId:
+    Description: The private subnet ID
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-0d1a60268878cb72b
+  PrivateSubnetId2:
+    Description: The private subnet ID 2
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-0e42cdf75e18e551b
+  MasterUsername:
+    Description: RDS Master Username
+    Type: String
+    Default: admin
+  MasterUserPassword:
+    Description: RDS Master Password
+    Type: String
+    Default: Passw0rd!
+    NoEcho: true
+  DomainName:
+    Description: The domain name for the Route53 hosted zone (e.g., example.com.)
+    Type: String
+    Default: temp.hectorproko.com
+  ImageId:
+    Description: The AMI ID
+    Type: String
+    Default: ami-053b0d53c279acc90 #redhat ami-067d1e60475437da2
+  KeyName:
+    Description: SSH Key Name
+    Type: String
+    Default: daro.io
+
+Resources:
+
+  DBSubnetGroup:
+   Type: AWS::RDS::DBSubnetGroup
+   Properties:
+     DBSubnetGroupDescription: "Subnet group for RDS"
+     SubnetIds:
+       - !Ref PrivateSubnetId
+       - !Ref PrivateSubnetId2
+        
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    Properties:
+      DBInstanceIdentifier: MySQL
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.micro
+      Engine: MySQL
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: true   # <-- Add this property
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: "Security group for RDS"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          CidrIp: 0.0.0.0/0 
