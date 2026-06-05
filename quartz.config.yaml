@@ -7,7 +7,7 @@ configuration:
   analytics:
     provider: plausible
   locale: en-US
-  baseUrl: hectorproko.github.io
+  baseUrl: hectorproko.github.io/quartz
   ignorePatterns:
     - private
     - templates
