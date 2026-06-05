@@ -5,7 +5,8 @@ configuration:
   enableSPA: true
   enablePopovers: true
   analytics:
-    provider: plausible
+    provider: google
+    tagId: G-PCN0FR1MYM
   locale: en-US
   baseUrl: hectorproko.github.io/quartz
   ignorePatterns:
