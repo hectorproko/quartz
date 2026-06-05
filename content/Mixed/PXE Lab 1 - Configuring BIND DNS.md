@@ -23,7 +23,7 @@ hardlinked: "True"
 
 ---
 
-## Overview [[icons]]
+## Overview
 
 This is the first lab in a four-part series building a complete PXE network boot infrastructure from scratch. Before clients can boot over the network, they need a reliable DNS server to resolve hostnames in the internal lab domain. In this lab, I install and configure BIND (Berkeley Internet Name Domain) on Server 1 to serve a private `example.vm` zone, handle DNS forwarding to Google's public resolvers for external queries, and lock down `/etc/resolv.conf` so the server always queries itself.
 

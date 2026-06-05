@@ -1,7 +1,7 @@
-<!--
-Picture doesnt work
+
+%%Picture doesnt work
 ![[IMG-20230405-WA0008.jpg|400]]
--->
+%%
 
 ## About Me
 Hi, I'm Hector Rodriguez. This webpage is a collection of my self-learning projects in the realm of DevOps technologies. Feel free to explore and see what I've been learning and working on.
