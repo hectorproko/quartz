@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: Hector's Learning Hub 🧠
+  pageTitle: Hector's Learning Hub 💡
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
