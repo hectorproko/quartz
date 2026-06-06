@@ -39,7 +39,7 @@ Server 1 (192.168.56.106)
 
 **Prerequisites:**
 - [[PXE Lab 1 - Configuring BIND DNS|Lab 1]] complete - Server 1 is running BIND on `192.168.56.106`
-- Server 1 has a static IP on `enp0s8`
+- Server 1 has a [[PXE Lab 1 - Configuring BIND DNS#Set the static IP on enp0s8|static IP]] on `enp0s8`
 - Root or sudo access
 
 ---
