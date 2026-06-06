@@ -25,7 +25,7 @@ hardlinked: "True"
 
 ---
 
-## Overview
+## Overview 
 
 With DNS and DHCP running, this lab adds the file distribution layer. PXE boot requires two things beyond network configuration: the bootloader files served over TFTP (covered in Lab 4), and the full OS installation media served over a separate protocol. I use FTP for the installation media because it integrates cleanly with Anaconda, the Red Hat family installer.
 
