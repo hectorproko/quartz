@@ -27,9 +27,9 @@ hardlinked: "True"
 
 ## Overview 
 
-With DNS and DHCP running, this lab adds the file distribution layer. PXE boot requires two things beyond network configuration: the bootloader files served over TFTP (covered in Lab 4), and the full OS installation media served over a separate protocol. I use FTP for the installation media because it integrates cleanly with Anaconda, the Red Hat family installer.
+With DNS and DHCP running, this lab adds the file distribution layer. PXE boot uses two protocols for two distinct stages: TFTP delivers the bootloader and kernel during the firmware stage, while FTP serves the full installation media once the installer is running. I use FTP specifically because it integrates cleanly with [[Anaconda]], the Red Hat family installer..
 
-In this lab I install `vsftpd` on Server 1, configure it for anonymous read-only access, then copy the full contents of both a CentOS 7.2 ISO and an AlmaLinux 9 ISO into the FTP directory. Lab 4 will reference these directories as the package source for network installations.
+In this lab I install `vsftpd` on Server 1, configure it for anonymous read-only access, then copy the full contents of both a CentOS 7.2 ISO and an AlmaLinux 9 ISO into the FTP directory. [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] will reference these directories as the package source for network installations.
 
 I also add a NAT adapter to Server 2 in this lab so it can reach the internet for package installs, and configure it as a DNF client pointing at Server 1's FTP as a local repository.
 
@@ -48,12 +48,12 @@ Server 1 (192.168.56.106)
 
 **Prerequisites:**
 
-| Requirement | From |
-|-------------|------|
-| Server 1 has a static IP (`192.168.56.106`) on `enp0s8` | Lab 1 |
-| BIND DNS is running and serving `example.vm` | Lab 1 |
-| ISC DHCP is installed, configured, and running | Lab 2 |
-| Server 2 exists and gets `192.168.56.120` from DHCP | Lab 2 |
+| Requirement                                             | From                                             |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| Server 1 has a static IP (`192.168.56.106`) on `enp0s8` | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| BIND DNS is running and serving `example.vm`            | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| ISC DHCP is installed, configured, and running          | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
+| Server 2 exists and gets `192.168.56.120` from DHCP     | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
 
 Verify services are up before starting:
 
@@ -66,8 +66,9 @@ systemctl status dhcpd
 
 ## Part 1 - Add a NAT Interface to Server 2
 
-Server 2 currently only has the host-only adapter. Without a second adapter for internet access, it cannot install packages like `bind-utils` (which provides `dig`) from the internet. Adding a NAT adapter on Adapter 1 gives it internet access while keeping the host-only `enp0s8` interface for internal lab communication.
+Server 2 currently only has the host-only adapter. Without a second adapter for internet access, it cannot install packages like `bind-utils` (which provides `dig`) from the internet. Adding a NAT adapter on Adapter 1 gives it internet access while keeping the host-only `enp0s8` interface for internal lab communication. 
 
+*Should have done this at [[PXE Lab 2 - Configuring a DHCP Server#Part 2 - Create Server 2|Server 2 creation]]*
 ### Shut down Server 2
 
 ```bash
@@ -332,7 +333,7 @@ ls /mnt
 EFI  EULA  LICENSE  Minimal  RPM-GPG-KEY-AlmaLinux-9  extra_files.json  images  isolinux  media.repo
 ```
 
-> The AlmaLinux 9 minimal ISO has a different structure than the CentOS DVD - no `AppStream` or `BaseOS` directories, just a `Minimal` directory. Lab 4 only needs `isolinux/` (for the kernel and initrd), so this is sufficient.
+> The AlmaLinux 9 minimal ISO has a different structure than the CentOS DVD - no `AppStream` or `BaseOS` directories, just a `Minimal` directory. [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] only needs `isolinux/` (for the kernel and initrd), so this is sufficient.
 
 ### Copy the ISO contents
 
@@ -366,7 +367,7 @@ After both copies, disk usage went from 7% to 33% - still plenty of room.
 
 ## Part 6 - Verify Both Repositories via FTP
 
-Confirm the `isolinux` directories have what Lab 4 needs (`vmlinuz` and `initrd.img`):
+Confirm the `isolinux` directories have what [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] needs (`vmlinuz` and `initrd.img`):
 
 ```bash
 ls /var/ftp/pub/centos72/isolinux
@@ -440,7 +441,7 @@ enabled=1
 gpgcheck=0
 ```
 
-Note the repo file uses `server1.example.vm` by hostname - this only works because DNS (Lab 1) and DHCP (Lab 2) are in place.
+Note the repo file uses `server1.example.vm` by hostname - this only works because DNS ([[PXE Lab 1 - Configuring BIND DNS|Lab 1]]) and DHCP ([[PXE Lab 2 - Configuring a DHCP Server|Lab 2]]) are in place.
 
 ### Test the repos
 
@@ -475,7 +476,7 @@ The repo names `CentOS 7.2 - FTP` and `AlmaLinux 9 Minimal - FTP` at the top of 
 | 6 | Verified both repos are accessible via FTP from Server 2 |
 | 7 | Created DNF repo file on Server 2 pointing to both FTP paths |
 
-**What Lab 4 will use from this lab:**
+**What [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] will use from this lab:**
 
 | Image | Kernel | initrd | Install repo |
 |-------|--------|--------|--------------|
@@ -484,11 +485,11 @@ The repo names `CentOS 7.2 - FTP` and `AlmaLinux 9 Minimal - FTP` at the top of 
 
 **All services now running on Server 1:**
 
-| Service | Port | Started in |
-|---------|------|-----------|
-| DNS (named) | 53 | Lab 1 |
-| DHCP (dhcpd) | 67/68 | Lab 2 |
-| FTP (vsftpd) | 21 | This lab |
+| Service      | Port  | Started in                                       |
+| ------------ | ----- | ------------------------------------------------ |
+| DNS (named)  | 53    | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| DHCP (dhcpd) | 67/68 | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
+| FTP (vsftpd) | 21    | This lab                                         |
 
 **Port reference:**
 
