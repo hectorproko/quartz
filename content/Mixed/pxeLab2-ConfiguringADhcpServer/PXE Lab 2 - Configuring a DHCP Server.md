@@ -50,7 +50,7 @@ VirtualBox includes its own DHCP server on the host-only network. If it stays ac
 
 On the host machine, go to **File - Tools - Network Manager**, select the **Host-only Networks** tab, click on your adapter, then open the **DHCP Server** tab and uncheck **Enable Server**.
 
-![[Pasted image 20260603101851.png]]
+![[Pasted image 20260603101851.png|500]]
 
 In my case the VirtualBox DHCP server was already disabled, so I could move on. The screenshot confirms the server address shows `0.0.0.0` with the enable checkbox unchecked.
 
