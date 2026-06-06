@@ -52,7 +52,7 @@ Server 1 (192.168.56.106)
 Before setting up DNS, Server 1 needs a permanent IP address so clients always know where to find it. A DHCP-assigned address would change on reboot and break everything downstream.
 
 I also set the hostname here so logs and DNS records are consistent throughout the series.
-
+%%If the hostname is still the default `localhost.localdomain`, log entries look like `localhost.localdomain dhcpd[2236]: ...`, which is unhelpful when you're troubleshooting across multiple machines. Setting it to `server1.example.vm` early means every log line clearly identifies which machine it came from.%%
 ```bash
 hostnamectl set-hostname server1.example.vm
 ```
@@ -63,7 +63,7 @@ hostnamectl set-hostname server1.example.vm
 ip a s
 ```
 
-The server has three relevant interfaces: `enp0s3` (NAT, internet access), `enp0s8` (host-only, target for the static IP), and `enp0s9` (a second host adapter used for SSH access during the lab).
+The server has three relevant interfaces: `enp0s3` (NAT, internet access), `enp0s8` (host-only, target for the static IP), and `enp0s9` (a second host adapter bridged used for SSH access during the lab).
 
 ```
 [root@localhost ~]# ip a s
@@ -165,12 +165,12 @@ dnf install -y bind bind-utils
 During this step I hit a chicken-and-egg problem: `dnf` needs to resolve `mirrors.almalinux.org` to download the package, but DNS isn't configured yet, so the download fails:
 
 ```
-Error: Error downloading packages: Curl error (6): Couldn't resolve host name for
-https://mirrors.almalinux.org/mirrorlist/9/appstream
-[Could not resolve host: mirrors.almalinux.org]
+❌Error: Error downloading packages: Curl error (6): Couldn't resolve host name for
+  https://mirrors.almalinux.org/mirrorlist/9/appstream
+  [Could not resolve host: mirrors.almalinux.org]
 ```
 
-The fix is a temporary entry in `/etc/resolv.conf`:
+✅ The fix is a temporary entry in `/etc/resolv.conf`:
 
 ```bash
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
@@ -218,13 +218,13 @@ allow-query { localhost; };
 
 **After:**
 ```
-listen-on port 53 { any; };
+listen-on port 53 { 127.0.0.1; 192.168.56.106; };
 listen-on-v6 port 53 { none; };
 allow-query { localhost; 192.168.56.0/24; localnets; };
 ```
 
-`any` opens BIND to all IPv4 interfaces. IPv6 is disabled since the lab uses IPv4 only. The `allow-query` directive is broadened to include the entire host-only subnet plus `localnets` (which covers all directly attached networks automatically).
-
+Rather than using `any`, I scope `listen-on` to only the two interfaces that actually need DNS - loopback (`127.0.0.1`) so the server can query itself, and `192.168.56.106` for clients on the host-only network. This leaves the NAT interface (`enp0s3`) out entirely, avoiding unnecessary exposure of port 53 on a network-facing adapter.%%`any` opens BIND to all IPv4 interfaces. IPv6 is disabled since the lab uses IPv4 only.%% The `allow-query` directive is broadened to include the entire host-only subnet plus `localnets` (which covers all directly attached networks automatically).
+%%In the lab we used any listen-on port 53 { any; }; %%
 ### Enable DNS forwarding
 
 Still inside `options { }`, add:
@@ -234,13 +234,13 @@ forwarders { 8.8.8.8; 8.8.4.4; };
 forward only;
 ```
 
-`forward only` tells BIND not to attempt its own recursive lookups. All external queries are delegated to Google's resolvers. This keeps the server simple and avoids issues with root hint resolution in a lab NAT environment.
-
+`forward only` prevents BIND from falling back to its own recursive resolution if the forwarder is unreachable. In both cases, BIND checks its own cache first before forwarding anything. All external queries are delegated to Google's resolvers. This keeps the server simple and avoids issues with root hint resolution in a lab NAT environment.
+%%so that way if the forwarder fails thats it, dont go looking on [[root hints]]%%
 ### Final options block
 
 ```
 options {
-    listen-on port 53 { any; };
+    listen-on port 53 { 127.0.0.1; 192.168.56.106; };
     listen-on-v6 port 53 { none; };
     directory       "/var/named";
     dump-file       "/var/named/data/cache_dump.db";
@@ -276,15 +276,21 @@ systemctl restart named
 ss -ltnp | grep named
 ```
 
-> **AlmaLinux 9 note:** `ss` replaces `netstat` here. The `net-tools` package is not installed by default on AlmaLinux 9.
-
+<!-- This was the original output when we had any on top
 ```
 LISTEN 0  10  192.168.56.106:53   0.0.0.0:*   users:(("named",pid=12912,fd=45))
 LISTEN 0  10       10.0.2.15:53   0.0.0.0:*   users:(("named",pid=12912,fd=41))
 LISTEN 0  10       127.0.0.1:53   0.0.0.0:*   users:(("named",pid=12912,fd=36))
 ```
+-->
+
+```
+LISTEN 0  10  192.168.56.106:53   0.0.0.0:*   users:(("named",pid=12912,fd=45))
+LISTEN 0  10       127.0.0.1:53   0.0.0.0:*   users:(("named",pid=12912,fd=36))
+```
 
 Port 53 now shows on `192.168.56.106`, confirming clients on the host-only network can reach it.
+%%Each line is BIND holding a socket open on a specific address, waiting for DNS queries. Before the config change, all those lines would have shown only `127.0.0.1:53`%%
 
 ---
 
@@ -309,7 +315,7 @@ cockpit dhcpv6-client dns ssh
 
 ## Part 5 - Create a Forward Lookup Zone
 
-The forward lookup zone is what makes `server1.example.vm` resolve to an IP. Without this, BIND would handle external queries via the forwarders but have no knowledge of the internal `example.vm` domain.
+The forward lookup zone is what makes `server1.example.vm` resolve to an IP. Without this, BIND would handle external queries *(queries for names outside the `example.vm` zone)* via the forwarders but have no knowledge of the internal `example.vm` domain.
 
 ### Add the zone declaration to named.conf
 
@@ -328,7 +334,16 @@ zone "example.vm." {
 ```
 
 `type master` makes this server authoritative for the zone. `allow-update { none; }` disables dynamic DNS updates, which keeps the zone file static and predictable.
-
+%%this is a concern of what bind can answer
+**"External queries" in that paragraph is poorly worded.** What it should say is "queries for names outside the `example.vm` zone" - things like `www.google.com`. The forwarders handle those by passing them upstream to `8.8.8.8`. The listening restriction (`127.0.0.1` and `192.168.56.106`) is a separate concern about _who_ can ask, not _what_ BIND can answer.
+%%
+%%
+so creating a zone is like hey anything that is `*.example.vm we resolve it here`
+So `file "db.example"` is just telling BIND:
+```
+zone "example.vm"  ->  read records from  ->  /var/named/db.example
+```
+%%
 ### Create the zone file
 
 ```bash
@@ -337,7 +352,7 @@ cp named.empty db.example
 chgrp named db.example
 ```
 
-The zone file is stored in `/var/named/`, which the `named` process has access to. Copying from `named.empty` gives the correct base format. The `chgrp named` command is important - without it, BIND cannot read the file and the zone will fail to load.
+The zone file is stored in `/var/named/`, which the `named` process has access to. Copying from `named.empty` gives the correct base format. The `chgrp named` command is important, without it, BIND cannot read the file and the zone will fail to load.
 
 ```
 [root@localhost named]# ls -l db.example
@@ -456,15 +471,15 @@ Running the same query a second time returns a much lower query time (typically 
 
 ## Summary
 
-| Step | Command / Action |
-|------|-----------------|
-| Static IP | `nmcli connection modify "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.56.106/24` |
-| Suppress DNS leakage | `nmcli connection modify enp0s3 ipv4.ignore-auto-dns yes` (repeat for enp0s9) |
-| Install | `dnf install -y bind bind-utils` |
-| Configure | Set `listen-on any`, `allow-query`, and `forwarders` in `/etc/named.conf` |
-| Firewall | `firewall-cmd --permanent --add-service=dns` |
-| Zone | Created `example.vm` forward zone with SOA, NS, and A records |
-| Tested | Verified A record, NS record, and external forwarding with `dig` |
+| Step                 | Command / Action                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Static IP            | `nmcli connection modify "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.56.106/24` |
+| Suppress DNS leakage | `nmcli connection modify enp0s3 ipv4.ignore-auto-dns yes` (repeat for enp0s9)                      |
+| Install              | `dnf install -y bind bind-utils`                                                                   |
+| Configure            | Set `listen-on`, `allow-query`, and `forwarders` in `/etc/named.conf`                              |
+| Firewall             | `firewall-cmd --permanent --add-service=dns`                                                       |
+| Zone                 | Created `example.vm` forward zone with SOA, NS, and A records                                      |
+| Tested               | Verified A record, NS record, and external forwarding with `dig`                                   |
 
 **Key files:**
 
