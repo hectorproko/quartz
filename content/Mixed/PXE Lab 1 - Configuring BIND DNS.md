@@ -101,6 +101,8 @@ ip a s enp0s8
        valid_lft forever preferred_lft forever
 ```
 
+^acfe8f
+
 The absence of the word `dynamic` in the output confirms this is a static assignment.
 
 #### Troubleshooting - Unknown Connection Name

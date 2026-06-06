@@ -1,11 +1,10 @@
 ---
-
 tags:
   - draft
-  - linux 
-  - almalinux 
-  - networking 
-  - dhcp 
+  - linux
+  - almalinux
+  - networking
+  - dhcp
   - PXE
 linkedin: "False"
 quartz: "False"
@@ -88,9 +87,7 @@ nmcli connection up "Wired connection 1"
 
 At this point, Server 2 will fail to get an IP because Server 1's DHCP isn't running yet. This is expected - the failure confirms Server 2 is correctly looking for a DHCP server on the network.
 
-![Pasted_image_20260603105600.png]
-
-The error `IP configuration could not be reserved, no available address, timeout` is exactly what you want to see here - it means the client is broadcasting correctly.
+The error `❌IP configuration could not be reserved, no available address, timeout` is exactly what you want to see here - it means the client is broadcasting correctly.
 
 ---
 
@@ -102,8 +99,6 @@ Back on **Server 1**:
 dnf install -y dhcp-server
 ```
 
-> **AlmaLinux 9 note:** The package name changed from older RHEL versions. On CentOS 7 the package was `dhcp`. On AlmaLinux 9 it is `dhcp-server`.
-
 Verify the service was installed:
 
 ```bash
@@ -111,7 +106,7 @@ systemctl status dhcpd
 ```
 
 ```
-○ dhcpd.service - DHCPv4 Server Daemon
+🔴 dhcpd.service - DHCPv4 Server Daemon
      Loaded: loaded (/usr/lib/systemd/system/dhcpd.service; disabled; preset: disabled)
      Active: inactive (dead)
 ```
@@ -173,10 +168,10 @@ host server2 {
 
 **Static reservation explained:**
 
-| Directive | Purpose |
-|-----------|---------|
-| `hardware ethernet` | Server 2's MAC address on `enp0s8` |
-| `fixed-address` | The IP Server 2 will always receive |
+| Directive           | Purpose                                                                          |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `hardware ethernet` | Server 2's [[PXE Lab 1 - Configuring BIND DNS#^acfe8f\|MAC address]] on `enp0s8` |
+| `fixed-address`     | The IP Server 2 will always receive                                              |
 
 The fixed address `192.168.56.120` is outside the dynamic range (`.151-.254`) but still within the subnet. This prevents it from being accidentally handed to another client.
 
@@ -498,7 +493,7 @@ nmcli connection up enp0s8
 ```
 
 ❌
-![[Pasted image 20260603105600.png]]
+![[]]
 
 **The problem:** Server 2 is trying to get a DHCP lease but failing — "no available address, timeout". This is because **Server 1's DHCP isn't running yet, or VirtualBox's DHCP is still enabled.**
 
