@@ -25,7 +25,7 @@ hardlinked: "True"
 
 ## Overview
 
-With DNS running from Lab 1, this lab adds the second foundational service: DHCP. A DHCP server is essential for PXE booting because clients power on with no configuration at all. They need an IP address, they need to know where the DNS server is, and they need to be pointed toward the TFTP server that holds the boot files. A single DHCP response handles all three.
+With DNS running from [[PXE Lab 1 - Configuring BIND DNS|Lab 1]], this lab adds the second foundational service: DHCP. A DHCP server is essential for PXE booting because clients power on with no configuration at all. They need an IP address, they need to know where the DNS server is, and they need to be pointed toward the TFTP server that holds the boot files. A single DHCP response handles all three.
 
 I install ISC DHCP Server on Server 1, configure it to serve the `192.168.56.0/24` subnet with a dynamic pool and a static reservation for Server 2, and verify that Server 2 receives the correct address and DNS configuration.
 
@@ -38,7 +38,7 @@ Server 1 (192.168.56.106)
 ```
 
 **Prerequisites:**
-- Lab 1 complete - Server 1 is running BIND on `192.168.56.106`
+- [[PXE Lab 1 - Configuring BIND DNS|Lab 1]] complete - Server 1 is running BIND on `192.168.56.106`
 - Server 1 has a static IP on `enp0s8`
 - Root or sudo access
 
@@ -214,7 +214,7 @@ firewall-cmd --list-services
 cockpit dhcp dhcpv6-client dns ssh
 ```
 
-`dhcp` appears in the list alongside `dns` from Lab 1.
+`dhcp` appears in the list alongside `dns` from [[PXE Lab 1 - Configuring BIND DNS|Lab 1]].
 
 ---
 
