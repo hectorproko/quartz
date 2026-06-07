@@ -27,7 +27,55 @@ hardlinked: "True"
 ## Overview 
 
 With DNS and DHCP running, this lab adds the file distribution layer. PXE boot uses two protocols for two distinct stages: TFTP delivers the bootloader and kernel during the firmware stage, while FTP serves the full installation media once the installer is running. I use FTP specifically because it integrates cleanly with [[Anaconda]], the Red Hat family installer..
+%%
+Just like the motherboard BIOS/UEFI is firmware burned into a chip on the board that runs before any OS, the PXE ROM is firmware burned into the NIC itself that gives it a minimal set of instructions for network booting. It knows just enough to:
 
+- broadcast a DHCP Discover
+- read the `next-server` and `filename` fields from the DHCP response
+- speak basic TFTP to pull down that file
+
+That's it. No filesystem, no OS, no drivers loaded yet - just bare metal network communication at the firmware level.
+
+```
+Power on
+    |
+    v
+Motherboard BIOS/UEFI
+  - hardware inventory, POST
+  - checks boot order (disk, USB, network...)
+    |
+    v
+NIC PXE ROM  (if network boot selected)
+  - sends DHCP Discover
+  - receives IP + next-server + filename
+  - pulls pxelinux.0 via TFTP
+    |
+    v
+pxelinux.0 (Syslinux bootloader)
+  - draws the boot menu
+  - pulls kernel + initrd via TFTP
+    |
+    v
+Linux kernel boots in RAM
+  - Anaconda installer starts
+  - fetches packages via FTP
+    |
+    v
+OS installed to disk
+```
+
+**`next-server`** is just the name chosen for that DHCP option field. The "next" refers to the next hop in the boot chain - after DHCP does its job, the next thing the client needs to talk to is the TFTP server, so the field that points to it got named `next-server`. It is a standard DHCP option (option 66 in the DHCP spec), that name is baked into the protocol.
+
+**`filename`** is exactly a path, yes. It is a string the NIC ROM passes directly to the TFTP server as the filename to request. In this lab it is just [[pxelinux.0]] with no directory prefix, which means "look in the root of the TFTP server." You could write it as `boot/pxelinux.0` and it would look in a `boot/` subdirectory of `/var/lib/tftpboot/`. It is option 67 in the DHCP spec.
+
+So in your `dhcpd.conf` those two lines:
+
+```
+next-server 192.168.56.106;
+filename "pxelinux.0";
+```
+
+%%
 In this lab I install `vsftpd` on Server 1, configure it for anonymous read-only access, then copy the full contents of both a CentOS 7.2 ISO and an AlmaLinux 9 ISO into the FTP directory. [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] will reference these directories as the package source for network installations.
 
 I also add a NAT adapter to Server 2 in this lab so it can reach the internet for package installs, and configure it as a DNF client pointing at Server 1's FTP as a local repository.
@@ -213,9 +261,10 @@ anon_world_readable_only=YES
 | `listen_ipv6=NO` | Disable the IPv6 listener |
 | `anon_world_readable_only=YES` | Anonymous users can only read world-readable files |
 | `xferlog_enable=YES` | Log all file transfers |
-
+%%
 > **Note:** `tcp_wrappers=YES` was removed from this config. On AlmaLinux 9, vsftpd no longer supports tcp_wrappers and enabling it causes a `500` error on connection.
 
+%%
 Restart and confirm the config took effect:
 
 ```bash
@@ -237,7 +286,7 @@ After the initial install, connecting to the FTP server returned an error:
 curl: (8) Got a 500 ftp-server response when 220 was expected
 ```
 
-A 500 error at the initial connection is caused by a configuration problem at startup. On AlmaLinux 9, `tcp_wrappers` support was removed from vsftpd, but the default config still includes `tcp_wrappers=YES`. Removing that line from `/etc/vsftpd/vsftpd.conf` and restarting the service resolved the issue.
+A 500 error at the initial connection is caused by a configuration problem at startup. I had been following a CentOS-based configuration reference which included `tcp_wrappers=YES`, but on AlmaLinux 9 that support was removed from vsftpd entirely, so including it causes the daemon to fail at connection. Removing that line from `/etc/vsftpd/vsftpd.conf` and restarting the service resolved the issue.
 
 After the fix, from Server 2:
 

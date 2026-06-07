@@ -99,23 +99,14 @@ menu.c32  pxelinux.0
 ## Step 1 - Install Required Packages
 
 ```bash
-dnf install -y tftp tftp-server
+dnf install -y tftp tftp-server syslinux
 ```
 
-| Package | Role |
-|---------|------|
-| `tftp` | TFTP client (for local testing) |
-| `tftp-server` | TFTP server daemon |
-
-`syslinux` was already installed in Lab 3, so `pxelinux.0` and `menu.c32` are already present.
-
-```
-[root@server1 ~]# dnf install -y tftp tftp-server
-Package tftp-5.2-40.el9.x86_64 is already installed.
-Package tftp-server-5.2-40.el9.x86_64 is already installed.
-Nothing to do.
-Complete!
-```
+| Package       | Role                                              |
+| ------------- | ------------------------------------------------- |
+| `tftp`        | TFTP client (for local testing)                   |
+| `tftp-server` | TFTP server daemon                                |
+| `syslinux`    | Provides `pxelinux.0` and the `.c32` menu modules |
 
 ---
 
