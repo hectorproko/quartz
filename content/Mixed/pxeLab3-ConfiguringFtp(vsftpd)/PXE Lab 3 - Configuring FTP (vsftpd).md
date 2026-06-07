@@ -1,5 +1,4 @@
 ---
-
 tags:
   - linux
   - almalinux
@@ -9,8 +8,8 @@ tags:
   - file-server
   - repository
   - PXE
-linkedin: "False"
-quartz: "False"
+linkedin: "True"
+quartz: "True"
 refactored: "False"
 hands-on: "True"
 completed: "True"
@@ -68,7 +67,7 @@ systemctl status dhcpd
 
 Server 2 currently only has the host-only adapter. Without a second adapter for internet access, it cannot install packages like `bind-utils` (which provides `dig`) from the internet. Adding a NAT adapter on Adapter 1 gives it internet access while keeping the host-only `enp0s8` interface for internal lab communication. 
 
-*Should have done this at [[PXE Lab 2 - Configuring a DHCP Server#Part 2 - Create Server 2|Server 2 creation]]*
+*Should have done this during [[PXE Lab 2 - Configuring a DHCP Server#Part 2 - Create Server 2|Server 2 creation]]*
 ### Shut down Server 2
 
 ```bash
@@ -135,7 +134,7 @@ Both succeed - Server 2 now resolves internal hostnames via Server 1 and reaches
 
 ## Part 2 - Install and Configure vsftpd on Server 1
 
-### Install vsftpd
+### Install [[vsftpd]]
 
 On **Server 1**:
 

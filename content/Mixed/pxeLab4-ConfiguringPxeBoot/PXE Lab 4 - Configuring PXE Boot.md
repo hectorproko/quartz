@@ -1,5 +1,4 @@
 ---
-
 tags:
   - linux
   - almalinux
@@ -8,8 +7,8 @@ tags:
   - PXE
   - tftp
   - kickstart
-linkedin: "False"
-quartz: "False"
+linkedin: "True"
+quartz: "True"
 refactored: "False"
 hands-on: "True"
 completed: "True"

@@ -6,9 +6,9 @@ tags:
   - networking
   - dhcp
   - PXE
-linkedin: "False"
-quartz: "False"
-refactored: "False"
+linkedin: "True"
+quartz: "True"
+refactored: "True"
 hands-on: "True"
 completed: "True"
 title: "PXE Lab Series - Lab 2: Configuring a DHCP Server"
@@ -68,6 +68,7 @@ Server 2 is the DHCP client used to test the setup. It will receive its IP from 
 
 For the network adapter, I used **Adapter 2** set to Host-only (same adapter as Server 1's `enp0s8`). Using Adapter 2 instead of Adapter 1 means the interface appears as `enp0s8` inside the VM rather than `enp0s3`, keeping the interface naming consistent with Server 1's layout.
 
+*On Lab 3 I end up [[PXE Lab 3 - Configuring FTP (vsftpd)#Part 1 - Add a NAT Interface to Server 2|adding a NAT interface]]*
 ### Install AlmaLinux 9 and set the hostname
 
 Do a minimal install. Once booted, set the hostname:
