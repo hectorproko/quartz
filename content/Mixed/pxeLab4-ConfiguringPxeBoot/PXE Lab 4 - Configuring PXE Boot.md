@@ -333,6 +333,7 @@ Create a test VM in VirtualBox:
 - **Network:** Adapter 2 - Host-only (same adapter as Server 1's `enp0s8`)
 - **Boot order:** Network first (above Hard Disk in System settings)
 
+![[Pasted image 20260607225101.png|500]]
 #### Troubleshooting - Test VM Does Not Reach the PXE Server
 
 On the first boot attempt, the VM showed a TFTP permission denied error:
