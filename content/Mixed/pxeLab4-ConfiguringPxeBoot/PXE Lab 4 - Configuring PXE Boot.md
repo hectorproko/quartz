@@ -338,7 +338,7 @@ Create a test VM in VirtualBox:
 
 On the first boot attempt, the VM showed a TFTP permission denied error:
 
-![[Pasted image 20260604081948.png|500]]
+![[Pasted image 20260604081948.png|700]]
 
 ```
 ❌ tftp://10.0.2.4/Test.pxe... Permission denied
@@ -357,7 +357,7 @@ The "Permission denied" is a TFTP error code that essentially means the request 
 
 On the next attempt, the bootloader loaded but the menu failed to render correctly:
 
-![[Pasted image 20260604082352.png|500]]
+![[Pasted image 20260604082352.png|700]]
 
 ```
 pxelinux.0: 42722 bytes [PXE-NBP]
@@ -505,12 +505,12 @@ Boot the client VM and select **Install CentOS 7.2 (Auto)** from the menu. The i
 
 The installation runs post-setup tasks and writes the bootloader:
 
-![[Pasted image 20260604122535.png|500]]
+![[Pasted image 20260604122535.png|700]]
 
 
 After completion, the VM reboots automatically into the freshly installed system:
 
-![[Pasted image 20260604122711.png|500]]
+![[Pasted image 20260604122711.png|700]]
 
 ```
 CentOS Linux 7 (Core)
