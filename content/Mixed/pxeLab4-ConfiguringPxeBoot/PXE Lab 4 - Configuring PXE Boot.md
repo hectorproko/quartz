@@ -505,11 +505,12 @@ Boot the client VM and select **Install CentOS 7.2 (Auto)** from the menu. The i
 
 The installation runs post-setup tasks and writes the bootloader:
 
-![Pasted_image_20260604122535.png]
+![[Pasted image 20260604122535.png]]
+
 
 After completion, the VM reboots automatically into the freshly installed system:
 
-![Pasted_image_20260604122711.png]
+![[Pasted image 20260604122711.png]]
 
 ```
 CentOS Linux 7 (Core)
