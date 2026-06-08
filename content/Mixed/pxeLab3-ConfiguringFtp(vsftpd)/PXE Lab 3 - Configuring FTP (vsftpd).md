@@ -10,7 +10,7 @@ tags:
   - PXE
 linkedin: "True"
 quartz: "True"
-refactored: "False"
+refactored: "True"
 hands-on: "True"
 completed: "True"
 title: "PXE Lab Series - Lab 3: Configuring an FTP Server (vsftpd)"
@@ -182,7 +182,7 @@ Both succeed - Server 2 now resolves internal hostnames via Server 1 and reaches
 
 ## Part 2 - Install and Configure vsftpd on Server 1
 
-### Install [[vsftpd]]
+### Install [[vsftpd (Very Secure FTP Daemon)]]
 
 On **Server 1**:
 

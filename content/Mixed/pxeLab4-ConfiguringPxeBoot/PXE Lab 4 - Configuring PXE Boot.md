@@ -25,7 +25,7 @@ hardlinked: "True"
 
 ## Overview
 
-This is the final lab in the series. All the infrastructure built in Labs 1 through 3 (DNS, DHCP, FTP) comes together here to enable PXE (Preboot eXecution Environment) network booting. By the end of this lab, a client VM with no OS and no boot media can power on, receive an IP from Server 1, download a bootloader over TFTP, present a menu, and install CentOS 7.2 completely unattended using a Kickstart file - without ever touching a CD, USB drive, or boot ISO.
+This is the final lab in the series. All the infrastructure built in Labs 1 through 3 ([[PXE Lab 1 - Configuring BIND DNS|DNS]], [[PXE Lab 2 - Configuring a DHCP Server|DHCP]], [[PXE Lab 3 - Configuring FTP (vsftpd)|FTP]]) comes together here to enable [[PXE (Pre-boot Execution Environment)]] network booting. By the end of this lab, a client VM with no OS and no boot media can power on, receive an IP from Server 1, download a bootloader *([[pxelinux.0]])* over TFTP, present a menu, and install CentOS 7.2 completely unattended using a Kickstart file - without ever touching a CD, USB drive, or boot ISO.
 
 **What PXE boot actually does:**
 
@@ -66,15 +66,14 @@ Server 1 (192.168.56.106)
 
 **Prerequisites:**
 
-| Requirement | From |
-|-------------|------|
-| Server 1 static IP `192.168.56.106` on `enp0s8` | Lab 1 |
-| BIND DNS running, serving `example.vm` | Lab 1 |
-| ISC DHCP running, serving `192.168.56.0/24` | Lab 2 |
-| vsftpd running on Server 1 | Lab 3 |
-| CentOS 7.2 media at `/var/ftp/pub/centos72/` | Lab 3 |
-| AlmaLinux 9 media at `/var/ftp/pub/almalinux9/` | Lab 3 |
-| `pxelinux.0` and `menu.c32` in `/var/lib/tftpboot/` | Lab 3 |
+| Requirement                                         | From                                             |
+| --------------------------------------------------- | ------------------------------------------------ |
+| Server 1 static IP `192.168.56.106` on `enp0s8`     | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| BIND DNS running, serving `example.vm`              | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| ISC DHCP running, serving `192.168.56.0/24`         | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
+| vsftpd running on Server 1                          | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
+| CentOS 7.2 media at `/var/ftp/pub/centos72/`        | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
+| AlmaLinux 9 media at `/var/ftp/pub/almalinux9/`     | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
 
 Verify all services before starting:
 
@@ -82,16 +81,6 @@ Verify all services before starting:
 systemctl status named
 systemctl status dhcpd
 systemctl status vsftpd
-```
-
-And confirm the syslinux boot files from Lab 3 are in place:
-
-```bash
-ls /var/lib/tftpboot/
-```
-
-```
-menu.c32  pxelinux.0
 ```
 
 ---
@@ -108,12 +97,26 @@ dnf install -y tftp tftp-server syslinux
 | `tftp-server` | TFTP server daemon                                |
 | `syslinux`    | Provides `pxelinux.0` and the `.c32` menu modules |
 
+With syslinux installed, the PXE bootloader and menu module need to be copied into the TFTP root manually. Syslinux places its files under `/usr/share/syslinux/` but the TFTP server only serves from `/var/lib/tftpboot/`.
+
+```
+cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/
+cp /usr/share/syslinux/menu.c32   /var/lib/tftpboot/
+```
+
 ---
 
 ## Step 2 - Copy Kernels and initrds to the TFTP Root
 
-The TFTP root directory is `/var/lib/tftpboot/`. This is where the client VM looks for everything it downloads during the boot process. I copy the kernel and initial RAM disk from each ISO and rename them to avoid filename conflicts.
+The TFTP root directory is `/var/lib/tftpboot/`. This is where the client VM looks for everything it downloads during the boot process. I copy the kernel and initial RAM disk (initrd.img) from each ISO and rename them to avoid filename conflicts.
+%%
+Great question. The PXE ROM on the client's NIC doesn't know about that path at all - it only knows two things, both delivered by the DHCP response:
+- **`next-server`** - the IP of the TFTP server (`192.168.56.106`)
+- **`filename`** - the first file to request (`pxelinux.0`)
+So the client asks the TFTP server at `192.168.56.106` for a file called `pxelinux.0`, with no path prefix.
 
+So when you see `initrd.img` sitting in the ISO's `isolinux/` directory, it is just a file on disk like any other. It only becomes a "RAM disk" at the moment the kernel loads it into memory during boot. The name describes what it becomes at runtime, not what it is at rest.
+%% [[RAM Disk]]
 ```bash
 cd /var/lib/tftpboot
 
@@ -125,7 +128,14 @@ cp /var/ftp/pub/centos72/isolinux/initrd.img  ./initrd-centos7.img
 
 ls -l /var/lib/tftpboot
 ```
-
+%%
+looking at the file name initrd.img you would think is using the older [[initramfs (Initial RAM Filesystem) vs RAM Disk (initrd)#The key difference|initrd and not newer initramfs]]
+but we can not assume that by name alone we can check with 
+file /var/ftp/pub/almalinux9/isolinux/initrd.img
+```
+initrd.img: ASCII cpio archive (SVR4 with no CRC)
+```
+%%
 ```
 -r--r--r--. 1 root root 223197216 Jun  3 23:10 initrd-alma9.img
 -rw-r--r--. 1 root root  48434768 Jun  3 23:10 initrd-centos7.img
@@ -201,7 +211,7 @@ All four lab services (dns, dhcp, ftp, tftp) are now visible in the firewall rul
 
 ## Step 5 - Start the TFTP Server
 
-TFTP is managed as a socket-activated service on AlmaLinux 9, meaning systemd starts the daemon on demand when the first client connects.
+TFTP is managed as a socket-activated service on AlmaLinux 9, meaning systemd starts the daemon on demand when the first client connects. ^0384f8
 
 ```bash
 systemctl start tftp.socket
@@ -209,6 +219,38 @@ systemctl enable tftp.socket
 ss -lun | grep 69
 ```
 
+%%
+Why is it `.socket`?
+
+Great question. On AlmaLinux 9 (and RHEL 9 family), TFTP is managed using **systemd socket activation** rather than a traditional persistent service.
+
+Here's how it works: instead of keeping the `tftp` daemon running constantly waiting for connections, systemd keeps a lightweight socket open on UDP 69. The moment a client sends a request to that port, systemd wakes up the actual `tftp` daemon to handle it, then lets it exit when done.
+
+This means:
+
+- `tftp.socket` - the unit systemd manages permanently, listening on UDP 69
+- `tftp.service` - the actual daemon, spawned on demand and short-lived
+
+If you ran `systemctl start tftp.service` directly, it would start the daemon once and exit immediately because there's no client to serve right then. Nothing would actually be listening on port 69.
+
+You can see both units exist:
+```bash
+systemctl list-units | grep tftp
+```
+
+```
+tftp.service   - Trivial File Transfer Protocol (TFTP) server
+tftp.socket    - Tftp Socket
+```
+
+Only `tftp.socket` will show as `active (listening)` when no client is connected. `tftp.service` shows as `inactive` until a request comes in, at which point systemd activates it automatically.
+
+This pattern is called **socket activation** and is common for low-traffic services in RHEL 9 - `xinetd` handled this role on older systems. TFTP is a natural fit because PXE clients only connect during boot, so there is no reason to keep the daemon alive in between.
+
+TFTP only. FTP (`vsftpd`) runs as a traditional persistent service, so it works differently.
+
+The reason for the difference comes down to traffic patterns and protocol complexity:
+%%
 ```
 UNCONN 0  0  *:69  *:*
 ```
@@ -242,7 +284,13 @@ mkdir /var/lib/tftpboot/pxelinux.cfg
 ```bash
 vi /var/lib/tftpboot/pxelinux.cfg/default
 ```
+%%
+This config file is requeted by the bootloader [[pxelinux.0]]
 
+PXELINUX doesn't actually know the full filesystem path - it only knows TFTP-relative paths.
+
+When `pxelinux.0` is downloaded by the client, the TFTP server serves it from `/var/lib/tftpboot/`. That directory **is** the TFTP root - it maps to `/` from the client's perspective. So once PXELINUX is running on the client, it thinks it is already sitting at the root of the TFTP server.
+%%
 ```
 default menu.c32
 prompt 0
@@ -289,21 +337,30 @@ Create a test VM in VirtualBox:
 
 On the first boot attempt, the VM showed a TFTP permission denied error:
 
-![Pasted_image_20260604081948.png]
+![[Pasted image 20260604081948.png]]
 
 ```
-tftp://10.0.2.4/Test.pxe... Permission denied
+❌ tftp://10.0.2.4/Test.pxe... Permission denied
 ```
 
-The VM was getting an IP from the NAT interface rather than the host-only network, and the TFTP path was wrong. The issue was the network adapter was set to NAT instead of Host-only. Switching to Host-only on Adapter 2 resolved this.
+To walk through it step by step:
+
+1. VM boots on NAT adapter - VirtualBox's DHCP answers instead of Server 1
+2. VirtualBox DHCP hands back `10.0.2.15` as the IP and `10.0.2.4` as the **next-server** (its own gateway, not out TFTP server)
+3. The **filename** `Test.pxe` is whatever VirtualBox defaults to - it has no knowledge of `pxelinux.0`
+4. The VM goes to `10.0.2.4` via TFTP and asks for `Test.pxe` - neither the server nor the file exist, so it gets "Permission denied"
+
+The "Permission denied" is a TFTP error code that essentially means the request couldn't be fulfilled - in this case not because of a file permission problem, but because `10.0.2.4` has no TFTP service at all..
+
+✅ The fix was simply putting the VM on the host-only adapter,
 
 On the next attempt, the bootloader loaded but the menu failed to render correctly:
 
-![Pasted_image_20260604082352.png]
+![[Pasted image 20260604082352.png]]
 
 ```
 pxelinux.0: 42722 bytes [PXE-NBP]
-Failed to load ldlinux.c32
+❌ Failed to load ldlinux.c32
 Boot failed
 ```
 
@@ -325,7 +382,7 @@ PXELINUX can serve different boot configurations to specific machines by matchin
 
 In VirtualBox: VM Settings - Network - Adapter 2 - Advanced - copy the MAC address.
 
-![Pasted_image_20260604084339.png]
+![[Pasted image 20260604084339.png|500]]
 
 ```
 080027D4A5CB
@@ -346,7 +403,8 @@ This MAC-specific file initially contained the same menu as `default`. The purpo
 
 After creating the file, the test VM only sees the CentOS 7.2 install option:
 
-![Pasted_image_20260604122246.png]
+![[Pasted image 20260604122246.png|500]]
+
 
 ---
 
