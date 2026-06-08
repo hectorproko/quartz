@@ -400,7 +400,7 @@ The query was answered by Server 1 (`192.168.56.106`), which Server 2 learned ab
 
 ## What's Next
 
-**[[PXE Lab 3 - Configuring FTP (vsftpd)]]** builds on this setup by installing `vsftpd` on Server 1 and copying two installation ISOs (CentOS 7.2 and AlmaLinux 9) into `/var/ftp/pub/`. This FTP directory is required by Lab 4 (PXE Boot), which fetches the kernel, initrd, and Kickstart file from it over the network.
+**[[PXE Lab 3 - Configuring FTP (vsftpd)]]** builds on this setup by installing `vsftpd` on Server 1 and copying two installation ISOs (CentOS 7.2 and AlmaLinux 9) into `/var/ftp/pub/`. This FTP directory is required by [[PXE Lab 4 - Configuring PXE Boot|Lab 4]] (PXE Boot), which fetches the kernel, initrd, and Kickstart file from it over the network.
 
 %%### Post
 Part 2 of my PXE home lab series is up. This one covers setting up ISC DHCP Server on AlmaLinux 9.

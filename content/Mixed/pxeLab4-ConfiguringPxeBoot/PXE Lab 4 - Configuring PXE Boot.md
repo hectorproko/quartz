@@ -66,14 +66,14 @@ Server 1 (192.168.56.106)
 
 **Prerequisites:**
 
-| Requirement                                         | From                                             |
-| --------------------------------------------------- | ------------------------------------------------ |
-| Server 1 static IP `192.168.56.106` on `enp0s8`     | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
-| BIND DNS running, serving `example.vm`              | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
-| ISC DHCP running, serving `192.168.56.0/24`         | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
-| vsftpd running on Server 1                          | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
-| CentOS 7.2 media at `/var/ftp/pub/centos72/`        | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
-| AlmaLinux 9 media at `/var/ftp/pub/almalinux9/`     | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
+| Requirement                                     | From                                             |
+| ----------------------------------------------- | ------------------------------------------------ |
+| Server 1 static IP `192.168.56.106` on `enp0s8` | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| BIND DNS running, serving `example.vm`          | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |
+| ISC DHCP running, serving `192.168.56.0/24`     | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |
+| vsftpd running on Server 1                      | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
+| CentOS 7.2 media at `/var/ftp/pub/centos72/`    | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
+| AlmaLinux 9 media at `/var/ftp/pub/almalinux9/` | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]  |
 
 Verify all services before starting:
 
@@ -151,7 +151,7 @@ The AlmaLinux 9 initrd is significantly larger (223 MB vs 48 MB for CentOS 7.2) 
 
 ## Step 3 - Configure DHCP for PXE
 
-The DHCP server is already running from Lab 2. PXE requires two additional fields in the subnet block: `next-server` (the address of the TFTP server) and `filename` (the boot file the client should request first).
+The DHCP server is already running from [[PXE Lab 2 - Configuring a DHCP Server|Lab 2]]. PXE requires two additional fields in the subnet block: `next-server` (the address of the TFTP server) and `filename` (the boot file the client should request first).
 
 ```bash
 vi /etc/dhcp/dhcpd.conf
@@ -525,17 +525,17 @@ The hostname `server3` confirms the Kickstart `network --hostname=server3.exampl
 
 ## Troubleshooting
 
-| Problem | Check |
-|---------|-------|
-| VM gets no IP | `systemctl status dhcpd` - confirm `next-server` and `filename` are in the subnet block |
-| PXE menu does not appear | `ss -lun \| grep 69` - confirm TFTP is listening |
-| `file not found` on boot | `ls /var/lib/tftpboot` - verify all kernel and initrd files exist |
-| `Failed to load ldlinux.c32` | Copy all syslinux modules: `cp /usr/share/syslinux/*.c32 /var/lib/tftpboot/` |
-| MAC config not loading | Check filename: `01-` prefix, hyphens not colons, all lowercase |
-| Kickstart install fails | `curl ftp://192.168.56.106/pub/centos7.ks` - confirm file is accessible |
-| Installer cannot find packages | Confirm the `url` line in the Kickstart file points to the correct FTP path |
-| DHCP errors on start | Normal - `enp0s3`/`enp0s9` subnet warnings can be ignored |
-| TFTP blocked by firewall | `firewall-cmd --list-services` - confirm `tftp` is listed |
+| Problem                        | Check                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| VM gets no IP                  | `systemctl status dhcpd` - confirm `next-server` and `filename` are in the subnet block |
+| PXE menu does not appear       | `ss -lun \| grep 69` - confirm TFTP is listening                                        |
+| `file not found` on boot       | `ls /var/lib/tftpboot` - verify all kernel and initrd files exist                       |
+| `Failed to load ldlinux.c32`   | Copy all syslinux modules: `cp /usr/share/syslinux/*.c32 /var/lib/tftpboot/`            |
+| MAC config not loading         | Check filename: `01-` prefix, hyphens not colons, all lowercase                         |
+| Kickstart install fails        | `curl ftp://192.168.56.106/pub/centos7.ks` - confirm file is accessible                 |
+| Installer cannot find packages | Confirm the `url` line in the Kickstart file points to the correct FTP path             |
+| DHCP errors on start           | Normal - `enp0s3`/`enp0s9` subnet warnings can be ignored                               |
+| TFTP blocked by firewall       | `firewall-cmd --list-services` - confirm `tftp` is listed                               |
 
 ---
 
@@ -554,12 +554,12 @@ The hostname `server3` confirms the Kickstart `network --hostname=server3.exampl
 
 **All services running on Server 1:**
 
-| Service | Port | Started in |
-|---------|------|-----------|
-| DNS (named) | 53 | Lab 1 |
-| DHCP (dhcpd) | 67/68 | Lab 2 |
-| FTP (vsftpd) | 21 | Lab 3 |
-| TFTP (tftp.socket) | 69 | This lab |
+| Service            | Port  | Started in                                       |     |     |
+| ------------------ | ----- | ------------------------------------------------ | --- | --- |
+| DNS (named)        | 53    | [[PXE Lab 1 - Configuring BIND DNS\|Lab 1]]      |     |     |
+| DHCP (dhcpd)       | 67/68 | [[PXE Lab 2 - Configuring a DHCP Server\|Lab 2]] |     |     |
+| FTP (vsftpd)       | 21    | [[PXE Lab 3 - Configuring FTP (vsftpd)\|Lab 3]]                                            |     |     |
+| TFTP (tftp.socket) | 69    | This lab                                         |     |     |
 
 **Key files reference:**
 
@@ -599,7 +599,7 @@ Before starting this lab, the following must already be complete:
 |AlmaLinux 9 media available at `/var/ftp/pub/almalinux9/`|Lab 3|
 |`pxelinux.0` and `menu.c32` already in `/var/lib/tftpboot/`|Lab 3|
 
-Verify all services are up before proceeding:
+Verify all services are up before proceeding: 
 
 ```bash
 systemctl status named
