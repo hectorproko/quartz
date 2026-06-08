@@ -116,7 +116,7 @@ Great question. The PXE ROM on the client's NIC doesn't know about that path at 
 So the client asks the TFTP server at `192.168.56.106` for a file called `pxelinux.0`, with no path prefix.
 
 So when you see `initrd.img` sitting in the ISO's `isolinux/` directory, it is just a file on disk like any other. It only becomes a "RAM disk" at the moment the kernel loads it into memory during boot. The name describes what it becomes at runtime, not what it is at rest.
-%% [[RAM Disk]]
+%%
 ```bash
 cd /var/lib/tftpboot
 
@@ -333,7 +333,7 @@ Create a test VM in VirtualBox:
 - **Network:** Adapter 2 - Host-only (same adapter as Server 1's `enp0s8`)
 - **Boot order:** Network first (above Hard Disk in System settings)
 
-![[Pasted image 20260607225101.png|500]]
+![[Pasted image 20260607225101.png]]
 #### Troubleshooting - Test VM Does Not Reach the PXE Server
 
 On the first boot attempt, the VM showed a TFTP permission denied error:
