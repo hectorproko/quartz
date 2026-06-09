@@ -56,10 +56,8 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[LAMP STACK IMPLEMENTATION|LAMP]], [[LEMP STACK IMPLEMENTATION|LEMP]], [[MERN STACK IMPLEMENTATION|MERN]], [[MEAN STACK IMPLEMENTATION|MEAN]] 
 - [[Project6 Web Solution Wordpress|Web Solution Wordpress]] 
 - [[Project7 DevOps Tooling Website Solution|DevOps Tooling Website Solution]] 
-- [[Project_8_APACHE_LOAD-BALANCER|Load Balancer Solution with Apache]] 
-    - Adds Load Balancer to [[Project7 DevOps Tooling Website Solution|DevOps Tooling Website Solution]]
-- [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE|Continuous Integration Pipeline for Tooling Website]]
-    - Enhance the architecture prepared in [[Project_8_APACHE_LOAD-BALANCER|Load Balancer Solution with Apache]] by adding a Jenkins server and configure a job
+- [[Project_8_APACHE_LOAD-BALANCER|Load Balancer Solution with Apache]] *(Adds Load Balancer to [[Project7 DevOps Tooling Website Solution|DevOps Tooling Website Solution]])*
+- [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE|Continuous Integration Pipeline for Tooling Website]] *(Enhances the architecture prepared in [[Project_8_APACHE_LOAD-BALANCER|Load Balancer Solution with Apache]] by adding a Jenkins server and configure a job)* 
 - [[Project10 LOAD-BALANCER-SOLUTION-WITH-NGINX-AND-TLS|Configure Nginx as a Load Balancer with TLS]]   
 **Others:**  
 - [[Linux Assignments|Linux Assignments]]

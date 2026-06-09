@@ -1167,7 +1167,8 @@ I successfully set up a fully functional OpenLDAP directory server, configured t
 This project helped me deeply understand how LDAP works in practice — from server setup and schema management to real directory operations like adding, modifying, and querying user data.
 
 
-<!--
+
+%%
 ### Post
 
 Recently implemented an OpenLDAP Server from scratch to get hands-on experience with the LDAP protocol.
@@ -1176,4 +1177,5 @@ I successfully set up a fully functional OpenLDAP directory server, configured t
 
 This project helped me deeply understand how LDAP works in practice, from server setup and schema management to real directory operations like adding, modifying, and querying user data.
 
-#OpenLDAP #LDAP #DirectoryServices #Linux #IdentityAndAccessManagement #Cybersecurity
+`#OpenLDAP #LDAP #DirectoryServices #Linux #IdentityAndAccessManagement #Cybersecurity`
+%%
