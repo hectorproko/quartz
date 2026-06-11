@@ -18,6 +18,10 @@ hands-on: "True"
 completed: "True"
 hardlinked: "True"
 ---
+%%so github actions build and image out of the repo when there are code changes, argpcd uses image (image tag updated in manifest) and deploys it in the cluster, via manifest that were generated with helm templates
+
+GitHub Actions builds an image from the code and pushes it to the container registry. It then updates the image tag in the values file in Git. ArgoCD detects that change, uses Helm to generate the Kubernetes manifests with the new tag, and applies them to the cluster. Kubernetes then pulls the image from the registry and runs i
+%%
 ## Overview 
 
 In this hands-on lab I took on the role of a DevSecOps engineer responsible for securely delivering workloads to an Azure Kubernetes Service (AKS) cluster using GitOps principles and Helm. The goal was to build a fully automated CI/CD pipeline that builds container images, tests them in a staging environment using automated security scanning, and promotes approved releases to production - all without hardcoded credentials.
@@ -111,7 +115,7 @@ The production environment adds a required reviewer gate - no deployment reaches
 ArgoCD is the GitOps engine of this pipeline. Rather than having the CI/CD pipeline push manifests directly to Kubernetes, ArgoCD continuously watches the Git repository and pulls the desired state into the cluster. This model means the cluster always reflects what is in Git - making rollbacks as simple as reverting a commit and keeping an auditable trail of every change.
 
 ### Install ArgoCD on the AKS Cluster
-
+%%ArgoCD is deployed **as workloads inside the AKS cluster itself**, running as pods in the `argocd` namespace.%%
 1. In the Azure Portal, open **Cloud Shell** and select **Bash**.
     
     ![[Pasted image 20260511145026.png]]
@@ -124,7 +128,7 @@ ArgoCD is the GitOps engine of this pipeline. Rather than having the CI/CD pipel
     az aks get-credentials --resource-group $RG --name $AKS
     ```
     
-    **Example output:**
+    **Example output:** %%[[Context (kubernetes)]]%%
     
     ```
     Merged "aks-xtj4c4iaele7a" as current context in /home/cloud/.kube/config
@@ -268,8 +272,17 @@ ArgoCD uses a custom resource called an `Application` that tells it which Git re
 
 ### Why
 
-A naive approach to connecting GitHub Actions to Azure would be to create a service principal, generate a client secret, and store it as a GitHub secret. The problem is that secrets can leak, expire unexpectedly, or need manual rotation. Workload Identity Federation solves this by establishing a trust relationship between GitHub's OIDC provider and Azure Active Directory. GitHub Actions receives a short-lived OIDC token per job - no stored passwords, no long-lived credentials.
+A naive approach to connecting GitHub Actions to Azure would be to create a service principal, generate a client secret, and store it as a GitHub secret. The problem is that secrets can leak, expire unexpectedly, or need manual rotation. Workload Identity Federation solves this by establishing a trust relationship between GitHub's [[OpenID Connect (OIDC)|OIDC]] provider and Azure Active Directory. GitHub Actions receives a short-lived OIDC token per job - no stored passwords, no long-lived credentials.
+%%**You're not turning workloads into federated users.** You're giving GitHub Actions the ability to _prove its identity_ to Azure without needing a password. The "federation" part means Azure agrees to trust GitHub's word when GitHub says "this job is running from repo X, branch Y, environment Z." Azure then issues a short-lived access token based on that trust — no account, no password involved.
 
+---
+
+**On your second question — yes, exactly.** Without Workload Identity Federation, the classic approach is:
+
+1. Create a **Service Principal** in Azure (think: a non-human account representing your app or pipeline)
+2. Generate a **client secret** for it (basically a password)
+3. Copy that secret into GitHub as a repository secret
+4. GitHub Actions uses it on every run to authenticate%%
 ### Create Federated Credentials
 
 1. In the Azure Portal, minimize Cloud Shell and navigate to the **Managed Identity** resource in your resource group.
@@ -281,7 +294,7 @@ A naive approach to connecting GitHub Actions to Azure would be to create a serv
 3. Select **GitHub Actions deploying Azure resources** as the scenario.
     
 4. Create the first federated credential for the **staging** environment:
-    
+ 
     |Field|Value|
     |---|---|
     |Organization|Your GitHub username|
@@ -534,8 +547,12 @@ The workflow file defines three jobs that run in sequence:
     
 4. Click **Commit changes**, add a commit message such as `Add CI/CD workflow for build and release process`, and confirm.
     
-    ![[Pasted image 20260511155455.png]]
+    ![[Pasted image 20260511155455.png|500]]
     
+After the workflow runs for the first time, the built images are visible in Azure Container Registry tagged with the GitHub run number.
+
+![[Pasted image 20260611131537.png]]
+
 
 ---
 
@@ -608,6 +625,20 @@ This fires the **Build and Release** workflow.
 The `release-production` job is now unblocked and begins running.
 
 ![[Pasted image 20260609125335.png]]
+
+Once the production job completes, the application is accessible via the frontend service's load balancer IP.
+
+```
+kubectl get svc --all-namespaces
+```
+
+```
+NAMESPACE           NAME                                      TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                
+production          frontend-service                          LoadBalancer   10.0.237.121   168.62.4.68      80:30126/TCP
+staging             frontend-service                          LoadBalancer   10.0.141.37    52.190.138.121   80:31044/TCP 
+```
+
+![[Pasted image 20260611133422.png]]
 
 ---
 
