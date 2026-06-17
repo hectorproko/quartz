@@ -1,5 +1,4 @@
 ---
-
 tags:
   - azure
   - Kubernetes
@@ -294,10 +293,15 @@ application.argoproj.io/simple-grocery-store-production created
 
 ## Step 3 - Configure CI/CD with Workload Identity Federation
 
-### Why
+### Why Workload Identity Federation
 
 A naive approach to connecting GitHub Actions to Azure would be to create a service principal, generate a client secret, and store it as a GitHub secret. The problem is that secrets can leak, expire unexpectedly, or need manual rotation. Workload Identity Federation solves this by establishing a trust relationship between GitHub's [[OpenID Connect (OIDC)|OIDC]] provider and Azure Active Directory. GitHub Actions receives a short-lived OIDC token per job - no stored passwords, no long-lived credentials.
-%%**You're not turning workloads into federated users.** You're giving GitHub Actions the ability to _prove its identity_ to Azure without needing a password. The "federation" part means Azure agrees to trust GitHub's word when GitHub says "this job is running from repo X, branch Y, environment Z." Azure then issues a short-lived access token based on that trust — no account, no password involved.
+%%
+- **OIDC issuer = identity provider** → in this case, **GitHub**
+- **Azure AD trusts that issuer** → via the federated credential you configured, which says "trust tokens from GitHub that match this repo + environment/branch"
+- **GitHub issues short-lived signed tokens** per workflow run, which Azure AD validates against that trust policy before handing out an access token
+
+
 
 ---
 
@@ -694,11 +698,13 @@ staging             frontend-service                          LoadBalancer   10.
 **Automated security testing in CI** - The ZAP baseline scan runs automatically after every staging deployment. Security findings surface as GitHub Issues, creating a traceable record tied directly to the code change that introduced them.
 
 **Helm as a release mechanism** - Rather than managing raw Kubernetes manifests, Helm charts allow values (like image tags) to be environment-specific while keeping the chart template shared. ArgoCD uses these value files as the source of truth for each environment's configuration.
-<!--
+
 %%
-### SHould be put Helm
+###Post
+Got some hands-on time with ArgoCD this week and ended up building a full pipeline that takes a container image from build to production on AKS, with GitOps handling the syncing, Helm managing the releases, and Azure Container Registry storing the images along the way. The part that really stretched me was setting up Workload Identity Federation so GitHub Actions could authenticate to Azure with no stored secrets, which made me dive deeper into OIDC and how that token exchange works under the hood. Not the easiest concept to wrap my head around at first, but worked through it and came out the other side with a pipeline that builds, scans for security issues, waits for manual approval, and deploys to production, all without a single long-lived credential anywhere in it.
 %%
-## Overview
+
+%%## Overview
 
 In this hands-on lab I took on the role of a DevSecOps engineer responsible for securely delivering workloads to an Azure Kubernetes Service (AKS) cluster using GitOps principles and Helm. The goal was to build a fully automated CI/CD pipeline that builds container images, tests them in a staging environment using automated security scanning, and promotes approved releases to production — all without hardcoded credentials.
 
@@ -939,6 +945,7 @@ ArgoCD uses a custom resource called an `Application` that tells it which Git re
     
 
 ---
+
 
 ## Step 3 — Configure CI/CD with Workload Identity Federation
 
@@ -1294,4 +1301,4 @@ The `release-production` job is now unblocked and begins running.
 
 **Helm as a release mechanism** — Rather than managing raw Kubernetes manifests, Helm charts allow values (like image tags) to be environment-specific while keeping the chart template shared. ArgoCD uses these value files as the source of truth for each environment's configuration.
 
----
+---%%
