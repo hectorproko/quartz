@@ -388,10 +388,27 @@ These three values need to be available to GitHub Actions workflows at runtime. 
 
 The workflow file defines three jobs that run in sequence:
 
-- **`build-and-push`** - checks out the code and builds three container images (frontend, cart-service, product-service) into ACR, tagging each with the GitHub run number.
+- **`build-and-push`** - checks out the code and builds three **container images** (frontend, cart-service, product-service) into ACR, tagging each with the GitHub run number.
 - **`release-and-test-staging`** - updates the Helm values file for staging with the new image tag, commits and pushes to Git (which triggers ArgoCD to sync), polls until the deployment is live, retrieves the load balancer IP, and runs an OWASP ZAP baseline security scan. Any findings are automatically filed as GitHub Issues.
-- **`release-production`** - waits for manual approval, then repeats the Helm values update for the production values file.
+- **`release-production`** - waits for manual approval, then repeats the Helm values update for the production values file. 
+%%
+Regarding the Polling part
 
+Once the image **matches** (meaning the newest image **is now deployed** and running in the cluster), **then** we move on.
+
+So the full sequence is:
+
+1. Job pushes the new tag to Git
+2. Job starts polling: "Hey Kubernetes, what tag is currently running on `frontend-deployment`?"
+3. Kubernetes replies with whatever's _currently_ running, which at first is still the **old** tag (ArgoCD hasn't synced yet)
+4. Job waits 60 seconds, asks again
+5. This repeats until the tag Kubernetes reports back finally **matches** the new run number, meaning ArgoCD has synced and the new image is now live
+6. Only then does the job exit that step successfully and move on to retrieving the load balancer IP and running the ZAP scan
+
+If it never matches after 20 tries (20 minutes), the job times out and fails, on the assumption that something's actually broken (ArgoCD didn't sync, the image build failed, etc.) rather than waiting forever.
+
+So "match" = newest image **is** deployed = safe to proceed.
+%%
 1. Go to the **Actions** tab in the repository.
     
 2. Click **set up a workflow yourself**.
@@ -573,7 +590,7 @@ The workflow file defines three jobs that run in sequence:
     
     ![[Pasted image 20260511155455.png|500]]
     
-After the workflow runs for the first time, the built images are visible in Azure Container Registry tagged with the GitHub run number.
+After the workflow runs for the first time, the built images are visible in [[Azure Container Registry]] tagged with the GitHub run number. 
 
 ![[Pasted image 20260611131537.png]]
 
@@ -584,7 +601,7 @@ After the workflow runs for the first time, the built images are visible in Azur
 
 ### Why
 
-This final stage closes the loop on the entire pipeline. The staging environment has been running the new build and has been scanned for security issues by OWASP ZAP. Any findings are surfaced as GitHub Issues, giving the team a chance to review them before promoting to production. The production environment is protected by a required reviewer gate - a human must explicitly approve the deployment before the `release-production` job is allowed to run. This combination of automated security testing and manual approval is what makes the pipeline suitable for workloads that need a controlled, auditable release process.
+This final stage closes the loop on the entire pipeline. The staging environment has been running the new build and has been scanned for security issues by OWASP ZAP. Any findings are surfaced as GitHub Issues, giving the team a chance to review them before promoting to production. The production environment is protected by a required reviewer gate, a human must explicitly approve the deployment before the `release-production` job is allowed to run. This combination of automated security testing and manual approval is what makes the pipeline suitable for workloads that need a controlled, auditable release process.
 
 ### Trigger the Workflow
 
@@ -616,7 +633,7 @@ This fires the **Build and Release** workflow.
     
 2. Once `release-and-test-staging` completes, go to the **Issues** tab.
     
-    The ZAP baseline scan automatically files any security findings it detects against the staging environment as GitHub Issues. Review each one - in a real environment these would be triaged and assigned. For this lab, reviewing them is sufficient before proceeding to the production approval.
+    The ZAP baseline scan automatically files any security findings it detects against the staging environment as GitHub Issues. Review each one, in a real environment these would be triaged and assigned. For this lab, reviewing them is sufficient before proceeding to the production approval. %%[[Triage]]%%
     
     ![[Pasted image 20260609152202.png]] ![[Pasted image 20260609152255.png]]
     
@@ -630,7 +647,7 @@ This fires the **Build and Release** workflow.
     
     ![[Pasted image 20260609123933.png]]
     
-
+![[PS1.png]]
 ### Approve the Production Deployment
 
 4. Click **Review deployments**.
