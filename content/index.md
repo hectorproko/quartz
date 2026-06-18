@@ -1,16 +1,7 @@
-
-%%Picture doesnt work
-![[IMG-20230405-WA0008.jpg|400]]
-%%
-
 ## About Me
 Hi, I'm Hector Rodriguez. This webpage is a collection of my self-learning projects in the realm of DevOps technologies. Feel free to explore and see what I've been learning and working on.
 
-You can find my professional profile on [LinkedIn](https://www.linkedin.com/in/hector-rodriguez-84020a26/).  
-You can find my GitHub profile on [GitHub](https://github.com/hectorproko).
-
-> [!attention] In Progress 🚀
-> Some documentation on this site requires reorganizing and proofreading for greater clarity. Initially, the portfolio was intended to organize my work for personal use, and I am now in the process of refining it for public viewing..
+🔗[LinkedIn](https://www.linkedin.com/in/hector-rodriguez-84020a26/) 🔗[GitHub](https://github.com/hectorproko)
 
 ## Projects
 Here are some of the projects I've been working on, categorized by technology:
@@ -35,11 +26,11 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM|Automating a Multi-Tier AWS Stack with Terraform]]
 
 ### Ansible:
-- [[Ansible]] ==Pending==
-- [[Project11]] ==Pending==
-- [[Project12]] ==Pending==
-- [[Project13]] ==Pending==
-- [[Project14]] ==Pending==
+- [[Ansible]] 🚧==Pending==
+- [[Project11]] 🚧==Pending==
+- [[Project12]] 🚧==Pending==
+- [[Project13]] 🚧==Pending==
+- [[Project14]] 🚧==Pending==
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 
 ### Docker:

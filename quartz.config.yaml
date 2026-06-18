@@ -219,13 +219,15 @@ plugins:
       options: {}
     layout:
       position: afterBody
-      priority: 10
+      priority: 10  
   - source: github:quartz-community/footer
     enabled: true
     options:
       links:
-        GitHub: https://github.com/jackyzha0/quartz
-        Discord Community: https://discord.gg/cRFFHYye7t
+        GitHub: https://github.com/hectorproko
+        Linkedin: https://www.linkedin.com/in/hector-rodriguez-84020a26/
+        #GitHub: https://github.com/jackyzha0/quartz
+        #Discord Community: https://discord.gg/cRFFHYye7t
   - source: github:quartz-community/recent-notes
     enabled: false
   - source: github:quartz-community/spacer
@@ -245,9 +247,9 @@ plugins:
     options:
       includeAll: false
       includedProperties:
-        - description
         - tags
-        - aliases
+        #- description
+        #- aliases
       excludedProperties: []
       hidePropertiesView: false
       delimiters: ---
