@@ -8,8 +8,8 @@ aliases:
 ---
 ~~*(old [Project 15](https://github.com/hectorproko/AWS-CLOUD-SOLUTION-FOR-2-COMPANY-WEBSITES-USING-A-REVERSE-PROXY-TECHNOLOGY/blob/main/Project15_Steps.md))*~~
 
-> [!attention] Provisioning with Terraform
-> [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM|Automating a Multi-Tier AWS Stack with Terraform]]
+> [!attention] Provisioning with Terraform [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM|Automating a Multi-Tier AWS Stack with Terraform]]
+> 
 
 
 > [!NOTE]
