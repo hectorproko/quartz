@@ -13,6 +13,9 @@ title: Automating a Multi-Tier AWS Stack with Terraform
 [[PART3_PROJECT18_Backends|Part 3: Remote Backends & Modules]]
 [[PART4_PROJECT19_TerraformCloud|Part 4: Terraform Cloud]]
 
-Migrating from:  
-- [Other](https://github.com/hectorproko/Terraform) 
-- [Project 16-19 (provisioning project 15)](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL) 
+*Migrated from [Project 16-19 (provisioning project 15)](https://github.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/tree/main/PBL)*
+
+---
+
+[Other](https://github.com/hectorproko/Terraform) ==Pending==
+ 
