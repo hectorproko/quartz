@@ -9,9 +9,9 @@ tags:
   - security
   - helm
   - AKS
-linkedin: "False"
-quartz: "False"
-refactored: "False"
+linkedin: "True"
+quartz: "True"
+refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 completed: "True"
