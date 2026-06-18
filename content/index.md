@@ -32,7 +32,7 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Azure:
 - [[Azure Administrator Course for AZ-103 AZ-104]]
 ### Terraform:
-- [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM]] ==Pending==
+🚧 [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM]] ==Pending==
 
 ### Ansible:
 - [[Ansible]] ==Pending==
