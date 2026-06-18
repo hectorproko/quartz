@@ -29,11 +29,12 @@ Terraform Cloud runs `plan` and `apply` on remote, consistent infrastructure rat
 
 I create an account and **start from scratch** (rather than importing an existing setup).
 
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/welcome.png)
+
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/organization.png)
+
 ![[Markdown_Logo-5.png]]
 
-![[Markdown_Logo-6.png]]
-
-![[Markdown_Logo-5.png]]
 
 ---
 
@@ -41,15 +42,17 @@ I create an account and **start from scratch** (rather than importing an existin
 
 Terraform Cloud connects to a version control provider so it can pull configuration and trigger runs on commits. I connect the provider, then choose the repository to use.
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/workspace2.png)
 
-![[Markdown_Logo-6.png]]
+![[Markdown_Logo-6.png|500]]
 
 Then I select the repo:
 
-![[Markdown_Logo-4.png]]
+![[Markdown_Logo-4.png|500]]
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/cloud.png)
+
+
 
 ---
 
@@ -60,23 +63,23 @@ When creating the workspace:
 - **Make sure to select "Environment variable"** when adding sensitive values (such as AWS credentials) so they're injected into the run environment securely.
 - The **workspace name** is `terraform-cloud` — it's set automatically to match the repository name.
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/variables.png)
 
 This is how it looks navigating back to the workspace overview:
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/workspaces.png)
 
 A walkthrough of the run flow:
 
-![[Markdown_Logo-1.gif]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/terraform_cloud_apply.gif)
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/created.png)
 
-![[Markdown_Logo.gif]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/terraform_cloud_destroyed.gif)
 
-![[Markdown_Logo-5.png]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/triggered.png)
 
-![[Markdown_Logo-2.gif]]
+![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/terraform_cloud_autoPlanning.gif)
 
 ---
 
