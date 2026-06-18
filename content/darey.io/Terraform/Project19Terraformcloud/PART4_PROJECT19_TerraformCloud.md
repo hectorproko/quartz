@@ -44,11 +44,11 @@ Terraform Cloud connects to a version control provider so it can pull configurat
 
 ![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/workspace2.png)
 
-![[Markdown_Logo-6.png|500]]
+![[Markdown_Logo-6.png|300]]
 
 Then I select the repo:
 
-![[Markdown_Logo-4.png|500]]
+![[Markdown_Logo-4.png|300]]
 
 ![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/cloud.png)
 
