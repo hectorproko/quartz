@@ -26,11 +26,12 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM|Automating a Multi-Tier AWS Stack with Terraform]]
 
 ### Ansible:
-- [[Ansible]] 🚧==Pending==
-- [[Project11]] 🚧==Pending==
-- [[Project12]] 🚧==Pending==
-- [[Project13]] 🚧==Pending==
-- [[Project14]] 🚧==Pending==
+==Pending==
+- [[Ansible]] 🚧
+- [[Project11]] 🚧
+- [[Project12]] 🚧
+- [[Project13]] 🚧
+- [[Project14]] 🚧
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 
 ### Docker:
