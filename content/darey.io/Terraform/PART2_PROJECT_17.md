@@ -19,7 +19,7 @@ title: "Automating AWS Infrastructure with Terraform - Part 2: Building the Full
 
 ## **Overview**
 
-In [[PART1_PROJECT_16|Part 1]] I set up the Terraform foundation: a dedicated IAM user, the AWS CLI, an S3 bucket, and a VPC with public subnets provisioned through refactored, variable-driven code.
+In [[PART1_PROJECT_16|Part 1: Getting Started]] I set up the Terraform foundation: a dedicated IAM user, the AWS CLI, an S3 bucket, and a VPC with public subnets provisioned through refactored, variable-driven code.
 
 This article builds the rest of the AWS stack on top of that foundation. I add the networking pieces that make the VPC usable (Internet Gateway, NAT Gateway, route tables), then move into compute and access control: IAM roles, security groups, TLS certificates, internal and external load balancers, auto scaling groups with launch templates, and finally the data layer with EFS and an RDS database.
 
@@ -29,7 +29,7 @@ A recurring theme throughout is **keeping the code DRY**, default tags applied e
 
 ## Prerequisites
 
-- Completed [[PART1_PROJECT_16|Part 1]] (VPC, subnets, and the refactored `main.tf`/`variables.tf`/`terraform.tfvars` structure)
+- Completed [[PART1_PROJECT_16|Part 1: Getting Started]] (VPC, subnets, and the refactored `main.tf`/`variables.tf`/`terraform.tfvars` structure)
 - The `terraform` IAM user and AWS CLI still configured locally
 
 ---
@@ -785,14 +785,14 @@ resource "aws_lb_listener_rule" "tooling-listener" {
 
 ## Step 9 - Auto Scaling Groups & Launch Templates
 
-Auto Scaling Groups (ASGs) scale the EC2 instances in and out with demand. Each ASG needs a **launch template** first. Based on the architecture there are four roles — **bastion**, **nginx**, **wordpress**, and **tooling** — split across two files:
+Auto Scaling Groups (ASGs) scale the EC2 instances in and out with demand. Each ASG needs a **launch template** first. Based on the architecture there are four roles **bastion**, **nginx**, **wordpress**, and **tooling** split across two files:
 
-- `asg-bastion-nginx.tf` — launch templates and ASGs for bastion and nginx
-- `asg-wordpress-tooling.tf` — launch templates and ASGs for wordpress and tooling
+- `asg-bastion-nginx.tf` - launch templates and ASGs for bastion and nginx
+- `asg-wordpress-tooling.tf` - launch templates and ASGs for wordpress and tooling
 
 I also create one SNS topic and an autoscaling notification so launch/terminate events (and their errors) are reported.
 
-> 👀 **Consistent naming:** the SNS topic below is named `hector-sns`, so the notification's `topic_arn` must reference `aws_sns_topic.hector-sns.arn`. The original tutorial code mixed in a different name here — make sure the topic name and the reference match, or `terraform plan` fails with a reference error.
+> 👀 **Consistent naming:** the SNS topic below is named `hector-sns`, so the notification's `topic_arn` must reference `aws_sns_topic.hector-sns.arn`. The original tutorial code mixed in a different name here, make sure the topic name and the reference match, or `terraform plan` fails with a reference error.
 
 <details><summary>asg-bastion-nginx.tf</summary>
 
@@ -1310,7 +1310,7 @@ By the end of Part 2 the full application stack is defined as code:
 - ✅ Encrypted EFS (with KMS) and a multi-AZ MySQL RDS instance
 - ✅ Every value driven by `variables.tf` and `terraform.tfvars`
 
-At this point the project is **one long list of `.tf` files** — functional, but hard to navigate. **Part 3** fixes that by moving state to a remote S3 backend with DynamoDB locking, and by refactoring everything into reusable **modules**.
+At this point the project is **one long list of `.tf` files** functional, but hard to navigate. [[PART3_PROJECT18_Backends|Part 3: Remote Backends & Modules]] fixes that by moving state to a remote S3 backend with DynamoDB locking, and by refactoring everything into reusable **modules**.
 
 ---
 

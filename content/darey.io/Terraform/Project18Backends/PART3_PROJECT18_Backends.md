@@ -187,7 +187,7 @@ hector@hector-Laptop:~/Project16-17/PBL$
 
 After migration, the local `.tfstate` can be removed and the state file is now visible inside the **S3 bucket**.
 
-![[Markdown_Logo-3.gif]]
+![Example Image](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/S3Bucket_tfstate.gif)
 
 ---
 
@@ -217,7 +217,7 @@ Real projects need separate resources for `dev`, `sit`, `uat`, `preprod`, `prod`
 1. **Terraform Workspaces**
 2. **Directory-based separation** using `terraform.tfvars`
 
-([[PART4_PROJECT19_TerraformCloud|Part 4: Terraform Cloud]] explores environment separation further using Terraform Cloud and VCS branches.)
+*([[PART4_PROJECT19_TerraformCloud|Part 4: Terraform Cloud]] explores environment separation further using Terraform Cloud and VCS branches.)*
 
 ---
 
@@ -402,9 +402,9 @@ each module: <resource_name>.tf, outputs.tf (optional), variables.tf
 providers + backends configured in separate files in the ROOT module
 Example: root main.tf module "VPC" { source = "./modules/VPC" ... } -> modules/VPC/main.tf resource aws_vpc
 Pro-tips: terraform validate, terraform fmt
--->
 
-<!--
+
+
 For reference
 https://github.com/darey-devops/PBL-project-18.git
 There are some .sh file that are empty
