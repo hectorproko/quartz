@@ -1,10 +1,9 @@
 ---
-
-
 tags:
   - "#Terraform"
   - IaC
 hardlinked: "True"
+title: Automating a Multi-Tier AWS Stack with Terraform
 ---
 
 **Using Terraform to provisioning project [[Project15 AWS CLOUD SOLUTION FOR 2 COMPANY WEBSITES USING A REVERSE PROXY TECHNOLOGY|AWS Solution for 2 Company Websites using a Reverse Proxy]]**  
