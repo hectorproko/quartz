@@ -29,11 +29,11 @@ Terraform Cloud runs `plan` and `apply` on remote, consistent infrastructure rat
 
 I create an account and **start from scratch** (rather than importing an existing setup).
 
-![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/welcome.png)
+![test|500](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/welcome.png)
 
-![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/organization.png)
+![test|500](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/organization.png)
 
-![[Markdown_Logo-5.png]]
+![[Markdown_Logo-5.png|500]]
 
 
 ---
@@ -42,7 +42,7 @@ I create an account and **start from scratch** (rather than importing an existin
 
 Terraform Cloud connects to a version control provider so it can pull configuration and trigger runs on commits. I connect the provider, then choose the repository to use.
 
-![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/workspace2.png)
+![test|500](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/workspace2.png)
 
 ![[Markdown_Logo-6.png|300]]
 
@@ -50,7 +50,7 @@ Then I select the repo:
 
 ![[Markdown_Logo-4.png|300]]
 
-![](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/cloud.png)
+![test|500](https://raw.githubusercontent.com/hectorproko/AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM-PART-1-to-4/main/images/cloud.png)
 
 
 
