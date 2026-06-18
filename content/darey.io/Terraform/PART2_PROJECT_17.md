@@ -23,7 +23,7 @@ In [[PART1_PROJECT_16|Part 1]] I set up the Terraform foundation: a dedicated IA
 
 This article builds the rest of the AWS stack on top of that foundation. I add the networking pieces that make the VPC usable (Internet Gateway, NAT Gateway, route tables), then move into compute and access control: IAM roles, security groups, TLS certificates, internal and external load balancers, auto scaling groups with launch templates, and finally the data layer with EFS and an RDS database.
 
-A recurring theme throughout is **keeping the code DRY** — default tags applied everywhere through `merge()`, dynamic names through `format()`, and every value driven by variables rather than hard-coded strings.
+A recurring theme throughout is **keeping the code DRY**, default tags applied everywhere through `merge()`, dynamic names through `format()`, and every value driven by variables rather than hard-coded strings.
 
 ---
 

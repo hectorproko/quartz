@@ -19,7 +19,7 @@ title: "Automating AWS Infrastructure with Terraform - Part 3: Remote Backends &
 
 ## **Overview**
 
-By the end of [[PART2_PROJECT_17|Part 2]] the full AWS stack was defined in code, but with two structural problems: the Terraform **state** lived only on my local machine, and every resource sat in one long flat list of `.tf` files.
+By the end of [[PART2_PROJECT_17|Part 2: Building the Full Stack]] the full AWS stack was defined in code, but with two structural problems: the Terraform **state** lived only on my local machine, and every resource sat in one long flat list of `.tf` files.
 
 This article fixes both. First I move state to a remote **S3 backend** with **DynamoDB** locking, so the state is durable, shareable across a team, and protected against concurrent writes. Then I refactor the entire configuration into reusable **modules**, grouping resources by domain (VPC, ALB, Autoscaling, EFS, RDS, Security).
 
@@ -49,7 +49,7 @@ The fix is a shared, remote backend. Since the project already runs on AWS, an [
 
 ## Step 1 - Create the S3 Backend Bucket
 
-I create `backend.tf`. The S3 bucket from [[PART1_PROJECT_16|Part 1]] is reused here, with **versioning** enabled (so I keep the full revision history of state files) and **server-side encryption** enabled by default.
+I create `backend.tf`. The S3 bucket from [[PART1_PROJECT_16|Part 1: Getting Started]] is reused here, with **versioning** enabled (so I keep the full revision history of state files) and **server-side encryption** enabled by default.
 
 ```bash
 # must give it a unique name globally
@@ -217,7 +217,7 @@ Real projects need separate resources for `dev`, `sit`, `uat`, `preprod`, `prod`
 1. **Terraform Workspaces**
 2. **Directory-based separation** using `terraform.tfvars`
 
-(Part 4 explores environment separation further using Terraform Cloud and VCS branches.)
+([[PART4_PROJECT19_TerraformCloud|Part 4: Terraform Cloud]] explores environment separation further using Terraform Cloud and VCS branches.)
 
 ---
 
@@ -363,7 +363,7 @@ Part 3 turned a working-but-messy project into a maintainable one:
 - ✅ Two environment-isolation strategies identified (workspaces vs. directories)
 - ✅ The entire configuration **refactored into modules** (ALB, Autoscaling, EFS, RDS, Security, VPC)
 
-**Part 4** takes the automation one step further, running Terraform from **Terraform Cloud** with VCS-driven runs and per-branch environments.
+[[PART4_PROJECT19_TerraformCloud|Part 4: Terraform Cloud]] takes the automation one step further, running Terraform from **Terraform Cloud** with VCS-driven runs and per-branch environments.
 
 ---
 

@@ -19,7 +19,7 @@ title: "Automating AWS Infrastructure with Terraform - Part 4: Terraform Cloud"
 
 ## **Overview**
 
-In [[PART3_PROJECT_18|Part 3]] I ran Terraform from my local workstation against a remote S3 backend. This final part moves the execution itself into [**Terraform Cloud**](https://www.terraform.io/cloud), HashiCorp's managed platform for running Terraform.
+In [[PART3_PROJECT18_Backends|Part 3: Remote Backends & Modules]] I ran Terraform from my local workstation against a remote S3 backend. This final part moves the execution itself into [**Terraform Cloud**](https://www.terraform.io/cloud), HashiCorp's managed platform for running Terraform.
 
 Terraform Cloud runs `plan` and `apply` on remote, consistent infrastructure rather than my laptop. It stores state for me, integrates directly with a VCS provider (so runs trigger from Git commits), manages variables and secrets securely, and supports per-environment workspaces. The goal here is to connect the GitHub repository, create a workspace, wire up branch-based environments (`dev`, `test`, `prod`), and set up notifications.
 

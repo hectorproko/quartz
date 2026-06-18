@@ -21,7 +21,7 @@ title: "Automating AWS Infrastructure with Terraform - Part 1: Getting Started"
 
 In previous projects [[Project15 AWS CLOUD SOLUTION FOR 2 COMPANY WEBSITES USING A REVERSE PROXY TECHNOLOGY|AWS Solution for 2 Company Websites using a Reverse Proxy]] I built AWS infrastructure for two websites manually through the console. The goal of this series is to automate that exact same setup using **Terraform**, an Infrastructure as Code (IaC) tool that lets you define, provision, and manage cloud resources through code instead of clicking through a UI.
 
-This first article covers the foundational setup: creating a dedicated IAM user for Terraform, configuring the AWS CLI, creating an S3 bucket that will later be used as a remote backend in **Part 3**, installing Terraform, and writing the first configuration files to provision a VPC and public subnets. Along the way I refactor the code to eliminate hard-coded values and introduce variables, a critical best practice for maintainable infrastructure code.
+This first article covers the foundational setup: creating a dedicated IAM user for Terraform, configuring the AWS CLI, creating an S3 bucket that will later be used as a remote backend in [[PART3_PROJECT18_Backends|Part 3: Remote Backends & Modules]], installing Terraform, and writing the first configuration files to provision a VPC and public subnets. Along the way I refactor the code to eliminate hard-coded values and introduce variables, a critical best practice for maintainable infrastructure code.
 
 ---
 
@@ -561,7 +561,7 @@ By the end of this project the foundation is solid:
 - ✅ Code refactored to use variables, data sources, loops, and dynamic CIDR generation
 - ✅ Configuration split across `main.tf`, `variables.tf`, and `terraform.tfvars`
 
-**Part 2** picks up from here and builds out the full AWS stack: networking (Internet Gateway, NAT Gateway, Route Tables), IAM roles, Security Groups, Load Balancers, Auto Scaling Groups, EFS, and RDS.
+[[PART2_PROJECT_17|Part 2: Building the Full Stack]] picks up from here and builds out the full AWS stack: networking (Internet Gateway, NAT Gateway, Route Tables), IAM roles, Security Groups, Load Balancers, Auto Scaling Groups, EFS, and RDS.
 
 ---
 
