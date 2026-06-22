@@ -14,3 +14,5 @@ Biology --> Chemistry
 class Biology,Chemistry internal-link; 
 ```
 
+[[biology]]
+
