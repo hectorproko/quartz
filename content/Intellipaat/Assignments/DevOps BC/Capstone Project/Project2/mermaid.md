@@ -16,3 +16,6 @@ class Biology,Chemistry internal-link;
 
 [[biology]]
 
+[[testing_canvas.canvas]]
+
+![[testing_canvas.canvas]]
