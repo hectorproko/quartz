@@ -88,6 +88,7 @@ Click **Save Results → HTML Report**, name the file `scan_results.html`, and s
 
 ![[Pasted image 20260516092136.png|600]]
 
+
 ---
 
 ### Step 5 - View the Report
@@ -123,6 +124,8 @@ Pre-built profiles like C2S cover a broad set of controls, but real environments
 <!--
 we are curating rules from an existing profile C2S, aka selecting some rules, not creating new rules
 these new selected rules create a new custom policy, profile
+- **The core idea:** when you customize a SCAP profile (e.g. start from the STIG or C2S baseline and deselect rules, change values), SCAP Workbench doesn't save a whole new copy of the baseline. It saves a small **tailoring file** that only records _your changes_ and points back at the original content. Your customization is a **layer on top of** the upstream baseline, not a fork of it.
+
 Writing a **net new rule from scratch** would mean authoring the OVAL XML yourself — defining exactly what file to check, what registry key to read, what service state to query. That's a much deeper task and a different skill set entirely.
 -->
 ---
@@ -176,7 +179,8 @@ Click **OK** to apply the customization.
 
 Navigate to **File → Save Customization Only**, name the file `custom_profile_1.xml`, and click **Save**.
 
-This exports the profile as a standalone **XCCDF XML** file. Saving it separately is important, it means you can version-control the policy, share it with teammates, or load it into other OpenSCAP tools independently of the base content.
+This exports the profile as a standalone **XCCDF XML** file. Saving it separately is important, it means you can version-control the policy, share it with teammates, or load it into other OpenSCAP tools independently of the base content. 
+%%using this file openscan can generate ansible playbooks%%
 
 ---
 

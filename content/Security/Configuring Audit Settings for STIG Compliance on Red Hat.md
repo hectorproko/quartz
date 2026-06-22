@@ -16,13 +16,17 @@ hardlinked: "True"
 In enterprise and government environments, systems must meet strict security baselines to be considered trustworthy. One of the most widely adopted standards is the **[[STIG (Security Technical Implementation Guide)]]**, a set of configuration guidelines published by the [[DISA (Defense Information Systems Agency)|Defense Information Systems Agency (DISA)]] to harden operating systems against known vulnerabilities.
 
 In this lab, I configured the Linux **[[auditd]]** service on a Red Hat host to load the precompiled STIG rule set. The goal is to give the system visibility into whether it meets STIG compliance requirements by actively tracking the security-relevant events those rules define.
-<!--
-this one configures _what_ auditd monitors (STIG rules), and the OpenSCAP lab verifies _whether the system is compliant_.
 
-**The log itself is not "violations" exactly** — it's more like a receipt. auditd records every time a watched event happens, whether it was authorized or not. It's up to a human or a tool to decide if it's suspicious.
+%%this one configures _what_ auditd monitors (STIG rules), and the OpenSCAP lab verifies _whether the system is compliant_.
 
-we used in auditbeat
--->
+**auditd** records every time (log entry) a watched event happens, whether it was authorized or not. It's up to a human or a tool to decide if it's suspicious.
+
+### Example
+One of the classic STIG audit requirements is **watching `/etc/sudoers` for changes**. That file controls who can escalate to root, so any modification to it is security-relevant by definition — you want a record every time it's touched.
+
+
+we used in auditbeat%%
+
 ---
 
 ## Why This Matters
