@@ -1,10 +1,9 @@
 ---
-
 tags:
   - RHEL10
   - security
   - RHEL
-quartz: "False"
+quartz: "True"
 linkedin: "False"
 hardlinked: "True"
 ---

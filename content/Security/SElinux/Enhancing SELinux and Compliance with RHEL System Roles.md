@@ -1,12 +1,11 @@
 ---
-
 tags:
   - RHEL
   - Ansible
   - selinux
   - RHEL10
   - security
-quartz: "False"
+quartz: "True"
 linkedin: "False"
 hardlinked: "True"
 ---
