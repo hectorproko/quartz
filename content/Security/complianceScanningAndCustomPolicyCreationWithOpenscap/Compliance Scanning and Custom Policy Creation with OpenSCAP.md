@@ -32,10 +32,7 @@ These two tasks reflect a realistic workflow: you start by scanning against a kn
 - **Tool:** [[SCAP Workbench]] (GUI frontend for [[OpenSCAP]]) 
 - **Access:** Remote desktop via VNC on TCP port `5901`
 - **Connection:**
-    - **macOS:** Finder → `Go` → `Connect to Server` → `vnc://<IP_ADDRESS>:5901`
     - **Windows:** [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer/)
-
-> 💡 Give the lab environment a couple of extra minutes to fully boot before connecting via VNC.
 
 ![[Pasted image 20260516084131.png]]
 
@@ -228,8 +225,9 @@ OpenSCAP is a powerful addition to any security operations or compliance workflo
 
 ---
 
-<!--
-###### POST
+
+%%
+# POST
 Continuing with security hardening topics. Recently got some solid hands-on time with **OpenSCAP** and SCAP Workbench. I started by running a compliance scan specifically against the **baseline C2S (Common Cloud Security) profile** for RHEL 7.
 
 Then I went ahead and built my own **custom scan policy** tailored to specific internal security rules, for example, disabling legacy services like Telnet and FTP, and ensuring firewalld is active. Finally, generated clean, professional HTML reports for both scans.
@@ -238,12 +236,12 @@ It was a very informative hand-on that demystifies compliance scanning and polic
 
 [https://hectorproko.github.io/quartz/Security/complianceScanningAndCustomPolicyCreationWithOpenscap/Compliance-Scanning-and-Custom-Policy-Creation-with-OpenSCAP](https://hectorproko.github.io/quartz/Security/complianceScanningAndCustomPolicyCreationWithOpenscap/Compliance-Scanning-and-Custom-Policy-Creation-with-OpenSCAP)
 
-#CyberSecurity #Compliance #OpenSCAP #RHEL #SecurityHardening #InfoSec
+`#CyberSecurity #Compliance #OpenSCAP #RHEL #SecurityHardening #InfoSec`
+
+%%
 
 
-
-<!--
-####### Drafts
+%%# Drafts
 
 # Run an OpenSCAP Compliance Scan on a Host
 
@@ -370,4 +368,4 @@ the report
 ![[Pasted image 20260516094353.png]]
 ## Conclusion
 
-Congratulations on completing this hands-on lab!
+Congratulations on completing this hands-on lab!%%
