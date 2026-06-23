@@ -9,7 +9,7 @@ quartz: "True"
 linkedin: "False"
 hardlinked: "True"
 ---
-**Role:** Linux Administrator at a financial services provider  
+**Role:** Linux Administrator at a financial services provider
 **Platform:** Red Hat Enterprise Linux 10  
 **Environment:** Two RHEL 10 VMs on an isolated network, Management Node (Ansible control) and Workload Node (Apache web server)
 
@@ -20,9 +20,9 @@ hardlinked: "True"
 Unix file permissions answer one question: *who* can access a file. SELinux answers a different question: *what processes* are allowed to access a file, and in what way. This distinction matters a lot in a web server context, an Apache process running as `www-data` may have the right Unix permissions to read a directory, but SELinux can still deny that access if the file's security label doesn't permit it.
 
 In this lab I used that capability to restrict a running Apache server from serving a confidential file, using only an SELinux label change, without touching Unix permissions, firewall rules, or Apache configuration. I then used Ansible with the `rhel-system-roles.selinux` role to codify that SELinux must remain in enforcing mode on the Workload Node.
-<!--
-[[Ansible Role#Example]]
--->
+
+%%[[Ansible Role#Example]]%%
+
 ---
 
 ## Environment
