@@ -28,10 +28,10 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Ansible:
 ==Pending==
 - [[Ansible]] 🚧
-- [[Project11]] 🚧
-- [[Project12]] 🚧
-- [[Project13]] 🚧
-- [[Project14]] 🚧
+- [[Project11_]] 🚧
+- [[Project12_]] 🚧
+- [[Project13_]] 🚧
+%%- [[Project14]] 🚧%%
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 
 ### Docker:
