@@ -569,7 +569,8 @@ Let's create our hidden values and plaintext parameters.
     i put cli access key
 23. Under the _Retrieve access keys_ page, copy the **Access key** value, then navigate back to your Cloud9 tab.
     
-    
+    access key AKIA4STEF7YD5OVKJXHB
+	secret 4AVfga/AxcFGb3IMdMWI7kQGEBRzFQPPTsM2YQU1
 	
 ![[Pasted image 20260618181117.png]]
 	
