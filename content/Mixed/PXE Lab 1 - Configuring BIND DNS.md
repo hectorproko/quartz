@@ -517,7 +517,7 @@ https://hectorproko.github.io/quartz/Mixed/PXE-Lab-1---Configuring-BIND-DNS
 %%
 %%
 [[BIND (Berkeley Internet Name Domain)]] #reconcile 
-[[LDAP Configuring an OpenLDAP Server]]
+[[OpenLDAP Server Setup and LDIF Management on CentOS 7]]
 
 setting up ssh
 [[ssh (Secure Shell)#Allow password access (for lab)]]

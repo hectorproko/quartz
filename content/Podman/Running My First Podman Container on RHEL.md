@@ -1,5 +1,4 @@
 ---
-
 tags:
   - Podman
   - RHEL
@@ -442,5 +441,486 @@ Looking forward to diving deeper!
 `#Podman #Containers #RHEL #Linux #CloudNative #DevOps `
 
 https://hectorproko.github.io/quartz/Podman/Running-My-First-Podman-Container-on-RHEL
+%%
+
+%%
+
+
+```
+[cloud_user@0e1f427e773c ~]$ `cat /etc/os-release`
+NAME="Red Hat Enterprise Linux"
+VERSION="9.7 (Plow)"
+ID="rhel"
+ID_LIKE="fedora"
+VERSION_ID="9.7"
+PLATFORM_ID="platform:el9"
+PRETTY_NAME="Red Hat Enterprise Linux 9.7 (Plow)"
+ANSI_COLOR="0;31"
+LOGO="fedora-logo-icon"
+CPE_NAME="cpe:/o:redhat:enterprise_linux:9::baseos"
+HOME_URL="https://www.redhat.com/"
+DOCUMENTATION_URL="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9"
+BUG_REPORT_URL="https://issues.redhat.com/"
+
+REDHAT_BUGZILLA_PRODUCT="Red Hat Enterprise Linux 9"
+REDHAT_BUGZILLA_PRODUCT_VERSION=9.7
+REDHAT_SUPPORT_PRODUCT="Red Hat Enterprise Linux"
+REDHAT_SUPPORT_PRODUCT_VERSION="9.7"
+[cloud_user@0e1f427e773c ~]$
+
+```
+
+```
+[cloud_user@0e1f427e773c ~]$ sudo dnf module install container-tools
+[sudo] password for cloud_user:
+Red Hat Enterprise Linux 9 for x86_64 - AppStream from RHUI (RPMs)                                                    56 kB/s | 4.5 kB     00:00
+Red Hat Enterprise Linux 9 for x86_64 - AppStream from RHUI (RPMs)                                                   113 MB/s |  89 MB     00:00
+Red Hat Enterprise Linux 9 for x86_64 - BaseOS from RHUI (RPMs)                                                       62 kB/s | 4.1 kB     00:00
+Red Hat Enterprise Linux 9 for x86_64 - BaseOS from RHUI (RPMs)                                                      109 MB/s | 113 MB     00:01
+Red Hat Enterprise Linux 9 Client Configuration                                                                       10 kB/s | 1.5 kB     00:00
+Red Hat Enterprise Linux 9 Client Configuration                                                                       43 kB/s | 4.1 kB     00:00
+Last metadata expiration check: 0:00:01 ago on Wed 13 May 2026 10:03:40 PM UTC.
+Error: Problems in request:
+missing groups or modules: container-tools
+
+[cloud_user@0e1f427e773c ~]$ sudo dnf install podman
+Last metadata expiration check: 0:00:20 ago on Wed 13 May 2026 10:03:40 PM UTC.
+Dependencies resolved.
+```
+## Lab Overview
+
+Every journey has to start somewhere. In this lab, we jump right into the deep end and look at how to launch and interact with our first container! Once complete, you'll know how to start, interact, and stop a container.
+
+# Running Your First Podman Container on RHEL
+
+## Introduction
+
+Every journey has to start somewhere. In this lab, we jump right into the deep end and look at how to launch and interact with our first container! Once complete, you'll know how to start, interact, and stop a container.
+
+## Solution
+
+Log in to the server using the credentials provided:
+
+```
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+```
+
+### Run Your First Podman Container
+
+1. Before we launch our first Podman container, let's check to see if any containers are running. As `cloud_user`:
+    
+    ```
+    podman ps -a
+    ```
+    
+    As `root`:
+    
+    ```
+    sudo podman ps -a
+    ```
+    
+2. Ensure no containers are running. We use the `-a` or `--all` option to display both running and non-running containers. Let's check our container images:
+    
+    ```
+    podman images
+    ```
+    
+    As you can see, we don't have any images yet.
+    
+3. We'd like to run an `httpd-24` container. Let's search for one:
+    
+    ```
+    podman search httpd-24 | more
+    ```
+    
+4. Let's use the `docker.io/centos/httpd-24-centos8` image. We are running our container in detached mode, with a `tty` to run commands:
+    
+    ```
+    podman run -dt docker.io/centos/httpd-24-centos8
+    ```
+    
+    Note that we didn't have to pull the container image to run it. When we ran the container, `podman` pulled the container image for us.
+
+**my output**
+that image did not appear int he search
+```
+[cloud_user@0e1f427e773c ~]$ podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[cloud_user@0e1f427e773c ~]$ sudo podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[cloud_user@0e1f427e773c ~]$ podman images
+REPOSITORY  TAG         IMAGE ID    CREATED     SIZE
+[cloud_user@0e1f427e773c ~]$ podman search httpd-24 | more
+NAME                                     DESCRIPTION
+registry.redhat.io/rhel8/httpd-24        Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/ubi8/httpd-24         Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/rhel9/httpd-24        Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/ubi9/httpd-24         Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/rhel10/httpd-24       Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/ubi10/httpd-24        Platform for running Apache httpd 2.4 or bui...
+registry.redhat.io/rhscl/httpd-24-rhel7  Platform for running Apache httpd 2.4 or bui...
+docker.io/alfiilham26/httpd-24
+docker.io/dcpilla/httpd-24
+docker.io/yikeshuizhudan/httpd-24
+docker.io/glfngocanh/httpd-24
+docker.io/rasskazovda/httpd-24
+docker.io/pabloapolo/httpd-24
+docker.io/herzer/httpd-24
+docker.io/aliijaz/httpd-24
+docker.io/tomhac3k/httpd-24
+docker.io/gwojcieszczuk/httpd-24
+docker.io/kasunrajapakse/httpd-24
+docker.io/library/httpd                  The Apache HTTP Server Project
+docker.io/danielpenagos/httpd-24
+docker.io/dgolovin/httpd-24
+docker.io/at1969/httpd-24
+docker.io/rmallaya/httpd-24
+docker.io/mtaru/httpd-24
+docker.io/ld5016/httpd-24
+docker.io/paketobuildpacks/httpd
+docker.io/paketobuildpacks/php-httpd
+docker.io/manageiq/httpd                 Container with httpd, built on CentOS for Ma...
+docker.io/cilium/demo-httpd
+docker.io/shshin4370/httpd-24
+docker.io/oryd/hydra-oidc-httpd
+docker.io/vulhub/httpd
+[cloud_user@0e1f427e773c ~]$ podman search httpd-24 | grep mtaru
+docker.io/mtaru/httpd-24
+[cloud_user@0e1f427e773c ~]$ podman search httpd-24 | grep centos
+[cloud_user@0e1f427e773c ~]$ podman run -dt docker.io/centos/httpd-24-centos8
+Trying to pull docker.io/centos/httpd-24-centos8:latest...
+Getting image source signatures
+Copying blob 3c72a8ed6814 done   |
+Copying blob a1d926117d46 done   |
+Copying blob 42c269fe6f7b done   |
+Copying blob afdf2ecdaa2f done   |
+Copying blob 07a0da26acf9 done   |
+Copying blob 74241943e2c2 done   |
+Copying blob 9e6c9d2db631 done   |
+Copying blob a33035987d8c done   |
+Copying blob eefe613be3f4 done   |
+Copying config 7d2fe0e482 done   |
+Writing manifest to image destination
+2bfce50fca393f2b75b82ff204e81570259f2ce12f5ad114a2905bdb0444e831
+[cloud_user@0e1f427e773c ~]$
+```
+
+    
+    
+    
+1. Let's check our containers and copy the `CONTAINER ID`:
+    
+    ```
+    podman ps -a
+    ```
+    
+2. Let's check our container images:
+    
+    ```
+    podman images
+    ```
+    
+    We see that we have our `httpd-24-centos8:latest` image now.
+    
+3. The container is running, let's interact with it. First, view the operating system our server using:
+    
+    ```
+    cat /etc/redhat-release
+    ```
+    
+    We can see it's RHEL 8.
+    
+4. Open a Bash shell in our container and paste in the `CONTAINER ID`, copied in our earlier step:
+    
+    ```
+    podman exec -it <container_ID> /bin/bash
+    ```
+    
+    This will give us an interactive session, showing the prompt as `bash-4.4$`.
+    
+5. Check what version of the operating system our container identifies as:
+    
+    ```
+    cat /etc/redhat-release
+    ```
+    
+    The container identifies itself as CentOS 8.
+    
+6. Try accessing the Apache web server running on port `8080` using `curl`:
+    
+    ```
+    curl http://localhost:8080
+    ```
+    
+    We see that we get the CentOS Apache server test page, albeit in text.
+    
+7. Exit our container shell:
+    
+    ```
+    exit
+    ```
+
+
+```
+[cloud_user@0e1f427e773c ~]$ podman ps -a
+CONTAINER ID  IMAGE                                     COMMAND               CREATED         STATUS         PORTS               NAMES
+2bfce50fca39  docker.io/centos/httpd-24-centos8:latest  /usr/bin/run-http...  50 seconds ago  Up 51 seconds  8080/tcp, 8443/tcp  cool_mccarthy
+[cloud_user@0e1f427e773c ~]$ podman images
+REPOSITORY                         TAG         IMAGE ID      CREATED      SIZE
+docker.io/centos/httpd-24-centos8  latest      7d2fe0e482ba  5 years ago  441 MB
+[cloud_user@0e1f427e773c ~]$ cat /etc/redhat-release
+Red Hat Enterprise Linux release 9.7 (Plow)
+[cloud_user@0e1f427e773c ~]$ podman exec -it 2bfce50fca39 /bin/bash
+bash-4.4$ cat /etc/redhat-release
+CentOS Linux release 8.2.2004 (Core)
+bash-4.4$ curl http://localhost:8080
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Apache HTTP Server Test Page powered by CentOS</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="shortcut icon" href="http://www.centos.org/favicon.ico"/>
+    <link rel="stylesheet" media="all" href="noindex/common/css/bootstrap.min.css"/>
+    <link rel="stylesheet" media="all" href="noindex/common/css/styles.css"/>
+  </head>
+  <body>
+    <header class="container">
+      <section class="row">
+        <div class="header-graphic v3-banner platform-banner centos-banner" role="banner">
+          <div class="graphic-inner">
+            <div class="graphic-inner2">
+              <div class="banner-title"><span>Apache HTTP Server</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </header>
+    <main class="container">
+      <h1>Test Page</h1>
+      <p class="lead">This page is used to test the proper operation of the <a href="http://apache.org">Apache HTTP server</a> after it has been installed. If you can read this page it means that this site is working properly. This server is powered by <a href="http://centos.org">CentOS</a>.</p>
+      <hr/>
+      <section class="row">
+        <div class="col-md-6">
+          <h2>Just visiting?</h2>
+                                <p class="lead">The website you just visited is either experiencing problems or is undergoing routine maintenance.</p>
+          <p>If you would like to let the administrators of this website know that you've seen this page instead of the page you expected, you should send them e-mail. In general, mail sent to the name "webmaster" and directed to the website's domain should reach the appropriate person.</p>
+          <p>For example, if you experienced problems while visiting www.example.com, you should send e-mail to "webmaster@example.com".</p>
+        <h2>Important note:</h2>
+        <p class="lead">The CentOS Project has nothing to do with this website or its content, it just provides the software that makes the website run.</p>
+        <p>If you have issues with the content of this site, contact the owner of the domain, not the CentOS project. Unless you intended to visit CentOS.org, the CentOS Project does not have anything to do with this website, the content or the lack of it.</p>
+        <p>For example, if this website is www.example.com, you would find the owner of the example.com domain at the following WHOIS server: <a href="http://www.internic.net/whois.html">http://www.internic.net/whois.html</a></p>
+        </div>
+        <div class="col-md-6">
+          <h2>Are you the Administrator?</h2>
+          <p>You should add your website content to the directory <code>/var/www/html/</code>.</p>
+          <p>To prevent this page from ever being used, follow the instructions in the file <code>/etc/httpd/conf.d/welcome.conf</code>.</p>
+          <h2>Promoting Apache and CentOS</h2>
+          <p>You are free to use the images below on Apache and CentOS Linux powered HTTP servers. Thanks for using Apache and CentOS!</p>
+          <p>
+            <a href="http://httpd.apache.org/">
+              <img src="noindex/common/images/pb-apache.png" alt="[ Powered by Apache ]"/>
+            </a>
+            <a href="http://www.centos.org/">
+              <img src="noindex/common/images/pb-centos.png" alt="[ Powered by CentOS Linux ]"/>
+            </a>
+          </p>
+        </div>
+        <div class="col-md-6">
+        </div>
+        <div class="col-md-6">
+          <h2>The CentOS Project</h2>
+          <p>The CentOS Linux distribution is a stable, predictable, manageable and reproduceable platform derived from the sources of Red Hat Enterprise Linux (RHEL).</p>
+          <p>Additionally to being a popular choice for web hosting, CentOS also provides a rich platform for open source communities to build upon. For more information please visit the <a href="http://www.centos.org/">CentOS website</a>.</p>
+        </div>
+      </section>
+      <hr/>
+    </main>
+    <footer class="container">
+      <p>© 2019 The CentOS Project | <a href="https://www.centos.org/legal/">Legal</a> | <a href="https://www.centos.org/legal/privacy/">Privacy</a></p>
+    </footer>
+  </body>
+</html>
+bash-4.4$ exit
+exit
+[cloud_user@0e1f427e773c ~]$
+```
+
+
+1. Back in our server, try accessing the Apache web server running on port `8080` in our container using `curl`:
+    
+    ```
+    curl http://localhost:8080
+    ```
+    
+    We see that we can't access the Apache web server running in the container. This is because we haven't published those ports to the host. We're going to get into that in an upcoming lesson.
+    
+```
+[cloud_user@0e1f427e773c ~]$ curl http://localhost:8080
+curl: (7) Failed to connect to localhost port 8080: Connection refused
+[cloud_user@0e1f427e773c ~]$
+```
+
+### Clean Up
+
+1. Let's stop our container:
+    
+    ```
+    podman stop <container_ID>
+    ```
+    
+2. Let's check our containers again:
+    
+    ```
+    podman ps -a
+    ```
+    
+    We can see our container is stopped now. We're done with our container.
+    
+3. Remove the container. Be sure to paste in your container's ID:
+    
+    ```
+    podman rm <container_ID>
+    ```
+    
+4. Verify the container has been removed:
+    
+    ```
+    podman ps -a
+    ```
+    
+5. Let's check our container images again:
+    
+    ```
+    podman images
+    ```
+    
+6. Remove our `httpd-24-centos8:latest` image:
+    
+    ```
+    podman rmi httpd-24-centos8:latest
+    ```
+    
+7. Check our container images again:
+    
+    ```
+    podman images
+    ```
+    
+
+We're all cleaned up!
+
+
+```
+[cloud_user@0e1f427e773c ~]$ podman stop 2bfce50fca39
+2bfce50fca39
+[cloud_user@0e1f427e773c ~]$ podman ps -a
+CONTAINER ID  IMAGE                                     COMMAND               CREATED        STATUS                    PORTS               NAMES
+2bfce50fca39  docker.io/centos/httpd-24-centos8:latest  /usr/bin/run-http...  5 minutes ago  Exited (0) 7 seconds ago  8080/tcp, 8443/tcp  cool_mccarthy
+[cloud_user@0e1f427e773c ~]$ podman rm 2bfce50fca39
+2bfce50fca39
+[cloud_user@0e1f427e773c ~]$ podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[cloud_user@0e1f427e773c ~]$ podman images
+REPOSITORY                         TAG         IMAGE ID      CREATED      SIZE
+docker.io/centos/httpd-24-centos8  latest      7d2fe0e482ba  5 years ago  441 MB
+
+[cloud_user@0e1f427e773c ~]$ podman rmi podman rmi httpd-24-centos8:latest
+Untagged: docker.io/centos/httpd-24-centos8:latest
+Deleted: 7d2fe0e482baf01e8a54f6c633bb2b5a89b3f35d278458c5ed73f3fdcc5646aa
+Error: 2 errors occurred:
+        * podman: image not known
+        * rmi: image not known
+
+[cloud_user@0e1f427e773c ~]$ podman rmi httpd-24-centos8:latest
+Error: httpd-24-centos8:latest: image not known
+
+[cloud_user@0e1f427e773c ~]$ podman images
+REPOSITORY  TAG         IMAGE ID    CREATED     SIZE
+[cloud_user@0e1f427e773c ~]$
+
+```
+## Conclusion
+
+Great going, Cloud Guru! We just ran our first Podman container, interacted with it, and cleaned up after ourselves.
+
+
+# error 
+
+cloud_user@ip-10-0-1-4: ~ $     podman ps -a
+bash: podman: command not found...
+Failed to search for file: Failed to download gpg key for repo 'mariadb-main': Curl error (37): Couldn't read a file:// file for file:///etc/pki/rpm-gpg/MariaDB-Server-GPG-KEY [Couldn't open file /etc/pki/rpm-gpg/MariaDB-Server-GPG-KEY]
+cloud_user@ip-10-0-1-4: ~ $ podman ps -a
+bash: podman: command not found...
+Failed to search for file: Failed to download gpg key for repo 'mariadb-main': Curl error (37): Couldn't read a file:// file for file:///etc/pki/rpm-gpg/MariaDB-Server-GPG-KEY [Couldn't open file /etc/pki/rpm-gpg/MariaDB-Server-GPG-KEY]
+cloud_user@ip-10-0-1-4: ~ $
+
+check the relationship with keylime read the callout
+> [!NOTE]- FIX
+> It looks like you've hit two separate issues here: **Podman isn't installed** (or isn't in your PATH), and your **YUM/DNF package manager is broken** because of a missing MariaDB GPG key.
+> 
+> When you type a command that doesn't exist, RHEL tries to search the repositories to see if it can suggest a package to install. Because the MariaDB repo is misconfigured, that search is crashing.
+> 
+> ---
+> 
+> ### Step 1: Fix the Package Manager
+> 
+> You need to disable the broken MariaDB repo so you can actually install Podman.
+> 
+> 1. **List your repos to find the exact name:**
+>     
+>     Bash
+>     
+>     ```
+>     sudo dnf repolist
+>     ```
+>     
+> 2. **Disable the broken MariaDB repo:** (Based on your error, it's likely named `mariadb-main`)
+>     
+>     Bash
+>     
+>     ```
+>     sudo dnf config-manager --set-disabled mariadb-main
+>     ```
+>     
+>     _If `config-manager` isn't found, you can manually edit the file in `/etc/yum.repos.d/` and change `enabled=1` to `enabled=0`._
+>     
+> 
+> ---
+> 
+> ### Step 2: Install Podman
+> 
+> Now that the package manager isn't crashing, you can install the container tools.
+> 
+> Bash
+> 
+> ```
+> sudo dnf install -y podman
+> ```
+> 
+> Once that finishes, your `podman ps -a` command should work perfectly.
+> 
+> ---
+> 
+> ### Why is this happening?
+> 
+> - **The GPG Error:** Your system is trying to verify the "honesty" of the MariaDB packages using a security key (GPG). The repo file says the key is located at `/etc/pki/rpm-gpg/MariaDB-Server-GPG-KEY`, but that file doesn't actually exist on your disk.
+>     
+> - **Command Not Found:** In RHEL/CentOS, there is a plugin called `Command Not Found`. When you typed `podman`, the system tried to be helpful and look up which package provides it. To do that, it refreshed the repo metadata, hit the broken MariaDB link, and threw the Curl error (37).
+>     
+> 
+> ### Pro-Tip for your Lab
+> 
+> Since you are working with **Keylime** and **PQC** in this lab environment, you might actually need the entire "Container Tools" module, which includes Podman, Buildah, and Skopeo. You can install them all at once with:
+> 
+> Bash
+> 
+> ```
+> sudo dnf module install -y container-tools
+> ```
+> 
+> Give the repo disable command a shot first—it should clear up that annoying "Failed to search for file" error immediately!
+
 %%
 

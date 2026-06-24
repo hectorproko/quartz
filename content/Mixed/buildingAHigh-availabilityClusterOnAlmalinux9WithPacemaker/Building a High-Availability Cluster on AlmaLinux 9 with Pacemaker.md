@@ -65,7 +65,7 @@ ip addr show
 ```
 
 ---
-<!--
+%%
 ### SSH Setup
 
 Remote access is needed to manage both nodes. I also set up key-based authentication between the two nodes, which cluster tools rely on for passwordless communication.
@@ -141,7 +141,8 @@ systemctl restart sshd
 
 > **Note:** `PermitRootLogin yes` and `PasswordAuthentication yes` are appropriate for a local lab environment. In production, use key-based authentication only and disable root login over SSH.
 
--->
+%%
+
 ---
 
 ## Phase 2 - Install Cluster Packages
