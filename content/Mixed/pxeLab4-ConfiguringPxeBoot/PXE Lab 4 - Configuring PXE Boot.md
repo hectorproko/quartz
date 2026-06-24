@@ -9,7 +9,7 @@ tags:
   - kickstart
 linkedin: "True"
 quartz: "True"
-refactored: "False"
+refactored: "True"
 hands-on: "True"
 completed: "True"
 title: "PXE Lab Series - Lab 4: Configuring PXE Network Boot"

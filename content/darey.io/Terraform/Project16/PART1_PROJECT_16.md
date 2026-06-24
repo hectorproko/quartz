@@ -3,9 +3,9 @@ tags:
   - "#Terraform"
   - IaC
 hardlinked: "True"
-linkedin: "False"
-quartz: "False"
-refactored: "False"
+linkedin: "True"
+quartz: "True"
+refactored: "True"
 darey.io: "True"
 hands-on: "True"
 completed: "True"
