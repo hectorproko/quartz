@@ -1,10 +1,17 @@
 ---
+
 tags:
-  - hands-on
   - Podman
+  - RHEL
 quartz: "True"
 linkedin: "True"
+refactored: "True"
+pluralsight: "True"
+hands-on: "True"
+completed: "True"
+hardlinked: "True"
 ---
+
 ## Overview
 
 One of the key advantages Podman has over Docker is its native support for **pods**,  a concept borrowed directly from Kubernetes. A pod is a group of one or more containers that share the same network namespace, meaning they can communicate with each other over `localhost`. This is particularly useful for multi-container applications like WordPress, which requires both a web server and a database running together.
