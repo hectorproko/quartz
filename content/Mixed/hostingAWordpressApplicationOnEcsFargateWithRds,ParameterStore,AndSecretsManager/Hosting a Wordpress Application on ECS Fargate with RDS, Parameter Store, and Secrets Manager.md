@@ -1,13 +1,11 @@
 ---
-
-
 tags:
   - draft
   - ECS
   - SecretsManagement
 linkedin: "False"
-quartz: "False"
-refactored: "False"
+quartz: "True"
+refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 completed: "True"

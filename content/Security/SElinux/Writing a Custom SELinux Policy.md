@@ -3,7 +3,7 @@ tags:
   - selinux
   - security
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 refactored: "True"
 pluralsight: "True"
 hands-on: "True"
