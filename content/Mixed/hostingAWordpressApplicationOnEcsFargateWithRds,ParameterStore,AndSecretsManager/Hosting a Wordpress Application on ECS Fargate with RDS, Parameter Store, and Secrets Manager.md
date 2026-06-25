@@ -175,7 +175,7 @@ To push the image, the Cloud9 environment needed AWS CLI credentials tied to the
 2. Tagged the key with the description `cli access key`.
     
 3. Copied the access key and secret access key values.
-   ![[Pasted image 20260618181117.png|500]]
+   ![[Pasted image 20260618181117.png|600]]
     
     
 4. In Cloud9, ran:
@@ -206,7 +206,7 @@ This command isn't really about S3, it's a low-stakes way to confirm the CLI can
     ![[Pasted image 20260618181801.png]]
     ![[Pasted image 20260618182137.png|500]]
     
-2. Copied **[[#Step 1 Create a Database Subnet Group|Step 1]]** of the push commands into the Cloud9 terminal, adding `--profile cloud_user` before the pipe:
+2. Copied **[[Pasted image 20260618182137.png|Step 1 of the push commands]]** into the Cloud9 terminal, adding `--profile cloud_user` before the pipe:
     
     ```shell
     aws ecr get-login-password --region us-east-1 --profile cloud_user | docker login --username AWS --password-stdin 864572276231.dkr.ecr.us-east-1.amazonaws.com
@@ -265,7 +265,7 @@ This command isn't really about S3, it's a low-stakes way to confirm the CLI can
 ![[Pasted image 20260618182453.png]]
 
 ## Step 5: Create the Amazon ECS Task Definition
-
+%%[[AWS ECS (Elastic Container Service)#ECS task definition]]%%
 With the image in ECR, I defined how the container should run.
 
 1. Navigated to **Amazon ECS** > **Task definitions** > **Create new task definition**.
@@ -290,80 +290,90 @@ With the image in ECR, I defined how the container should run.
     |`WORDPRESS_DB_NAME`|ValueFrom|ARN of the `/dev/WORDPRESS_DB_NAME` Parameter Store parameter|
     |`WORDPRESS_DB_USER`|ValueFrom|ARN of the Secrets Manager RDS secret, with `:username::` appended (e.g. `arn:aws:secretsmanager:us-east-1:864572276231:secret:rds!db-7874795c-0509-460b-a932-a761a7dbd3a4-07y1yB:username::`)|
     |`WORDPRESS_DB_PASSWORD`|ValueFrom|ARN of the Secrets Manager RDS secret, with `:password::` appended (e.g. `arn:aws:secretsmanager:us-east-1:864572276231:secret:rds!db-7874795c-0509-460b-a932-a761a7dbd3a4-07y1yB:password::`)|
-    
+
+%%why using :username::, :password::
+
+When you enable **"Manage master credentials in AWS Secrets Manager"** for RDS, AWS doesn't store your username and password as separate secrets. It stores **one secret** as a JSON object that looks something like this:
+```json
+{
+  "username": "admin",
+  "password": "Tg7!kP9z..."
+}
+```
+
+So the secret itself (identified by its ARN) contains _both_ values bundled together. If you just pointed `WORDPRESS_DB_USER` and `WORDPRESS_DB_PASSWORD` at the same plain ARN, ECS would inject the **entire JSON blob** as the environment variable value — not just the field you wanted.%%
+
 7. Clicked **Create**.
     
 
-`Pasted image 20260618184655.png`
+> [!note]- Snapshot
+> ![[Pasted image 20260618184655.png]]
 
 ## Step 6: Create the ECS Cluster and Service
 
 1. In **Amazon ECS** > **Clusters** > **Create cluster**, named it `Wordpress-Cluster` and selected **AWS Fargate (serverless)** infrastructure, then clicked **Create**.
     
-    `Pasted image 20260618185335.png`
-    
+> [!NOTE]- Snapshot
+> ![[Pasted image 20260618185335.png]]
 
-#### Troubleshooting: Cluster Creation Errors
+> [!attention] Troubleshooting - Cluster Creation Errors:
+>  If cluster creation produces service-related errors, AWS generates a CloudFormation stack behind the scenes. Navigating to that CloudFormation template and retrying the deployment from there resolves most transient creation failures.
+>       ![[Pasted image 20260618185638.png]]
 
-If the cluster creation produces service-related errors, AWS generates a CloudFormation stack behind the scenes. Navigating to that CloudFormation template and retrying the deployment from there resolves most transient creation failures.
-
-`Pasted image 20260618185638.png`
 
 2. Selected the new `Wordpress-Cluster`, then under the **Services** tab clicked **Create**.
-    
 3. Under **Compute options**, selected **Launch type**, set to **FARGATE**, with **Platform version** set to **LATEST**.
-    
-4. Under **Deployment configuration**, the **Application type** field described in the original instructions (select "Service") wasn't present in this version of the console, so I proceeded without setting it.
-    
-5. For **Family**, selected the `wordpress-td` task definition (`LATEST` revision).
-    
-6. Named the service `wordpress-service` with a desired task count of `1`.
-    
-7. Under **Networking**, selected **Your Custom VPC**, cleared the default subnet selection, and selected only the **Private Subnet** entries.
-    
-8. Created a new security group named `app-sg` with the following inbound rule:
+4. Under **Deployment configuration**, for **Family**, selected the `wordpress-td` task definition (`LATEST` revision).
+5. Named the service `wordpress-service` with a desired task count of `1`.
+6. Under **Networking**, selected **Your Custom VPC**, cleared the default subnet selection, and selected only the **Private Subnet** entries.
+7. Created a new security group named `app-sg` with the following inbound rule:
     
     |Type|Protocol|Port range|Source|Value|
     |---|---|---|---|---|
     |HTTP|TCP|80|Source group|Security Group of `ALBAllowHttp`|
     
-    (Referenced from `Pasted image 20260618173014.png`)
-    
-9. Set **Public IP** to **off**.
-    
-10. Under **Load balancing**, selected **Application Load Balancer** > **Use an existing load balancer** > `OurApplicationLoadBalancer`.
-    
+    ![[Pasted image 20260618173014.png]]
+8. Set **Public IP** to **off**.
+9. Under **Load balancing**, selected **Application Load Balancer** > **Use an existing load balancer** > `OurApplicationLoadBalancer`.
 
-#### Troubleshooting: Missing Health Check Grace Period Field
+%%The instructions called for setting the **Health check grace period** to `30 seconds`, but this field wasn't visible anywhere in the service creation flow for this console version. I proceeded without setting it explicitly and the service still came up successfully, but it's worth checking the **Service auto scaling** or **Deployment configuration** sections in your own console version if you need this set.%%
 
-The instructions called for setting the **Health check grace period** to `30 seconds`, but this field wasn't visible anywhere in the service creation flow for this console version. I proceeded without setting it explicitly and the service still came up successfully, but it's worth checking the **Service auto scaling** or **Deployment configuration** sections in your own console version if you need this set.
+10. Left the **Listener** values as default.
+11. For **Target group**, named it `wordpress-tg`.
+12. Set the **Health check path** to `/wp-admin/images/wordpress-logo.svg`, since WordPress isn't fully set up yet at this point, and the default health check path would otherwise fail.
+13. Left the remaining values as defaults and clicked **Create**.
+14. Waited for the service to reach a running state.
 
-11. Left the **Listener** values as default.
-12. For **Target group**, named it `wordpress-tg`.
-13. Set the **Health check path** to `/wp-admin/images/wordpress-logo.svg` — this is necessary because WordPress isn't fully set up yet at this point, and the default health check path would otherwise fail.
-14. Left the remaining values as defaults and clicked **Create**.
-15. Waited for the service to reach a running state.
+> [!NOTE]- Cluster Details
+> ![[Pasted image 20260618191035.png ]]
 
-`Pasted image 20260618191035.png` `Pasted image 20260618191334.png` `Pasted image 20260618191507.png`
+![[Pasted image 20260618191334.png ]]
 
+![[Pasted image 20260618191507.png]]
+
+> [!tip]
+> When we created the **ECS Service** (`wordpress-service`) with a **desired task count of 1**, ECS itself spins up that many **tasks** to satisfy the service. A "task" is just a running instance of your [[#Step 5 Create the Amazon ECS Task Definition|task definition]] (`wordpress-td`), basically one running copy of the WordPress container, scheduled onto Fargate.
+
+%%
+you question was where does this task come from
+tasks are created automatically, you defined the number of them in the service
+[[AWS ECS (Elastic Container Service)#What are tasks in a cluster]]
+%%
 ## Step 7: Connect to the Application
 
 1. Once the service was running, confirmed a task was listed under the cluster's **Tasks** tab.
-    
-    `Pasted image 20260618191507.png`
+    ![[Pasted image 20260618191507.png]]
     
 2. Navigated to **Amazon EC2** > **Load balancers** > `OurApplicationLoadBalancer`.
     
 3. Copied the ALB's DNS name into a new browser tab over **HTTP**.
-    
+    ![[Pasted image 20260618191711.png ]]
 4. Was greeted with the WordPress setup page, confirming the application was successfully running on ECS Fargate and connected to the RDS database.
-    
-
-`Pasted image 20260618191711.png` `Pasted image 20260618191757.png`
+    ![[Pasted image 20260618191757.png]]
 
 ## Conclusion
 
-This lab tied together networking, managed database services, secrets handling, container registries, and serverless compute into a single working deployment. The most valuable part wasn't just getting WordPress running, it was seeing how Parameter Store and Secrets Manager keep configuration and credentials out of the application code and task definitions entirely, which is a pattern I'll carry into future containerized projects on AWS.
+This lab tied together networking, managed database services, secrets handling, container registries, and serverless compute into a single working deployment. The most valuable part wasn't just getting WordPress running, it was seeing how Parameter Store and Secrets Manager keep configuration and credentials out of the application code and task definitions entirely, which is a pattern I'll carry into future containerized projects on AWS. 
 
 
 <!--
