@@ -1,9 +1,8 @@
 ---
 tags:
-  - draft
   - ECS
   - SecretsManagement
-linkedin: "False"
+linkedin: "True"
 quartz: "True"
 refactored: "True"
 pluralsight: "True"
@@ -372,6 +371,17 @@ tasks are created automatically, you defined the number of them in the service
 ## Conclusion
 
 This lab tied together networking, managed database services, secrets handling, container registries, and serverless compute into a single working deployment. The most valuable part wasn't just getting WordPress running, it was seeing how Parameter Store and Secrets Manager keep configuration and credentials out of the application code and task definitions entirely, which is a pattern I'll carry into future containerized projects on AWS. 
+
+%%
+### Post
+Just completed a hands-on project to get my hands dirty with ECS. I deployed a production-ready WordPress application on Fargate, and to my surprise I ended up working with several other services along the way  RDS, Systems Manager Parameter Store, and Secrets Manager.
+
+It was a solid way to see how these pieces fit together in a real setup. Learned a lot about container orchestration and secure cloud architectures.
+
+Full walkthrough here: [https://hectorproko.github.io/quartz/mixed/hostingawordpressapplicationonecsfargatewithrds,parameterstore,andsecretsmanager/hosting-a-wordpress-application-on-ecs-fargate-with-rds,-parameter-store,-and-secrets-manager](https://hectorproko.github.io/quartz/mixed/hostingawordpressapplicationonecsfargatewithrds,parameterstore,andsecretsmanager/hosting-a-wordpress-application-on-ecs-fargate-with-rds,-parameter-store,-and-secrets-manager)
+
+`#AWS #ECS #Fargate #RDS #SecretsManager #ParameterStore #DevOps #CloudEngineering`
+%%
 
 
 <!--
