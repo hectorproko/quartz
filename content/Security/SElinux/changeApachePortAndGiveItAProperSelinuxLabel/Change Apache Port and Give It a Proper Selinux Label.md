@@ -10,10 +10,6 @@ hands-on: "True"
 completed: "True"
 hardlinked: "True"
 ---
-
-
-
-
 ## Introduction
 
 The goal of this hands-on lab is to change the Apache port and give it a proper SELinux label. Keep in mind, changing the port of a web server also requires changes to SELinux and the firewall. I first changed the listening port for Apache in the Apache configuration file, switching from port 80 to a custom port. After that, I configured SELinux for the new port, closed the old port (80) with firewalld, and opened the newly configured Apache port. Finally, I tested the changes to confirm everything worked.
