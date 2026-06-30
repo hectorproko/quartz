@@ -1,6 +1,5 @@
 ---
 tags:
-  - draft
   - selinux
 linkedin: "False"
 quartz: "True"
@@ -49,7 +48,8 @@ The goal of this hands-on lab is to change the Apache port and give it a proper 
     sudo semanage port -a -t http_port_t -p tcp 61297
     ```
     *As root, add a new SELinux port rule that labels TCP port 61297 with the `http_port_t` type, so Apache is allowed to bind to it.*
-%%
+
+%%kjk
 how can port be assinged type like process or file
 [[semanage (SELinux Management)#Options|semanage]]
 **Files and processes:** SELinux contexts are stored as literal metadata.
@@ -62,7 +62,7 @@ In both cases, there's a real kernel object (inode, task_struct) that the contex
 **Ports are different:** A TCP/UDP port number is not a file and has no inode. There's no xattr to attach to. Instead, SELinux maintains a separate **policy table** (the port context table) that maps port number + protocol → type. That's exactly what `semanage port -l` is showing you — it's not metadata stored "on" the port, it's a lookup table the kernel's network hooks (via `netlabel`/`selinux` socket hooks) consult whenever a process tries to `bind()` to that port.
 [[SELinux#SELinux Contexts]]
 %% 
-    
+
 5. Start the Apache service:
     
     ```bash
