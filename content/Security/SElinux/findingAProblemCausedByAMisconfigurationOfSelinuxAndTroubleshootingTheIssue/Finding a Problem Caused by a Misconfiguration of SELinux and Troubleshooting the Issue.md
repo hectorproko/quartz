@@ -1,5 +1,4 @@
 ---
-
 tags:
   - selinux
 linkedin: "False"
@@ -35,7 +34,7 @@ I then checked the `auditd` service configuration to understand how audit loggin
 ```bash
 sudo systemctl cat auditd
 ```
-%%[[systemctl]]%%
+%%[[systemctl#Cat config]]%%
 
 > [!NOTE]- auditd config
 > ```bash
@@ -76,6 +75,9 @@ sudo systemctl cat auditd
 > 
 > [root@ip-10-0-1-138 ~]#
 > ```
+
+> [!attention] `auditd` Restart Needed
+> When we installed `setroubleshoot`, it also installs an **auditd plugin** (`sedispatch`) that hooks into the audit system and translates AVC denials into human-readable messages. For auditd to pick that plugin up, it needs to be restarted so it re-reads its plugin directory and loads the new dispatcher.
 
 #### Troubleshooting: `auditd` Won't Restart Cleanly
 
@@ -131,6 +133,8 @@ This failed immediately. Checking the service status confirmed a permissions-rel
 sudo systemctl status httpd -l
 ```
 
+^932d3c
+
 ```
 Job for httpd.service failed because the control process exited with error code. See "systemctl status httpd.service" and "journalctl -xe" for details.
 [root@ip-10-0-1-138 ~]# sudo systemctl status httpd -l
@@ -152,6 +156,9 @@ Jun 25 16:15:11 ip-10-0-1-138.ec2.internal systemd[1]: Failed to start The Apach
 Jun 25 16:15:11 ip-10-0-1-138.ec2.internal systemd[1]: Unit httpd.service entered failed state.
 Jun 25 16:15:11 ip-10-0-1-138.ec2.internal systemd[1]: httpd.service failed.
 ```
+
+^systemctlStatusHttpd-l
+
 %%
 Look at the lines right before it in your log:
 
@@ -166,6 +173,22 @@ Apache tries to create a listening socket for every address/port combo in its co
 So: Apache tried to open 2 sockets → both got blocked by SELinux → it ended up with **zero working sockets** → and a server with no sockets to listen on has nothing to do, so it logs "no listening sockets available, shutting down" and exits.
 
 The real cause is the `Permission denied` lines above it (which trace back to the SELinux `name_bind` denial you found in the audit log). "No listening sockets available" is just Apache's way of saying "I had nothing left to try, so I'm exiting" — it's the symptom, not the disease.
+%%
+
+%%
+[[Linux File Types#Socket]]
+t o bind to address does this create 2 files of type sockets
+_________
+Yes, exactly. When Apache sees `Listen 9100` without a specific address, it tries to bind to **two sockets**:
+
+- `[::]:9100` — an IPv6 socket (listens on all IPv6 interfaces)
+- `0.0.0.0:9100` — an IPv4 socket (listens on all IPv4 interfaces)
+
+That's why you saw two separate "Permission denied" lines in the error output — SELinux denied the bind attempt twice, once per socket.
+
+When you changed it to `Listen 0.0.0.0:9100`, you told Apache to only create the IPv4 socket, which is why it worked — one bind attempt, one approval from SELinux.
+
+These aren't files on disk the way [[Linux File Types#Regular File|regular files]] are. They're **network sockets**, which in Linux are kernel objects. They do show up in the filesystem under `/proc` and you can see them with tools like `ss` or `netstat`, but they're not created in a directory you'd browse to. The "two files" mental model is close though — each socket is a distinct kernel resource with its own context that SELinux evaluates independently.
 %%
 #### Troubleshooting: Identifying SELinux as the Cause
 
@@ -230,50 +253,120 @@ type=AVC msg=audit(1782419024.521:449): avc:  denied  { name_bind } for  pid=275
 [root@ip-10-0-1-138 ~]#
 ```
 
-This is also where I confirmed the live monitoring view of the log, which is useful for watching denials happen in real time:
+> [!NOTE]
+> `audit2why` doesn't always point us to the _best_ fix, it points you to _a_ fix, based on whatever SELinux booleans or rules exist that would allow the denied action. In this case, it found a broad boolean that happens to permit `httpd` to bind to non-standard ports, and suggested that. The problem is that enabling `httpd_enable_ftp_server` is a blunt instrument, it grants wider permissions than needed.
+> 
+> The real diagnostic information was already in the raw AVC line itself:
+> ```
+> avc: denied { name_bind } for pid=27442 comm="httpd" src=9100 tcontext=...hplip_port_t
+> ```
+> 
+> - `name_bind` — Apache is trying to bind to a port
+> - `src=9100` — the port in question
+> - `tcontext=...hplip_port_t` — the port is labeled as an HP printer port, not an HTTP port
+> 
+> That tells you the real fix: relabel the port to `http_port_t` using `semanage`. The boolean suggestion from `audit2why` was noted and ignored in favor of the more targeted, correct approach.
+
+%%
+### **Why "blunt"?**
+
+When I said blunt I meant it's an _all-or-nothing_ permission. Setting `httpd_enable_ftp_server 1` tells SELinux "let Apache bind to a wide range of non-standard ports" — it doesn't say "let Apache bind specifically to port 9100."
+### Why is it called `httpd_enable_ftp_server`?
+
+This one is genuinely confusing naming. The reason is historical — Apache (`httpd`) has a module called `mod_proxy_ftp` that lets it act as an FTP proxy, meaning Apache can sit in front of an FTP server and forward FTP traffic. FTP uses non-standard ports by nature, so this boolean was originally created to let Apache bind to those FTP-related ports.
+
+Over time, SELinux's logic of "this boolean allows non-standard port binding for httpd" ended up making `audit2why` suggest it as a fix for _any_ non-standard port denial, even ones that have nothing to do with FTP. The name reflects the original use case, not what it actually ends up being suggested for.
+
+So `audit2why` wasn't wrong exactly — it would have "worked" — but it would have also quietly granted Apache a lot more port access than you intended, which is exactly the kind of thing SELinux is supposed to prevent in the first place.%%
+
+%%[[SELinux#Rules / Policy]] what is meant by rule
+Lab used in [[Writing a Custom SELinux Policy]]%%
+
+To go one step further and watch a denial happen in real time, I used a two-terminal setup. In the first terminal, I started following the audit log live:
 
 ```bash
 sudo tail -f /var/log/audit/audit.log
 ```
 
+With that running, I opened a second terminal, SSH'd into the same server, and from there attempted to start `httpd` again:
+
+```bash
+sudo systemctl start httpd
+```
+
+The moment `httpd` tried to bind to port 9100 and SELinux blocked it, the AVC denial appeared live in the first terminal. This made it clear exactly which action triggered the denial and when, without having to stop and grep the log after the fact.
+
+This technique is especially useful when you're not sure _which_ action is causing a denial,running `tail -f` while you manually test things lets you catch the exact moment a denial fires, rather than hunting through a log after the fact.
+
+*Truncated Output*
+```
+type=CRYPTO_SESSION msg=audit(...:425): ... op=start direction=from-server cipher=chacha20-poly1305@openssh.com ... addr=73.49.202.63 lport=22 exe="/usr/sbin/sshd" ...
+type=CRYPTO_SESSION msg=audit(...:426): ... op=start direction=from-client cipher=chacha20-poly1305@openssh.com ... addr=73.49.202.63 lport=22 exe="/usr/sbin/sshd" ...
+type=USER_AUTH msg=audit(...:427): ... op=pubkey acct="cloud_user" exe="/usr/sbin/sshd" ... res=failed
+type=USER_AUTH msg=audit(...:428): ... op=PAM:authentication grantors=pam_unix acct="cloud_user" exe="/usr/sbin/sshd" ... res=success
+type=AVC msg=audit(...:448): avc: denied { name_bind } for pid=27547 comm="httpd" src=9100 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:hplip_port_t:s0 tclass=tcp_socket permissive=0
+type=SERVICE_START msg=audit(...:450): ... unit=httpd comm="systemd" ... res=failed
+```
+
+
+Notice the sequence: the `CRYPTO_SESSION` and `USER_AUTH` lines are the second terminal's SSH connection appearing in the log first, followed immediately by the AVC denial the moment `httpd` tried to bind to port 9100. This made it clear exactly which action triggered the denial and when, without having to stop and grep the log after the fact.
 ### Finding and Assigning the Correct Port Label
 
 With the root cause identified, the next step was to correctly label port 9100 so SELinux would allow Apache to bind to it.
 
-First, I listed the existing port labels related to HTTP to understand what was already in use:
+First, I listed the **existing port labels** related to HTTP to understand what was already in use:
 
 ```bash
 sudo semanage port -l | grep -i http
 ```
 
-This showed that `http_port_t` already covered ports like 80, 81, 443, 8008, 8009, 8443, and 9000, but not 9100.
+```
+http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
+http_cache_port_t              udp      3130
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000 ⬅️
+pegasus_http_port_t            tcp      5988
+pegasus_https_port_t           tcp      5989  
+```
 
-I tried adding 9100 directly:
+This showed that `http_port_t` already covered ports like 80, 81, 443, 8008, 8009, 8443, and 9000, but **not 9100**. 
+
+I tried adding 9100 directly: %%adding a new mapping%%
 
 ```bash
 sudo semanage port -a -t http_port_t -p tcp 9100
 ```
+%%[[semanage (SELinux Management)#Options]]%%
+*We're mapping a **port number** to an **SELinux type***
 
+```
+❌ValueError: Port tcp/9100 already defined
+```
 #### Troubleshooting: Port Already Defined Under a Different Label
 
-This returned an error, since port 9100 was already assigned to `hplip_port_t`. SELinux won't let the same port belong to two labels at once, so instead of adding a new mapping, I had to modify the existing one to reassign it:
+This returned an error, since port 9100 was already assigned to `hplip_port_t`. SELinux won't let the same port belong to two labels at once, so instead of **adding a new mapping**, I had to modify the existing one to reassign it:
 
 ```bash
 sudo semanage port -m -t http_port_t -p tcp 9100
 ```
-
+%%[[semanage (SELinux Management)#Options|semanage]]%%
 Verifying the change confirmed port 9100 now appeared under `http_port_t`:
 
 ```bash
 sudo semanage port -l | grep -i http
 ```
 
+```
+http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
+http_cache_port_t              udp      3130
+http_port_t                    tcp      9100, 80, 81, 443, 488, 8008, 8009, 8443, 9000  ⬅️
+pegasus_http_port_t            tcp      5988
+pegasus_https_port_t  
+```
 ### Restarting Apache and Hitting the Next Roadblock
 
 With the port correctly labeled, I tried loading the site in the browser at `<PUBLIC_IP_ADDRESS>:9100`. It didn't load.
 
-![Pasted image 20260625163344.png]
-
+![[Pasted image 20260625163344.png|600]]
 #### Troubleshooting: Apache Still Not Running
 
 Checking the service status showed Apache wasn't actually running:
@@ -282,23 +375,40 @@ Checking the service status showed Apache wasn't actually running:
 sudo systemctl status httpd
 ```
 
-Looking back at the config, the issue was how the `Listen` directive was written. I updated it to explicitly bind to all interfaces:
+```
+🔴 httpd.service - The Apache HTTP Server
+   Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; vendor preset: disabled)
+   Active: failed (Result: exit-code) since Thu 2026-06-25 16:23:44 EDT; 10min ago
+  Process: 27547 ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND (code=exited, status=1/FAILURE)
+ Main PID: 27547 (code=exited, status=1/FAILURE)
 
+Jun 25 16:23:44 ip-10-0-1-138.ec2.internal httpd[27547]: (13)Permission denied: AH00072: make_sock: could not bind to address ...:9100
+Jun 25 16:23:44 ip-10-0-1-138.ec2.internal httpd[27547]: (13)Permission denied: AH00072: make_sock: could not bind to address ...:9100
+Jun 25 16:23:44 ip-10-0-1-138.ec2.internal httpd[27547]: no listening sockets available, shutting down
+Jun 25 16:23:44 ip-10-0-1-138.ec2.internal systemd[1]: Failed to start The Apache HTTP Server.
+Jun 25 16:23:44 ip-10-0-1-138.ec2.internal systemd[1]: httpd.service failed.
+```
+
+The error message looked identical to the [[#^systemctlStatusHttpd-l|earlier SELinux denial]]. To rule SELinux out, I checked the audit log again, no new AVC entries appeared this time, which confirmed SELinux was no longer blocking the bind. The issue was instead how the `Listen` directive was written...
+
+Looking back at the config, `Listen 9100` tells Apache to bind to port 9100 on **all interfaces**, both IPv4 (`0.0.0.0`) and IPv6 (`[::]`). 
+
+You can actually see this in the [[#^systemctlStatusHttpd-l|first failure output]]:
+```
+Permission denied: make_sock: could not bind to address [::]:9100
+Permission denied: make_sock: could not bind to address 0.0.0.0:9100
+```
+%%
+The status right above us which did not use `-l` truncates output, coud be missleading because i wont not have notice IPv4 an Ipv6 
+...:9100
+...:9100
+%%
+I updated it to explicitly bind to all interfaces:
 ```bash
 sudo vim /etc/httpd/conf/httpd.conf
 ```
 
-Change:
-
-```
-Listen 9100
-```
-
-to:
-
-```
-Listen 0.0.0.0:9100
-```
+Change `Listen 9100` to `Listen 0.0.0.0:9100`
 
 After saving and restarting, Apache started successfully:
 
@@ -309,8 +419,7 @@ sudo systemctl status httpd
 
 Trying the browser again at `<PUBLIC_IP_ADDRESS>:9100` got further this time, but returned a "Forbidden" error instead of the expected page.
 
-![Pasted image 20260625163616.png]
-
+![[Pasted image 20260625163616.png]]
 ### Fixing the SELinux Context on `index.html`
 
 A "Forbidden" response with the server otherwise running pointed to a file context issue rather than a port issue. I checked the security context of the web root:
@@ -321,15 +430,20 @@ cd /var/www/html/
 ls -lZ
 ```
 
-This revealed that `index.html` had the context `user_home_t`, which is not a context Apache is permitted to read from. To confirm what the _correct_ context looked like, I created a test file in the same directory and checked its context, since new files inherit the directory's default context:
+```
+-rw-r--r--. root root system_u:object_r:user_home_t:s0 index.html
+```
+
+This revealed that `index.html` had the context `user_home_t`, which is not a context Apache is permitted to read from. I created a test file in the same directory to confirm what the correct context should be. Since SELinux file contexts are path-based, the policy automatically labeled the new file with `httpd_sys_content_t` for anything under `/var/www/html/`, making it clear that `index.html` should have that same type.
 
 ```bash
 touch test
 ls -lZ
 ```
 
-The test file correctly showed `httpd_sys_content_t`, confirming that's the label `index.html` needed.
-
+```
+unconfined_u:object_r:httpd_sys_content_t:s0 test
+```
 #### Troubleshooting: Fixing the Mismatched Context Permanently
 
 Simply changing the context wouldn't survive a relabel or restore operation, so I updated the persistent file context rule first, then applied it:
@@ -337,36 +451,40 @@ Simply changing the context wouldn't survive a relabel or restore operation, so 
 ```bash
 semanage fcontext -a -t httpd_sys_content_t /var/www/html/index.html
 ```
-
-This returned an error indicating a rule for that path already existed, so I modified it instead:
-
-```bash
-semanage fcontext -m -t httpd_sys_content_t /var/www/html/index.html
-```
+%%[[semanage (SELinux Management)#Options|semanage]],[[SELinux#^6143c4]]%%
+> If `-a` fails because a rule for that path is already defined in the policy, run `-m` instead to modify the existing entry:
+> 
+> ```
+> Sample
+> ❌ValueError: Port tcp/9100 already defined
+> ```
+> 
+> ```bash
+> semanage fcontext -m -t httpd_sys_content_t /var/www/html/index.html
+> ```
 
 Then I applied the corrected context to the actual file:
 
 ```bash
 restorecon -v /var/www/html/index.html
 ```
-
+%%[[restorecon (Restore Context)#Options|restorecon]]%%
 Output confirmed the relabel:
 
 ```
 restorecon reset /var/www/html/index.html context system_u:object_r:user_home_t:s0->system_u:object_r:httpd_sys_content_t:s0
 ```
-
 ### Confirming the Fix
 
 With both the port label and file context corrected, I loaded `<PUBLIC_IP_ADDRESS>:9100` one more time. This time, the page loaded successfully.
 
-![Pasted image 20260625163852.png]
 
+![[Pasted image 20260625163852.png|600]]
 ## Conclusion
 
 This lab was a solid exercise in SELinux troubleshooting methodology: rather than disabling SELinux to "make the error go away," I worked through identifying the actual policy violations using `audit.log`, `audit2why`, and `semanage`, then applied targeted, persistent fixes for each one. The two issues, an incorrectly labeled port and an incorrect file context, are common, real-world SELinux problems, and resolving both reinforced how SELinux enforces security at a much more granular level than standard Linux permissions.
 
-**Key takeaways:**
+**Key takeaways:** 
 
 - AVC denials in `/var/log/audit/audit.log` are the starting point for any SELinux investigation.
 - `audit2why` translates cryptic denial messages into actionable causes.
