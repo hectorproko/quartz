@@ -1,0 +1,43 @@
+---
+
+tags:
+linkedin: "False"
+quartz: "False"
+refactored: "False"
+pluralsight: "True"
+hands-on: "True"
+completed: "False"
+hardlinked: "True"
+---
+
+**Section 1: SELinux Modes and Boolean-Based Service Configuration**
+✅[[Rotating Between the 3 SELinux Modes]]
+✅[[Configuring SELinux - Enabling Service Communication and Enforcing Security Policy]] (Zabbix/httpd) comes with prerequise stuff tht we dotn mention
+
+**Section 2: Security Contexts**
+✅[[Display and Restore File and Directory Security Contexts with SELinux]] comes with prerequise stuff tht we dotn mention
+✅[[Troubleshooting SELinux on Files and Directories]]
+✅[[Troubleshooting SELinux Issues]]
+✅ [[Enhancing SELinux and Compliance with RHEL System Roles]]
+
+**Section 3: Log Analysis & Troubleshooting**
+[[❌Converting SELinux Log File with sealert and Finding Entries for HTTP in the Log File]]
+
+**Section 4: Ports & Labels on Apache** (merged)
+✅ [[Change Apache Port and Give It a Proper SELinux Label]]
+✅ [[Finding a Problem Caused by a Misconfiguration of SELinux and Troubleshooting the Issue]] (two violations, port + file context)
+✅ [[Resolving SELinux Issues]] (one violation, port only)
+**Section 5: Booleans & Ports on Other Services**
+- [[Working with SELinux Booleans and Ports]] (MariaDB)
+
+**Section 6: SELinux Users & sudo**
+This section grows into a 3-lab progression, all about SELinux user identities (separate from booleans/contexts/ports):  
+- [[Granting sudo Privileges to Confined Users]] — maps Linux users to `staff_u`, grants sudo via `administrator_t`/`administrator_r`, fixes home dir contexts
+- [[Creating Confined Users in SELinux]] — maps users to `user_u`/`staff_u`, disables an `xguest` boolean, repeats the enforcing-mode persistence steps (overlaps with Section 1, you'll just reference it briefly instead of repeating in full)
+- [[Working with SELinux Users and Roles]]— creates `staff_u`, `guest_u`, and `user_u` accounts directly via `useradd -Z`, changes the system default role with `semanage login -m ... __default__`
+
+**Section 7: Writing a Custom SELinux Policy** (capstone)
+- ✅[[Writing a Custom SELinux Policy]] (apachelogger)
+
+**Section 8 (Optional/Bonus, adjacent topic, not core SELinux)**
+- [[Configure ModSecurity]]
