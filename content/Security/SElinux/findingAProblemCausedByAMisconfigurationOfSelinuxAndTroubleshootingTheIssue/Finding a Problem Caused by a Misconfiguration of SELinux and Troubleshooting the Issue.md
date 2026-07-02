@@ -2,13 +2,13 @@
 tags:
   - selinux
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 refactored: "False"
 pluralsight: "True"
 hands-on: "True"
 completed: "True"
 hardlinked: "True"
-title: Finding and Fixing an SELinux Misconfiguration on an Apache Web Server
+title: Fixing SELinux Port and File Context Violations on Apache
 ---
 ## Introduction
 
