@@ -1,5 +1,4 @@
 ---
-
 tags:
 linkedin: "False"
 quartz: "False"
@@ -8,7 +7,9 @@ pluralsight: "True"
 hands-on: "True"
 completed: "False"
 hardlinked: "True"
+title: SELinux  Index
 ---
+# 🚧 🔧
 
 **Section 1: SELinux Modes and Boolean-Based Service Configuration**
 ✅[[Rotating Between the 3 SELinux Modes]]
