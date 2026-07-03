@@ -6,13 +6,13 @@ linkedin: "False"
 quartz: "True"
 refactored: "True"
 pluralsight: "True"
-hands-on: "False"
+hands-on: "True"
 completed: "True"
 hardlinked: "True"
 ---
 ## Introduction
 
-By default, SELinux enforces strict rules about which ports a service is allowed to use. When you configure a service to listen on a non-standard port, SELinux will block it unless you explicitly update the policy to allow it. In addition, SELinux controls service behavior through **booleans** - toggleable settings that enable or disable specific access rules without requiring a full policy rewrite.
+By default, SELinux enforces strict rules about which ports a service is allowed to use. When you configure a service to listen on a non-standard port, SELinux will block it unless you explicitly update the policy to allow it. In addition, SELinux controls service behavior through **booleans**, toggleable settings that enable or disable specific access rules without requiring a full policy rewrite.
 
 In this lab, MariaDB is configured to run on port `3333` instead of the default `3306`. The goal is to update the SELinux policy to allow this, and then enable the `mysql_connect_any` boolean so the service can make outbound connections freely.
 
