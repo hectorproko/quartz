@@ -8,6 +8,7 @@ refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 hardlinked: "True"
+completed: "True"
 ---
 ## Introduction
 
