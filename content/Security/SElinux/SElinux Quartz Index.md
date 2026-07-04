@@ -37,7 +37,7 @@ This section grows into a 3-lab progression, all about SELinux user identities (
 
 ✅[[Working with SELinux Users and Roles]]
 
-🚧[[Creating Confined Users in SELinux]] — maps users to `user_u`/`staff_u`, disables an `xguest` boolean, repeats the enforcing-mode persistence steps (overlaps with Section 1, you'll just reference it briefly instead of repeating in full)
+✅[[Creating Confined Users in SELinux]]
 
 🚧[[Granting sudo Privileges to Confined Users]] — maps Linux users to `staff_u`, grants sudo via `administrator_t`/`administrator_r`, fixes home dir contexts
 
@@ -46,3 +46,4 @@ This section grows into a 3-lab progression, all about SELinux user identities (
 
 ### Section 8 (Optional/Bonus, adjacent topic, not core SELinux)
 🚧 [[Configure ModSecurity]]
+
