@@ -35,7 +35,7 @@ title: SELinux  Index
 ### Section 6: SELinux Users & sudo
 This section grows into a 3-lab progression, all about SELinux user identities (separate from booleans/contexts/ports):  
 
-🚧[[Working with SELinux Users and Roles]]— creates `staff_u`, `guest_u`, and `user_u` accounts directly via `useradd -Z`, changes the system default role with `semanage login -m ... __default__`
+✅[[Working with SELinux Users and Roles]]
 
 🚧[[Creating Confined Users in SELinux]] — maps users to `user_u`/`staff_u`, disables an `xguest` boolean, repeats the enforcing-mode persistence steps (overlaps with Section 1, you'll just reference it briefly instead of repeating in full)
 
