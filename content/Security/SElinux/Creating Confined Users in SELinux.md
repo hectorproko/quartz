@@ -1,10 +1,9 @@
 ---
-
 tags:
   - selinux
 linkedin: "False"
-quartz: "False"
-refactored: "False"
+quartz: "True"
+refactored: "True"
 pluralsight: "True"
 hands-on: "True"
 completed: "True"
@@ -152,6 +151,7 @@ SELINUX=enforcing
 In this lab we mapped Linux users to SELinux identities using `semanage login`, disabled the `xguest_mount_media` boolean using `setsebool -P`, and switched SELinux from permissive to enforcing mode using `setenforce 1`, making it persistent by editing `/etc/selinux/config`.
 
 <!--
+
 [Creating Confined Users in SELinux](https://app.pluralsight.com/hands-on/labs/d9a09e9a-bd01-41d2-bd16-44e8ae931c19?originUrl=https%3A%2F%2Fapp.pluralsight.com%2Fsearch%2F)
 
 ```
