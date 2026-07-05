@@ -39,7 +39,7 @@ This section grows into a 3-lab progression, all about SELinux user identities (
 
 ✅[[Creating Confined Users in SELinux]]
 
-🚧[[Granting sudo Privileges to Confined Users]] — maps Linux users to `staff_u`, grants sudo via `administrator_t`/`administrator_r`, fixes home dir contexts
+✅[[Granting sudo Privileges to Confined Users]] — maps Linux users to `staff_u`, grants sudo via `administrator_t`/`administrator_r`, fixes home dir contexts
 
 ### Section 7: Writing a Custom SELinux Policy (capstone)
 ✅[[Writing a Custom SELinux Policy]] (apachelogger)

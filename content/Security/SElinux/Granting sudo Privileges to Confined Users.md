@@ -1,6 +1,5 @@
 ---
 tags:
-  - draft
   - selinux
 linkedin: "False"
 quartz: "True"
