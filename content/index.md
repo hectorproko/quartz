@@ -75,7 +75,7 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[Ubuntu Security Hardening]]
 - [[Hardening a Windows DNS Server]]
 - [[Implementing Post‑Quantum Crypto Policies on RHEL 10]]
-#### [[SElinux Quartz Index|SELinux Index]] 🚧
+#### [[SElinux Quartz Index|SELinux Index]]
 
 
 
