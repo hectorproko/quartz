@@ -1,13 +1,20 @@
 ---
 title: "Project 11: Ansible-Automate"
 tags:
-  - inquartz
-  - hardlink
-  - darey
   - Ansible
+linkedin: "False"
+quartz: "False"
+refactored: "False"
+darey.io: "True"
+hands-on: "True"
+completed: "True"
+hardlinked: "True"
+aliases:
+  - "Project 11: Ansible-Automate"
 ---
+
 ~~*(Old [Project 11](https://github.com/hectorproko/ANSIBLE-AUTOMATE))*~~
-# ANSIBLE AUTOMATION
+# ANSIBLE AUTOMATION test
 The aim of this project is to start automating tasks with **Ansible Configuration Management**.
 
 ## INSTALL AND CONFIGURE ANSIBLE ON EC2 INSTANCE
