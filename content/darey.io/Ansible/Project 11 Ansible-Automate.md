@@ -13,8 +13,6 @@ aliases:
   - "Project 11: Ansible-Automate"
 ---
 %%~~*(Old [Project 11](https://github.com/hectorproko/ANSIBLE-AUTOMATE))*~~%%
-# Ansible Automation
-
 The goal of this project is to begin automating tasks using **Ansible Configuration Management**, reducing manual effort and making infrastructure changes repeatable and consistent.
 
 ---
