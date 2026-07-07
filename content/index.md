@@ -30,7 +30,7 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[Ansible]] 🚧
 - [[Project 11 Ansible-Automate|Project 11: Ansible-Automate]]
 - [[Project 12 Ansible (Refactoring, Static Assignments Imports, Roles)|Project 12: Ansible Refactoring, Static Assignments Imports, Roles]]
-- [[Project13_]] 🚧
+- [[Project 13 Ansible (Dynamic Assignments, Include and Community Roles)|Project 13: Ansible (Dynamic Assignments, Include and Community Roles)]]
 %%- [[Project14]] 🚧%%
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 
