@@ -18,7 +18,13 @@ aliases:
 The goal of this project is to begin automating tasks using **Ansible Configuration Management**, reducing manual effort and making infrastructure changes repeatable and consistent.
 
 ---
+## Environment
 
+| Role           | IP              | OS      |
+| -------------- | --------------- | ------- |
+| Control Node   | `172.31.94.159` | Ubuntu  |
+| Managed Node 1 | `3.220.20.204`  | Ubuntu  |
+| Managed Node 2 | `54.209.253.1`  | Red Hat |
 ## Install and Configure Ansible on EC2 Instance
 
 An existing **EC2** instance with **Jenkins** already installed is used as the control node for Ansible.

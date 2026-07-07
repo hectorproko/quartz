@@ -4,8 +4,17 @@ tags:
   - Ansible
   - darey
   - inquartz
+  - draft
 title: "Project 12: Ansible (Refactoring, Static Assignments Imports, Roles)"
+hardlinked: "False"
+linkedin: "False"
+quartz: "False"
+refactored: "False"
+darey.io: "True"
+hands-on: "True"
+completed: "True"
 ---
+
 ~~*(Old [Project 12](https://github.com/hectorproko/ANSIBLE-REFACTORING-ASSIGNMENTS-IMPORTS/blob/main/Project12_Steps.md))*~~
 #### ANSIBLE REFACTORING AND STATIC ASSIGNMENTS (IMPORTS AND ROLES)
 

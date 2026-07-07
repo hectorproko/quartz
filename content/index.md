@@ -28,8 +28,8 @@ Here are some of the projects I've been working on, categorized by technology:
 ### Ansible:
 ==Pending==
 - [[Ansible]] 🚧
-- [[Project 11 Ansible-Automate|Project 11: Ansible-Automate]] 🚧
-- [[Project12_]] 🚧
+- [[Project 11 Ansible-Automate|Project 11: Ansible-Automate]]
+- [[Project 12 Ansible (Refactoring, Static Assignments Imports, Roles)]] 🚧
 - [[Project13_]] 🚧
 %%- [[Project14]] 🚧%%
 - [[Minikube AWX Setup|Minikube AWX Setup]]
