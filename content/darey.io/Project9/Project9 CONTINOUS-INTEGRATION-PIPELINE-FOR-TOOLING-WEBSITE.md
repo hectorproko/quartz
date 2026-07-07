@@ -1,17 +1,26 @@
 ---
+
 title: Continuous Integration Pipeline for Tooling Website
 tags:
   - Linux
   - LoadBalancer
   - Jenkins
   - webhooks
-  - CI/CD
+  - CD/CD
+  - draft
+linkedin: "False"
+quartz: "False"
+refactored: "False"
+darey.io: "True"
+hands-on: "True"
+completed: "True"
+hardlinked: "True"
 ---
 
- ==*~~(old [Project 9](https://github.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE))~~*==
- 
+PROJECT 9
+
 > [!info]
-> In this project, we'll extend the architecture developed in [[Project_8_APACHE_LOAD-BALANCER]] by integrating a Jenkins server. Our focus will be on automating routine tasks using Jenkins, a free and open-source automation tool. We'll set up a Jenkins job designed to automatically deploy any changes made to the source code in our GitHub repository, [tooling](https://github.com/hectorproko/tooling), directly to the Tooling Website via an NFS server.
+> In this project, we'll extend the architecture developed in [[Project 8 APACHE LOAD-BALANCER]] by integrating a Jenkins server. Our focus will be on automating routine tasks using Jenkins, a free and open-source automation tool. We'll set up a Jenkins job designed to automatically deploy any changes made to the source code in our GitHub repository, [tooling](https://github.com/hectorproko/tooling), directly to the Tooling Website via an NFS server.
 > 
 > ![[darey.io/Project9/images/architecture.png]]
 > 
@@ -36,7 +45,7 @@ sudo apt-get install jenkins
 We access jenkins through the browser using the instance IP.
 You will be prompted to provide a default **admin password**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/unlock.png)
+![Markdown Logo](media/Markdown_Logo-27.png)
   
 We retrieve the password from the specified path
 ``` bash
@@ -58,7 +67,7 @@ This may also be found at: /root/.jenkins/secrets/initialAdminPassword
 
 Then you will be asked which plugings to install – choose **suggested plugins**.  
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/suggested.png)  
+![Markdown Logo](media/Markdown_Logo-25.png)  
 
 Once plugins installation is done you are prompted to create an admin user and you will get your Jenkins server address and the installation is complete.
 
@@ -71,13 +80,13 @@ In this part we'll configure a simple Jenkins job/project that will be triggered
 Go to Jenkins web console, click **New Item** and create a **Freestyle project**  
 Press **OK** at the bottom
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/job.png)  
+![Markdown Logo](media/Markdown_Logo-23.png)  
 
 We get prompted to the job configuration. In the **Source Code management** tab we select **Git** and put the **URL** of **tooling** repo
 https://github.com/hectorproko/tooling.git  
 Click **Save**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/sourcecode.png)  
+![Markdown Logo](media/Markdown_Logo-28.png)  
 
 
 *Keep In Mind:  
@@ -87,7 +96,7 @@ Finished: FAILURE*
 
 Once configuration is saved you are taken to the **Jobs Dashboard** where we can do test build by clicking on **Build Now**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/buildnow.png)  
+![Markdown Logo](media/Markdown_Logo-26.png)  
 
   
 Now we configure the job to trigger whenever there is a change in the **sourcecode** in Github's Repo
@@ -95,29 +104,29 @@ Now we configure the job to trigger whenever there is a change in the **sourceco
 In **Build Triggers** Tab check box **GitHub hook trigger for GITScm polling**  
 In **Post-build Actions** we archive all the artifacts with **\***
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/buildtriggers.png)  
+![Markdown Logo](media/Markdown_Logo-26.png)  
 
 ### Configuring webhook in github repo
 To add a webhook we go to  **Settings** > **Webhooks** > **Add webhook**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/webhooks1.png)  
+![Markdown Logo](media/Markdown_Logo-27.png)  
 
 On **Payload URL** we put the **public IP** (of Jenkins instance) and port **8080** followed by **/github-webhhook/**  
 Make sure **Content type** is set to **application/json**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/webhooks2.png)
+![Markdown Logo](media/Markdown_Logo-28.png)
 
 
 Here I'm creating a **test** file in the repo to test the webhook
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/commit.png)  
+![Markdown Logo](media/Markdown_Logo-27.png)  
 
 This triggers build **#5**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/build5.png)  
+![Markdown Logo](media/Markdown_Logo-24.png)  
 
 If I look at the **conosole output** or log of **build 5** I confirm that the job was triggered by **Github push**
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE/main/images/log.png)  
+![Markdown Logo](media/Markdown_Logo-24.png)  
 
 
