@@ -26,11 +26,10 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[AUTOMATE-INFRASTRUCTURE-WITH-IAC-USING-TERRAFORM|Automating a Multi-Tier AWS Stack with Terraform]]
 
 ### Ansible:
-==Pending==
 - [[Ansible]] 🚧
-- [[Project 11 Ansible-Automate|Project 11: Ansible-Automate]]
-- [[Project 12 Ansible (Refactoring, Static Assignments Imports, Roles)|Project 12: Ansible Refactoring, Static Assignments Imports, Roles]]
-- [[Project 13 Ansible (Dynamic Assignments, Include and Community Roles)|Project 13: Ansible (Dynamic Assignments, Include and Community Roles)]]
+- [[Project 11 Ansible-Automate|Ansible-Automate]]
+- [[Project 12 Ansible (Refactoring, Static Assignments Imports, Roles)|Ansible Refactoring, Static Assignments Imports, Roles]]
+- [[Project 13 Ansible (Dynamic Assignments, Include and Community Roles)|Ansible Dynamic Assignments, Include and Community Roles]]
 %%- [[Project14]] 🚧%%
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 

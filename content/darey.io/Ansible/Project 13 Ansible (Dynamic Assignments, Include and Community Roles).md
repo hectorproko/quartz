@@ -13,7 +13,7 @@ aliases:
   - "Project 13: Ansible (Dynamic Assignments, Include and Community Roles)"
 ---
 
-%%~~*(Old [Project 13](https://github.com/hectorproko/ANSIBLE-DYNAMIC-ASSIGNMENTS-INCLUDE-AND-COMMUNITY-ROLES/blob/main/Project13_Steps.md))%%*~~
+%%*(Old [Project 13](https://github.com/hectorproko/ANSIBLE-DYNAMIC-ASSIGNMENTS-INCLUDE-AND-COMMUNITY-ROLES/blob/main/Project13_Steps.md))*%%
 
 ## Overview
 
