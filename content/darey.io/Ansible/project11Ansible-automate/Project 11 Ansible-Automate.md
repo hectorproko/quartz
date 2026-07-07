@@ -69,7 +69,7 @@ The setup is tested by making a change to the **README.md** file on the `main` b
 
 ## Set Up Directory Structure in a Feature Branch
 
-In the **[ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt/tree/main)** repository, a new branch named [NewFeature](https://github.com/hectorproko/ansible-config-mgt/tree/NewFeature) is created for development work.
+In the [ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt/tree/main) repository, a new branch named [NewFeature](https://github.com/hectorproko/ansible-config-mgt/tree/NewFeature) is created for development work.
 
 The branch is checked out locally to build the directory structure:
 
