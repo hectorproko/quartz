@@ -15,7 +15,7 @@ Here are some of the projects I've been working on, categorized by technology:
 
 ### CI/CD Jenkins:
 - [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE|CI Pipeline for Tooling Website]]
-- [[Project14 CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP|CI with Jenkins, Ansible, Artifactory, SonarQube & PHP]] 
+- [[Project 14 Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP|CI with Jenkins, Ansible, Artifactory, SonarQube & PH]] 
 
 ### AWS:
 - [[Project15 AWS CLOUD SOLUTION FOR 2 COMPANY WEBSITES USING A REVERSE PROXY TECHNOLOGY|AWS Solution for 2 Company Websites using a Reverse Proxy]]
@@ -30,7 +30,7 @@ Here are some of the projects I've been working on, categorized by technology:
 - [[Project 11 Ansible-Automate|Ansible-Automate]]
 - [[Project 12 Ansible (Refactoring, Static Assignments Imports, Roles)|Ansible Refactoring, Static Assignments Imports, Roles]]
 - [[Project 13 Ansible (Dynamic Assignments, Include and Community Roles)|Ansible Dynamic Assignments, Include and Community Roles]]
-%%- [[Project14]] 🚧%%
+%%- [[Project 14 Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP]] 🚧%%
 - [[Minikube AWX Setup|Minikube AWX Setup]]
 
 ### Docker:
