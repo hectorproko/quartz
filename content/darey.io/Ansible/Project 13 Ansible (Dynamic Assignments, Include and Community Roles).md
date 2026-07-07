@@ -1,10 +1,12 @@
 ---
+
 tags:
   - hardlink
   - Ansible
   - darey
   - inquartz
 title: "Project 13: Ansible (Dynamic Assignments, Include and Community Roles)"
+hardlinked: "True"
 ---
 
 ~~*(Old [Project 13](https://github.com/hectorproko/ANSIBLE-DYNAMIC-ASSIGNMENTS-INCLUDE-AND-COMMUNITY-ROLES/blob/main/Project13_Steps.md))*~~
