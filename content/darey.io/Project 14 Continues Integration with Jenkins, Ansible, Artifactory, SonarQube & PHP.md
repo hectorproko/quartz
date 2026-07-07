@@ -1,4 +1,5 @@
 ---
+
 title: "Project 14: Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP"
 tags:
   - Jenkins
@@ -8,16 +9,22 @@ tags:
   - hardlink
   - darey
   - inquartz
+  - draft
+linkedin: "False"
+quartz: "False"
+refactored: "False"
+pluralsight: "True"
+hands-on: "True"
+completed: "False"
+hardlinked: "True"
+aliases:
+  - "Project 14: Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP"
 ---
 
 ==*~~(old [Project 14](https://github.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/blob/main/Steps_Project14.md))~~*==
 
 ### ANSIBLE ROLES FOR CI ENVIRONMENT
-<!--- Wrap text --->
 
-<!--- Wrap text 
-#### Installing roles **Skipped**
---->
 
 
 Install & Open **Blue Ocean Jenkins** Plugin  
