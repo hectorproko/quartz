@@ -6,13 +6,15 @@ tags:
   - inquartz
   - draft
 title: "Project 12: Ansible (Refactoring, Static Assignments Imports, Roles)"
-hardlinked: "False"
+hardlinked: "True"
 linkedin: "False"
-quartz: "False"
+quartz: "True"
 refactored: "False"
 darey.io: "True"
 hands-on: "True"
 completed: "True"
+aliases:
+  - "Project 12: Ansible (Refactoring, Static Assignments Imports, Roles)"
 ---
 
 ~~*(Old [Project 12](https://github.com/hectorproko/ANSIBLE-REFACTORING-ASSIGNMENTS-IMPORTS/blob/main/Project12_Steps.md))*~~
