@@ -1,5 +1,4 @@
 ---
-
 title: Continuous Integration Pipeline for Tooling Website
 tags:
   - Linux
@@ -15,6 +14,8 @@ darey.io: "True"
 hands-on: "True"
 completed: "True"
 hardlinked: "True"
+aliases:
+  - "Project 9: Continuous Integration Pipeline for Tooling Website"
 ---
 
 PROJECT 9

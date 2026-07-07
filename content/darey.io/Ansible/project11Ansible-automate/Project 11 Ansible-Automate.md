@@ -12,6 +12,7 @@ hardlinked: "True"
 aliases:
   - "Project 11: Ansible-Automate"
 ---
+%%~~*(Old [Project 11](https://github.com/hectorproko/ANSIBLE-AUTOMATE))*~~%%
 # Ansible Automation
 
 The goal of this project is to begin automating tasks using **Ansible Configuration Management**, reducing manual effort and making infrastructure changes repeatable and consistent.
@@ -36,7 +37,7 @@ ansible --version
 
 ## Configure Jenkins to Trigger on Repository Changes
 
-A new **Freestyle** project named **ansible** is created in **Jenkins** and pointed to the **ansible-config-mgt** repository. This job will pull the latest repository contents each time a change is pushed.
+A new **Freestyle** project named **ansible** is created in **Jenkins** and pointed to the **[ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt)** repository. This job will pull the latest repository contents each time a change is pushed.
 
 ![Jenkins - New Freestyle Project](https://raw.githubusercontent.com/hectorproko/ANSIBLE-AUTOMATE/main/images/enterItem.png)
 
@@ -50,7 +51,7 @@ The **Webhook** is also registered on the **GitHub** repository side.
 
 ![GitHub - Add Webhook](https://raw.githubusercontent.com/hectorproko/ANSIBLE-AUTOMATE/main/images/addWebhook.png)
 
-A **Post-build** step is configured to archive all files (`**`). This is similar to the setup done in [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE]]. 
+A **Post-build** step is configured to archive all files (`**`). This is similar to the setup done in [[Project9 CONTINOUS-INTEGRATION-PIPELINE-FOR-TOOLING-WEBSITE|Project 9: Continuous Integration Pipeline for Tooling Website]]. 
 
 The setup is tested by making a change to the **README.md** file on the `main` branch. The build starts automatically and **Jenkins** saves the artifacts at:
 
@@ -87,7 +88,7 @@ Inventory files are created for each environment inside `inventory/`:
 ---
 
 ## Configure SSH Agent for Key-Based Access
-
+%%[[ssh (Secure Shell)#ssh agent, eval]]%%
 The SSH key is imported into `ssh-agent` so Ansible can connect to managed nodes without specifying a `.pem` file on each command:
 
 ```bash
@@ -119,7 +120,7 @@ hector@hector-Laptop:~/ansible-config-mgt$ git branch
 hector@hector-Laptop:~/ansible-config-mgt$ ls
 2plays.yml  README.md
 ```
-
+%%The branch may have existed on GitHub already, but `git branch` only lists **local** branches. Until you run `git checkout NewFeature` (or `git checkout -b NewFeature` to create it), it won't show up in that list.%%
 **NewFeature branch:**
 
 ```bash
@@ -280,7 +281,8 @@ state: absent
 - [Project 7: DevOps Tooling Website Solution](https://github.com/hectorproko/Ansible/tree/main/Project7)
 - [Project 8: Load Balancer Solution with Apache](https://github.com/hectorproko/Ansible/tree/main/Project8)
 - [Project 9: Continuous Integration Pipeline for Tooling Website](https://github.com/hectorproko/Ansible/tree/main/Project9)
-~~*(Old [Project 11](https://github.com/hectorproko/ANSIBLE-AUTOMATE))*~~
+
+<!---
 # ANSIBLE AUTOMATION
 The aim of this project is to start automating tasks with **Ansible Configuration Management**.
 
