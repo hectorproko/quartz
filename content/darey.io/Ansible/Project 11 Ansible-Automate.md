@@ -175,7 +175,7 @@ The Ansible plugin is installed in Jenkins for future integration. For this proj
 
 ![Jenkins - Ansible Plugin](https://raw.githubusercontent.com/hectorproko/ANSIBLE-AUTOMATE/main/images/plugin.png)
 
-*Used in [[Project 14 Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP#Running Ansible Playbooks from Jenkins|Project 14: Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP]]*
+*Used in [[Project 14 Continues Integration with Jenkins, Ansible, Artifactory, SonarQube and PHP#Running Ansible Playbooks from Jenkins|Project 14: Continues Integration with Jenkins, Ansible, Artifactory, SonarQube & PHP]]*
 
 ---
 

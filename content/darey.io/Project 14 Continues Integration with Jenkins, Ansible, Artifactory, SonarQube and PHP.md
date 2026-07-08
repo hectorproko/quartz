@@ -5,11 +5,10 @@ tags:
   - Artifactory
   - Ansible
   - CI/CD
-  - hardlink
-  - inquartz
+  - sonarqube
 linkedin: "False"
 quartz: "True"
-refactored: "False"
+refactored: "True"
 darey.io: "True"
 hands-on: "True"
 completed: "True"
