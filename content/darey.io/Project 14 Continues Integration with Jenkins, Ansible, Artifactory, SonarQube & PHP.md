@@ -23,6 +23,20 @@ aliases:
 
 This project builds a full CI/CD pipeline using Jenkins, Ansible, JFrog Artifactory, and SonarQube to automate the build, test, quality gate, packaging, and deployment of a PHP application. The pipeline is driven entirely by a [Jenkinsfile](https://github.com/hectorproko/ansible-project/blob/main/deploy/Jenkinsfile) stored in version control, making the configuration portable and reproducible.
 
+%%
+### Environment
+
+| #   | Role                            | OS           | Notes                                                                                                                   |
+| --- | ------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 1   | Jenkins + Ansible + Artifactory | Ubuntu       | Same server - Artifactory was installed on the Jenkins box, which is why it crashed and needed the upgrade to t2.medium |
+| 2   | SonarQube                       | Ubuntu 20.04 | c4.large, separate server                                                                                               |
+| 3   | Database                        | Amazon Linux | MySQL 8.0.26, `ec2-user`    172.31.81.201?                                                                                            |
+| 4   | UAT Web Server 1                | Amazon Linux | `172.31.81.182`                                                                                                         |
+| 5   | UAT Web Server 2                | Amazon Linux | `172.31.89.227`                                                                                                         |
+| 6   | Load Balancer                   | Ubuntu       | `172.31.91.121`, appears in the `uat.ini` inventory                                                                     |
+
+%%
+
 ---
 
 ## Setting Up Blue Ocean and the Jenkins Pipeline
@@ -136,7 +150,7 @@ Additional stages are added to `feature/jenkinspipeline-stages` and tested in Bl
 The Ansible plugin is installed via **Manage Jenkins** > **Plugin Manager**.
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/ansiblePlugin.png)
-
+%%we installed here? [[Project 11 Ansible-Automate#Install Ansible Plugin in Jenkins]]%%
 ### Pointing Jenkins to the Ansible Installation
 
 Under **Manage Jenkins** > **Global Tool Configuration**, Jenkins is pointed to the Ansible binary on the server.
@@ -184,8 +198,12 @@ When triggering the job in Blue Ocean, the parameter prompt appears before execu
 
 ### Switching to the ansible-config-mgt Repository
 
-The **[ansible-project](https://github.com/hectorproko/ansible-project)** job is updated to use [ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt) as its source repository, which contains the full Ansible configuration including `site.yml` and `ansible.cfg`.
+The [ansible-project](https://github.com/hectorproko/ansible-project) job is updated to use [ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt) %%we this in 11,12,13%%as its source repository, which contains the full Ansible configuration including `site.yml` and `ansible.cfg`.
+%% 
+Why did we change
 
+Looking back at your notes, the context for the switch is there but scattered across a few comments. The reason is that `ansible-config-mgt` already contains the full Ansible configuration including `site.yml`, which is what the pipeline actually needs to run. `ansible-project` was a starter repo that got replaced once the real configuration was in place.
+%%
 The `ansible.cfg` file is placed alongside the `Jenkinsfile` in the `deploy/` directory. The `roles_path` is intentionally excluded from `ansible.cfg` because the Jenkins workspace path changes per branch. Instead, it is injected dynamically in the **Prepare Ansible For Execution** stage:
 
 ```bash
@@ -239,7 +257,13 @@ The [php-todo](https://github.com/hectorproko/php-todo) repository is used as th
 **Composer** is installed and verified on the Jenkins server:
 
 ```bash
+# Step 1 - Download the installer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+
+# Step 2 - Verify the installer integrity
+php -r "if (hash_file('sha384', 'composer-setup.php') === '906a84df04cea2aa72f40b5f787e49f22d4c2f19492ac310e8cba5b96ac8b64115ac402c8cd292b8a03482574915d1a8') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+
+# Step 3 - Run the installer
 php composer-setup.php
 ```
 
@@ -279,12 +303,13 @@ The user is then added to Jenkins. Port **8082** must be open for Jenkins to com
 
 ### Setting Up the Database
 
-On the database server, the `homestead` database and user are created for the php-todo application:
+On the database server (NFS), the `homestead` database and user are created for the php-todo application:
 
 ```sql
-Create database homestead;
-CREATE USER 'homestead'@'%' IDENTIFIED BY 'sePret^i';
-GRANT ALL PRIVILEGES ON * . * TO 'homestead'@'%';
+sudo mysql
+mysql> Create database homestead;
+mysql> CREATE USER 'homestead'@'%' IDENTIFIED BY 'sePret^i';
+mysql> GRANT ALL PRIVILEGES ON * . * TO 'homestead'@'%';
 ```
 
 **Output confirming the database was created:**
@@ -304,7 +329,7 @@ mysql> show databases;
 6 rows in set (0.01 sec)
 ```
 
-The `.env` file for the application is updated with the remote database connection details:
+The `.env.sample` file for the application is updated with the remote database connection details:
 
 ```bash
 DB_HOST=<remote-db-server-ip>
@@ -312,6 +337,43 @@ DB_DATABASE=homestead
 DB_USERNAME=homestead
 DB_PASSWORD=sePret^i
 ```
+%%
+### Initially i had `.env` not .env.sample
+but below the pipeline has sh 'mv .env.sample .env' which overwrites .env everytime it runs so our change needs to be done in sample
+
+- The repo contains `.env.sample` as a template (committed to Git)
+- The pipeline runs `mv .env.sample .env` to turn it into the active config file
+- The **actual database credentials** are either already baked into `.env.sample`, or you manually edited `.env.sample` on the server/repo beforehand with the real values
+
+### why do this this way
+claude says to avoid pushing credentials to github in .env but we either push with .env.sample, or edit it in jenkins workspce after it clones it which is not practical
+
+### Better solution
+You create the credentials in jenkins then inject it `.env`
+
+You would inject them as environment variables in the pipeline and then use `sed` or `echo` to write them into the `.env` file. Something like this:
+
+```yaml
+stage('Prepare Dependencies') {
+    environment {
+        DB_CREDS = credentials('homestead-db-creds')
+    }
+    steps {
+        sh 'cp .env.sample .env'
+        sh 'sed -i "s/DB_HOST=.*/DB_HOST=172.31.81.201/" .env'
+        sh 'sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_CREDS_USR}/" .env'
+        sh 'sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_CREDS_PSW}/" .env'
+        sh 'composer install'
+        sh 'php artisan migrate'
+        sh 'php artisan db:seed'
+        sh 'php artisan key:generate'
+    }
+}
+```
+
+Jenkins has a built-in `credentials()` binding that for a **Username with Password** credential type automatically gives you two variables - `_USR` for the username and `_PSW` for the password. The values are masked in the console output so they never appear in logs.
+%%
+
 
 The `mysql-client` package is also installed on the Jenkins server so it can reach the database:
 
@@ -321,7 +383,7 @@ sudo apt install mysql-client-core-8.0
 
 ### Writing the php-todo Jenkinsfile
 
-A `Jenkinsfile` is created in the [php-todo](https://github.com/hectorproko/php-todo/blob/main/Jenkinsfile) repository. The initial stages handle workspace cleanup, source checkout, and dependency installation:
+A [Jenkinsfile](https://github.com/hectorproko/php-todo/blob/main/Jenkinsfile) is created in the [php-todo](https://github.com/hectorproko/php-todo/blob/main/Jenkinsfile) repository. The initial stages handle workspace cleanup, source checkout, and dependency installation:
 
 ```bash
 pipeline {
@@ -360,6 +422,11 @@ Migration table created successfully.
 Migrated: 2014_10_12_000000_create_users_table
 Migrated: 2014_10_12_100000_create_password_resets_table
 Migrated: 2015_10_27_141258_create_tasks_table
+[Pipeline] sh
++ php artisan db:seed
+[Pipeline] sh
++ php artisan key:generate
+Application key [Vvnp0EfkhlkxAyTTjHI5Xggp0U9NE6In] set successfully.
 ```
 
 ### Code Analysis Stage
@@ -373,23 +440,32 @@ stage('Code Analysis') {
     }
 }
 ```
-
+*Add the code analysis step in [Jenkinsfile](https://github.com/hectorproko/php-todo/blob/main/Jenkinsfile)*
 ### Plot Code Coverage Report
 
 After adding the Plot stage, a **Plot** button becomes visible on the Jenkins job, giving a visual representation of code metrics over time.
 
-![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/menuplot.png)
+![Markdown Logo|400](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/menuplot.png)
 
 ### Creating the php-todo Jenkins Job
 
-A new Jenkins job named **php-todo** is created as a **Multibranch Pipeline** and configured with the `Jenkinsfile` from the php-todo repository.
+A new Jenkins job named **php-todo** is created as a **Multibranch Pipeline** and configured with the [Jenkinsfile](https://github.com/hectorproko/php-todo/blob/main/Jenkinsfile) from the **php-todo** repository.
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/multibranch.png)
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/general.png)
 
 A validation warning may appear in the Branch Sources configuration, but it clears after saving.
+%%
+Need to create the job through ocean blue cuse there is a step that asks for Jenkins token, not sure how to do it with regular job. (👀 Not sure if i ended up using ocean or regular job)
 
+the token being referenced there is the same **GitHub Personal Access Token** created at the very beginning of the project - the one named `jenkins-access-token` with `repo`, `user:email`, and `read:user` scopes.
+
+Its purpose is to allow Jenkins to:
+- **Read** the repository to pull the `Jenkinsfile`
+- **Scan** for branches (that's what "Scan Repository Now" does)
+- **Detect** new branches and pull requests automatically for the multibranch pipeline
+%%
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/branchSources.png)
 
 ---
@@ -417,7 +493,7 @@ Jenkinsfile  README.md  artisan  build  composer.json  config  php-todo.zip  ...
 
 ### Creating the Artifactory Repository
 
-Before uploading, a repository named **php-todo-Repo** is created in Artifactory via the browser at `http://<jenkins-elastic-ip>:8082/`.
+Before uploading, a repository named **php-todo-Repo** is created in Artifactory via the browser at `http://3.220.20.204:8082/` *(**Elastic IP** and needed **port**)*.
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/createRepo.png)
 
@@ -458,17 +534,23 @@ stage('Upload Artifact to Artifactory') {
     }
 }
 ```
+%%
+is this def server = Artifactory.server 'artifactory-server' the antifactory server define in jenkins [[#Configuring Artifactory in Jenkins]] same Instance ID
 
+"target": "php-todo-Repo/php-todo", the repo in artifactory
+%%
 After running the job, the artifact is confirmed in Artifactory.
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/application.png)
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/phptodo.png)
 
-### Deploying to the Dev Environment
-
-A **Deploy to Dev Environment** stage is added. This stage triggers the **[ansible-project](https://github.com/hectorproko/ansible-project)** pipeline and passes it the target inventory as a parameter:
-
+### Deploying to the UAT Environment
+%%Originally it said DEV instead of UAT but because the snipppet says uat i changed it%%
+A **Deploy to Dev Environment** stage is added. This stage triggers the **ansible-project** pipeline and passes it the target inventory as a parameter:
+%%**ansible-project** not to be confused with the repo that we no longer pointing to this job points [[#Switching to the ansible-config-mgt Repository]]
+related to parameterized [[#Parameterizing the Pipeline]]
+%%
 ```bash
 stage('Deploy to Dev Environment') {
     steps {
@@ -476,16 +558,16 @@ stage('Deploy to Dev Environment') {
     }
 }
 ```
-
-The `value: 'uat'` refers to the inventory file containing the UAT servers that Ansible will target.
-
+%% #question  is this related to [[Project 13 Ansible (Dynamic Assignments, Include and Community Roles)#Introducing Dynamic Assignments Into the Structure]] doesnt seem to, that other seems to be exclusive related to ansible%%
+The `value: 'uat'` refers to the inventory file containing the **UAT** servers that Ansible will target.
+%%The idea is that each environment gets its own stage, each passing a different inventory file as the parameter.%%
 The full pipeline stages are now visible in Blue Ocean.
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/phptodo26.png)
 
-The **php-todo** job completes all stages and triggers **[ansible-project](https://github.com/hectorproko/ansible-project)**, as shown in the Console Output:
-
-```
+The **php-todo** job completes all stages and triggers **ansible-project**, as shown in the Console Output:
+%%keep in mind the job is point to repo of a different name [ansible-config-mgt](https://github.com/hectorproko/ansible-config-mgt) %%
+```log
 triggered by upstream project "php-todo/main"
 ```
 
@@ -510,6 +592,8 @@ Inventory files are stored under `ansible-config-mgt/inventory/`. The `uat.ini` 
 172.31.89.227 ansible_ssh_user='ec2-user'
 ```
 
+*The idea is that each `.ini` file represents a complete environment, defining its own set of application servers and load balancer*
+
 ---
 
 ## SonarQube Installation
@@ -529,7 +613,7 @@ A **c4.large Ubuntu** instance is provisioned for SonarQube.
 
 SonarQube 7.9.3 requires Java and a PostgreSQL backend. Before installation, the Linux kernel is tuned for optimal performance.
 
-### Tuning the Linux Kernel
+#### Tuning the Linux Kernel
 
 ```bash
 sudo sysctl -w vm.max_map_count=262144
@@ -570,7 +654,8 @@ Nothing to configure
 
 Java version confirmation:
 
-```
+```bash
+ubuntu@ip-172-31-89-89:~$ java -version
 openjdk version "11.0.15" 2022-04-19
 OpenJDK Runtime Environment (build 11.0.15+10-Ubuntu-0ubuntu0.20.04.1)
 OpenJDK 64-Bit Server VM (build 11.0.15+10-Ubuntu-0ubuntu0.20.04.1, mixed mode, sharing)
@@ -603,14 +688,20 @@ su - postgres
 Inside the PostgreSQL shell, create the SonarQube role and database:
 
 ```bash
+#Create a new user using PostgreSQL command
 createuser sonar
+#Switch to the PostgreSQL shell
 psql
 ```
-
-```sql
+%%**createuser** is a PostgreSQL command not Linux, so we are just creating a **role** sonar in PostgreSQL.%%
+```bash
+#Set a password for the newly created user for SonarQube database
 ALTER USER sonar WITH ENCRYPTED password 'sonar';
+#Create a new database for PostgreSQL database by running
 CREATE DATABASE sonarqube OWNER sonar;
+#Grant all privileges to sonar user on sonarqube Database
 GRANT ALL PRIVILEGES ON DATABASE sonarqube TO sonar;
+#Exit from the psql shell
 \q
 ```
 
@@ -648,14 +739,17 @@ A token is generated in SonarQube and stored as a Jenkins credential.
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/sonarToken.png)
 
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/sonarQubeInstall.png)
+%%SonarQube privateIP `172.31.89.89 `  %%
 
 ### Configuring the SonarQube Webhook
 
-A webhook is created in SonarQube pointing back to Jenkins so that quality gate results are reported:
+A webhook is created in SonarQube pointing back to Jenkins (Elastic IP) so that quality gate results are reported:
 
 ```
-http://<jenkins-elastic-ip>/sonarqube-webhook/
+http://3.220.20.204/sonarqube-webhook/
 ```
+
+>**Note:** In retrospect, the private IP should have been used here instead of the Elastic IP. Since both the Jenkins and SonarQube servers are in the same VPC, the webhook traffic could stay internal and never leave the network. Using the Elastic IP routes the traffic out through the internet gateway and back in, which is unnecessary and less secure. Private IP is the better practice for same-VPC communication.
 
 The secret field is set to `jenkins`.
 
@@ -691,7 +785,7 @@ stage('SonarQube Quality Gate') {
 ```
 
 The first run is expected to fail because the scanner tools directory has not been generated yet. Running the job once forces Jenkins to download and unpack the scanner, creating the `tools/` directory.
-
+%%When you configure SonarQube Scanner in Jenkins with **Install Automatically**, Jenkins does not download it immediately at configuration time. It only downloads it the **first time a job actually tries to use it**. Until that happens, the directory `/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner/` does not exist yet.%%
 ```
 Unpacking https://repo1.maven.org/maven2/org/sonarsource/scanner/cli/sonar-scanner-cli/4.7.0.2747/sonar-scanner-cli-4.7.0.2747.zip
 to /var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner on Jenkins
@@ -700,7 +794,8 @@ to /var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQube
 ![](https://raw.githubusercontent.com/hectorproko/EXPERIENCE-CONTINUOUS-INTEGRATION-WITH-JENKINS-ANSIBLE-ARTIFACTORY-SONARQUBE-PHP/main/images/stageLogs.png)
 
 #### Troubleshooting
-
+%%**Issue 2 - Missing projectKey (separate problem)**  
+This is the actual error in the Troubleshooting block. After the tools directory exists and the scanner runs, it still fails because `sonar-scanner.properties` has no `sonar.projectKey` defined. SonarQube does not know which project to associate the scan with. The fix is to first create the project in the SonarQube UI to get a key, then add that key to the properties file.%%
 **Issue:** The Quality Gate stage failed with the following error:
 
 ```
