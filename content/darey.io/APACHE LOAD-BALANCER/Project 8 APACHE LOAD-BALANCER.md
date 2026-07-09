@@ -4,8 +4,18 @@ tags:
   - Linux
   - LoadBalancer
   - "#Apache"
+  - draft
+hardlinked: "True"
+linkedin: "False"
+quartz: "True"
+refactored: "False"
+darey.io: "True"
+hands-on: "True"
+completed: "True"
+aliases:
+  - "Project 8: Load Balancer Solution with Apache"
 ---
-*~~(old [Project 8](https://github.com/hectorproko/LOAD-BALANCER-SOLUTION-WITH-APACHE))~~*
+
 
 > [!Info]
 > Project 8: Adding Load Balancer to [**Project 7:** DevOps Tooling Website Solution](https://github.com/hectorproko/Devops-Tooling-Website-Solution/blob/main/Project7_Step.md)  
@@ -92,7 +102,7 @@ To verify that our configuration works we access the **LB** from a browswer usin
 
 We should see a Red Hat default page since the Load Balancer (Ubuntu Machine) is redirecting the traffic to the Web Servers which are using Read Hat
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/LOAD-BALANCER-SOLUTION-WITH-APACHE/main/images/site.png)
+![Markdown Logo](media/Markdown_Logo-44.png)
 
 To make sure both servers are receiving **HTTP GET requests** from the **Load Balancer** we check the server's log file for new records.
 
@@ -105,7 +115,7 @@ sudo tail -f /var/log/httpd/access_log
 
 The following terminals shows both logs side by side as I refresh the page on the browser
 
-![Markdown Logo](https://raw.githubusercontent.com/hectorproko/LOAD-BALANCER-SOLUTION-WITH-APACHE/main/images/lbgetrequest.png)
+![Markdown Logo](media/Markdown_Logo-44.png)
 
 
 
