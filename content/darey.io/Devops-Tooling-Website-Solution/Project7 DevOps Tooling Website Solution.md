@@ -1,18 +1,17 @@
 ---
-
 title: DevOps Tooling Website Solution
 tags:
   - Linux
   - EBS
   - draft
 aliases:
-  - Project 7 Dario.io
+  - "Project 7: DevOps Tooling Website Solution"
 linkedin: "False"
 quartz: "False"
 refactored: "False"
-pluralsight: "True"
+darey.io: "True"
 hands-on: "True"
-completed: "False"
+completed: "True"
 hardlinked: "True"
 ---
 *~~(old [Project 7](https://github.com/hectorproko/Devops-Tooling-Website-Solution))~~*
