@@ -15,7 +15,7 @@ completed: "True"
 aliases:
   - "Project 8: Load Balancer Solution with Apache"
 ---
-
+[[Project7 DevOps Tooling Website Solution]]
 
 > [!Info]
 > Project 8: Adding Load Balancer to [**Project 7:** DevOps Tooling Website Solution](https://github.com/hectorproko/Devops-Tooling-Website-Solution/blob/main/Project7_Step.md)  

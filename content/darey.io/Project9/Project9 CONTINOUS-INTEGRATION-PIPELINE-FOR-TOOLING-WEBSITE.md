@@ -8,8 +8,8 @@ tags:
   - CD/CD
   - draft
 linkedin: "False"
-quartz: "False"
-refactored: "False"
+quartz: "True"
+refactored: "True"
 darey.io: "True"
 hands-on: "True"
 completed: "True"
@@ -84,7 +84,7 @@ After plugins install, create an admin user and the setup is complete.
 
 ## Step 3: Configure Jenkins to Pull from GitHub via Webhooks
 
-The job is configured so that Jenkins polls for source code changes - and more importantly, GitHub notifies Jenkins directly via a webhook whenever a push happens, so builds trigger in real time rather than on a schedule.
+The job is configured so that Jenkins polls for source code changes and more importantly, GitHub notifies Jenkins directly via a webhook whenever a push happens, so builds trigger in real time rather than on a schedule.
 
 ### 3.1 Create the Jenkins Freestyle Job
 
@@ -107,7 +107,7 @@ Click **Save**.
 When specifying the repository branch, Jenkins defaults to `master`. If the local repository uses `main` as the default branch, changing the branch specifier to `main` produces the following error:
 
 ```
-ERROR: Couldn't find any revision to build. Verify the repository and branch configuration for this job.
+❌ERROR: Couldn't find any revision to build. Verify the repository and branch configuration for this job.
 Finished: FAILURE
 ```
 
