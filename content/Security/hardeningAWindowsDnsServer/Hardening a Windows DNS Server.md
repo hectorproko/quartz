@@ -273,7 +273,7 @@ pslearner@ip-172-31-24-30:~$
     
 2. Click the **Start** icon, then click on **Server Manager**.
     
-    **Note:** If you see a message to "Try Windows Admin Center and Azure Arc today" you can click **Don't show this message again** and close out of the window by clicking the **X**.![](https://labs.pluralsight.com/labkeep/lab_assets/174a0e86-4373-4387-bd39-83a8b0a107e4)**Analysis**: There are three roles that are installed, **DNS**, **File and Storage Services**, and **IIS**. **DNS** is required for this server to function as a DNS server and **File and Storage Services** is installed by default and cannot be removed. However, **IIS** is the role that is listening for connections coming in on port 80, so that needs to be removed.
+    **Note:** If you see a message to "Try [[Windows Admin Center]] and Azure Arc today" you can click **Don't show this message again** and close out of the window by clicking the **X**.![](https://labs.pluralsight.com/labkeep/lab_assets/174a0e86-4373-4387-bd39-83a8b0a107e4)**Analysis**: There are three roles that are installed, **DNS**, **File and Storage Services**, and **IIS**. **DNS** is required for this server to function as a DNS server and **File and Storage Services** is installed by default and cannot be removed. However, **IIS** is the role that is listening for connections coming in on port 80, so that needs to be removed.
 ![[Pasted image 20260510212755.png]]
 1. In the top right corner of **Server Manager**, click **Manage**, and then click on **Remove Roles and Features**.
     

@@ -26,7 +26,7 @@ hardlinked: "True"
 
 ## Overview
 
-This lab simulates a real-world pre-audit scenario: I'm part of an operations team at a regional logistics company, and our inventory server is about to face an external security audit. The server was intentionally left in a weak baseline state - SSH accepted password logins with no user restrictions, no firewall was active, there was no privileged action trail, and AppArmor was running but not yet tuned.
+This lab simulates a real-world pre-audit scenario: I'm part of an operations team at a regional logistics company, and our inventory server is about to face an external security audit. The server was intentionally left in a weak baseline state, SSH accepted password logins with no user restrictions, no firewall was active, there was no privileged action trail, and AppArmor was running but not yet tuned.
 
 My goal was to harden the system across three layers:
 
