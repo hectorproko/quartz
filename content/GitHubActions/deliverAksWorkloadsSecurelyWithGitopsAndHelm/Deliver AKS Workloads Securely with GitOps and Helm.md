@@ -4,7 +4,7 @@ tags:
   - Kubernetes
   - GitOps
   - ArgoCD
-  - githubactions
+  - GitHubActions
   - ci/cd
   - security
   - helm
